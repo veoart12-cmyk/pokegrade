@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>PokeGrade</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
@@ -74,8 +75,9 @@ body {
 
 .home-header {
   padding: 60px 26px 0;
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center; justify-content: space-between;
 }
+.home-header-left { display: flex; align-items: center; gap: 10px; }
 .logo-mark {
   width: 36px; height: 36px;
   background: var(--red); border-radius: 10px;
@@ -83,6 +85,13 @@ body {
   flex-shrink: 0;
 }
 .logo-name { font-size: 20px; font-weight: 900; color: var(--black); letter-spacing: -0.5px; }
+
+.account-btn {
+  width: 36px; height: 36px;
+  background: var(--g100); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; border: none; flex-shrink: 0;
+}
 
 .home-copy { padding: 28px 26px 0; }
 .home-h1 {
@@ -92,6 +101,18 @@ body {
 }
 .home-h1 em { color: var(--red); font-style: normal; }
 .home-p { font-size: 15px; color: var(--g500); line-height: 1.5; }
+
+/* Grade counter pill */
+.grade-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--g50); border: 1px solid var(--g200);
+  border-radius: 99px; padding: 6px 14px;
+  font-size: 12px; font-weight: 700; color: var(--g700);
+  margin-top: 14px;
+}
+.grade-pill .pill-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+.grade-pill.warning .pill-dot { background: var(--amber); }
+.grade-pill.danger  .pill-dot { background: var(--red); }
 
 /* Card showcase */
 .cards-showcase {
@@ -129,7 +150,6 @@ body {
   display: flex;
   border-top: 1px solid var(--g100);
   border-bottom: 1px solid var(--g100);
-  margin: 0 0 0;
 }
 .stat-item {
   flex: 1; text-align: center;
@@ -335,7 +355,6 @@ body {
 .res-cn { font-size: 18px; font-weight: 800; color: var(--black); letter-spacing: -0.3px; }
 .res-cs { font-size: 12px; color: var(--g500); margin-top: 2px; }
 
-/* Score block */
 .score-block {
   background: var(--white);
   margin: 14px 14px 10px;
@@ -358,7 +377,6 @@ body {
 }
 .sc-eq { font-size: 13px; color: var(--g500); }
 
-/* Criteria */
 .crit-head-row {
   padding: 14px 18px 8px;
   font-size: 11px; font-weight: 700;
@@ -378,7 +396,6 @@ body {
 .crit-f   { height: 100%; border-radius: 99px; transition: width 1.2s cubic-bezier(0.4,0,0.2,1); width: 0%; }
 .crit-cf  { font-size: 11px; color: var(--g300); font-weight: 600; }
 
-/* Bottom actions */
 .res-bottom { padding: 6px 14px 44px; }
 .btn-red-full {
   width: 100%; padding: 18px;
@@ -397,6 +414,156 @@ body {
   margin-bottom: 14px;
 }
 .disc { font-size: 11px; color: var(--g300); text-align: center; line-height: 1.5; }
+
+/* ══════════════
+   AUTH (LOGIN / SIGNUP)
+══════════════ */
+.auth-screen {
+  display: flex; flex-direction: column;
+  padding: 72px 26px 44px;
+  min-height: 100vh;
+}
+.auth-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 36px; }
+.auth-h1 { font-size: 30px; font-weight: 900; color: var(--black); letter-spacing: -1px; margin-bottom: 6px; }
+.auth-sub { font-size: 14px; color: var(--g500); margin-bottom: 32px; }
+
+.auth-field { margin-bottom: 14px; }
+.auth-lbl { font-size: 11px; font-weight: 700; color: var(--g500); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 8px; display: block; }
+.auth-inp {
+  width: 100%; padding: 16px;
+  background: var(--g50); border: 1.5px solid var(--g200);
+  border-radius: 14px; outline: none;
+  font-size: 16px; color: var(--black);
+  transition: border-color 0.15s;
+}
+.auth-inp:focus { border-color: var(--red); }
+
+.auth-error {
+  background: var(--red-bg); color: var(--red);
+  font-size: 13px; font-weight: 600;
+  padding: 12px 16px; border-radius: 12px;
+  margin-bottom: 14px; display: none;
+}
+
+.auth-submit {
+  width: 100%; padding: 18px;
+  background: var(--red); color: var(--white);
+  border: none; border-radius: 16px;
+  font-size: 16px; font-weight: 800;
+  cursor: pointer; margin-top: 6px;
+  transition: background 0.15s, opacity 0.15s;
+}
+.auth-submit:disabled { opacity: .5; cursor: default; }
+.auth-switch {
+  text-align: center; margin-top: 20px;
+  font-size: 14px; color: var(--g500);
+}
+.auth-switch a { color: var(--red); font-weight: 700; cursor: pointer; text-decoration: none; }
+
+/* ══════════════
+   PAYWALL
+══════════════ */
+#s-paywall {
+  display: flex; flex-direction: column;
+  align-items: center; text-align: center;
+  padding: 72px 26px 44px;
+  min-height: 100vh;
+}
+.paywall-icon {
+  width: 72px; height: 72px;
+  background: var(--red-bg); border-radius: 22px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 24px; font-size: 36px;
+}
+.paywall-h1 { font-size: 26px; font-weight: 900; color: var(--black); letter-spacing: -0.8px; margin-bottom: 10px; }
+.paywall-sub { font-size: 14px; color: var(--g500); line-height: 1.6; margin-bottom: 32px; }
+.paywall-perks { width: 100%; margin-bottom: 32px; }
+.perk {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 0; border-bottom: 1px solid var(--g100);
+  text-align: left;
+}
+.perk:last-child { border-bottom: none; }
+.perk-icon { font-size: 20px; flex-shrink: 0; }
+.perk-t { font-size: 14px; font-weight: 700; color: var(--black); }
+.perk-s { font-size: 12px; color: var(--g500); }
+.price-row { margin-bottom: 20px; }
+.price-main { font-size: 42px; font-weight: 900; color: var(--black); letter-spacing: -2px; }
+.price-per  { font-size: 15px; color: var(--g500); }
+.paywall-cta {
+  width: 100%; padding: 18px;
+  background: var(--red); color: var(--white);
+  border: none; border-radius: 16px;
+  font-size: 17px; font-weight: 800; cursor: pointer;
+  margin-bottom: 14px;
+}
+.paywall-skip { font-size: 14px; color: var(--g500); cursor: pointer; background: none; border: none; }
+
+/* ══════════════
+   ACCOUNT
+══════════════ */
+#s-account { background: var(--g50); }
+.acc-header {
+  background: var(--white);
+  padding: 60px 22px 22px;
+  border-bottom: 1px solid var(--g100);
+}
+.acc-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.acc-back { font-size: 15px; color: var(--red); font-weight: 600; cursor: pointer; }
+.acc-title { font-size: 15px; font-weight: 700; }
+.acc-avatar {
+  width: 56px; height: 56px;
+  background: var(--red); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 20px; font-weight: 900;
+  margin-bottom: 10px;
+}
+.acc-email { font-size: 14px; color: var(--g500); margin-bottom: 4px; }
+.acc-plan {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 700; padding: 4px 12px;
+  border-radius: 99px;
+}
+.acc-plan.free    { background: var(--g100); color: var(--g700); }
+.acc-plan.premium { background: #FFF9E6; color: #B45309; }
+
+.acc-section { margin: 14px; }
+.acc-card {
+  background: var(--white); border-radius: 16px;
+  overflow: hidden; margin-bottom: 10px;
+}
+.acc-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px; border-bottom: 1px solid var(--g50);
+  font-size: 14px; color: var(--black);
+}
+.acc-row:last-child { border-bottom: none; }
+.acc-row-l { font-weight: 600; }
+.acc-row-r { color: var(--g500); }
+
+.history-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px; border-bottom: 1px solid var(--g50);
+}
+.history-item:last-child { border-bottom: none; }
+.hist-badge {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: var(--g50); display: flex; align-items: center;
+  justify-content: center; font-size: 16px; font-weight: 900;
+  flex-shrink: 0;
+}
+.hist-info { flex: 1; min-width: 0; }
+.hist-name { font-size: 14px; font-weight: 700; color: var(--black); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hist-date { font-size: 12px; color: var(--g500); margin-top: 2px; }
+.hist-score { font-size: 16px; font-weight: 900; }
+
+.acc-logout {
+  width: 100%; padding: 16px;
+  background: var(--white); color: var(--red);
+  border: 1.5px solid var(--red-bg); border-radius: 16px;
+  font-size: 15px; font-weight: 700; cursor: pointer;
+  margin: 0 0 40px;
+}
 </style>
 </head>
 <body>
@@ -405,23 +572,34 @@ body {
 <!-- HOME -->
 <div class="screen active" id="s-home">
   <div class="home-header">
-    <div class="logo-mark">
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-        <circle cx="11" cy="11" r="8.5" stroke="white" stroke-width="1.6" opacity=".5"/>
-        <path d="M11 2.5 A8.5 8.5 0 0 1 19.5 11 L11 11Z" fill="white" opacity=".4"/>
-        <circle cx="11" cy="11" r="3" fill="white"/>
-        <line x1="2.5" y1="11" x2="19.5" y2="11" stroke="white" stroke-width="1.1" opacity=".4"/>
-      </svg>
+    <div class="home-header-left">
+      <div class="logo-mark">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <circle cx="11" cy="11" r="8.5" stroke="white" stroke-width="1.6" opacity=".5"/>
+          <path d="M11 2.5 A8.5 8.5 0 0 1 19.5 11 L11 11Z" fill="white" opacity=".4"/>
+          <circle cx="11" cy="11" r="3" fill="white"/>
+          <line x1="2.5" y1="11" x2="19.5" y2="11" stroke="white" stroke-width="1.1" opacity=".4"/>
+        </svg>
+      </div>
+      <span class="logo-name">PokeGrade</span>
     </div>
-    <span class="logo-name">PokeGrade</span>
+    <button class="account-btn" id="acc-btn" onclick="handleAccountBtn()">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <circle cx="9" cy="6.5" r="3" stroke="#555" stroke-width="1.5"/>
+        <path d="M2 15.5c0-3 3.1-5 7-5s7 2 7 5" stroke="#555" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
   </div>
 
   <div class="home-copy">
     <h1 class="home-h1">Grade tes<br>cartes par <em>IA</em>.</h1>
     <p class="home-p">Note PSA en 10 secondes.<br>Sans envoyer ta carte.</p>
+    <div class="grade-pill" id="home-pill" style="display:none">
+      <div class="pill-dot"></div>
+      <span id="home-pill-text"></span>
+    </div>
   </div>
 
-  <!-- Vraies cartes Pokémon -->
   <div class="cards-showcase">
     <div class="card-fan">
       <div class="fan-card c1">
@@ -443,8 +621,8 @@ body {
   </div>
 
   <div class="home-cta">
-    <button class="btn-red" onclick="go('s-guide')">Grader une carte →</button>
-    <p class="home-note">3 grades gratuits · Sans carte bancaire</p>
+    <button class="btn-red" onclick="handleGradeBtn()">Grader une carte →</button>
+    <p class="home-note" id="home-note">3 grades gratuits · Sans carte bancaire</p>
   </div>
 </div>
 
@@ -611,10 +789,189 @@ body {
   </div>
 </div>
 
+<!-- LOGIN -->
+<div class="screen" id="s-login">
+  <div class="auth-screen">
+    <div class="auth-logo">
+      <div class="logo-mark">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <circle cx="11" cy="11" r="8.5" stroke="white" stroke-width="1.6" opacity=".5"/>
+          <path d="M11 2.5 A8.5 8.5 0 0 1 19.5 11 L11 11Z" fill="white" opacity=".4"/>
+          <circle cx="11" cy="11" r="3" fill="white"/>
+        </svg>
+      </div>
+      <span class="logo-name">PokeGrade</span>
+    </div>
+    <h1 class="auth-h1">Connexion</h1>
+    <p class="auth-sub">3 grades gratuits par mois.</p>
+
+    <div class="auth-error" id="login-error"></div>
+
+    <div class="auth-field">
+      <label class="auth-lbl">Email</label>
+      <input class="auth-inp" type="email" id="login-email" placeholder="toi@email.com" autocomplete="email">
+    </div>
+    <div class="auth-field">
+      <label class="auth-lbl">Mot de passe</label>
+      <input class="auth-inp" type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+    </div>
+
+    <button class="auth-submit" id="login-btn" onclick="doLogin()">Se connecter</button>
+
+    <p class="auth-switch">Pas encore de compte ? <a onclick="go('s-signup')">Créer un compte</a></p>
+    <p class="auth-switch" style="margin-top:10px"><a onclick="go('s-home')" style="color:var(--g500)">← Retour</a></p>
+  </div>
+</div>
+
+<!-- SIGNUP -->
+<div class="screen" id="s-signup">
+  <div class="auth-screen">
+    <div class="auth-logo">
+      <div class="logo-mark">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <circle cx="11" cy="11" r="8.5" stroke="white" stroke-width="1.6" opacity=".5"/>
+          <path d="M11 2.5 A8.5 8.5 0 0 1 19.5 11 L11 11Z" fill="white" opacity=".4"/>
+          <circle cx="11" cy="11" r="3" fill="white"/>
+        </svg>
+      </div>
+      <span class="logo-name">PokeGrade</span>
+    </div>
+    <h1 class="auth-h1">Créer un compte</h1>
+    <p class="auth-sub">Gratuit. 3 grades offerts ce mois.</p>
+
+    <div class="auth-error" id="signup-error"></div>
+
+    <div class="auth-field">
+      <label class="auth-lbl">Email</label>
+      <input class="auth-inp" type="email" id="signup-email" placeholder="toi@email.com" autocomplete="email">
+    </div>
+    <div class="auth-field">
+      <label class="auth-lbl">Mot de passe</label>
+      <input class="auth-inp" type="password" id="signup-pass" placeholder="••••••••" autocomplete="new-password">
+    </div>
+
+    <button class="auth-submit" id="signup-btn" onclick="doSignup()">Créer mon compte</button>
+
+    <p class="auth-switch">Déjà un compte ? <a onclick="go('s-login')">Se connecter</a></p>
+    <p class="auth-switch" style="margin-top:10px"><a onclick="go('s-home')" style="color:var(--g500)">← Retour</a></p>
+  </div>
+</div>
+
+<!-- PAYWALL -->
+<div class="screen" id="s-paywall">
+  <div class="paywall-icon">🏆</div>
+  <h2 class="paywall-h1">Limite atteinte</h2>
+  <p class="paywall-sub">Tu as utilisé tes 3 grades gratuits ce mois.<br>Passe en Premium pour continuer.</p>
+
+  <div class="paywall-perks">
+    <div class="perk">
+      <span class="perk-icon">♾️</span>
+      <div><p class="perk-t">Grades illimités</p><p class="perk-s">Autant de cartes que tu veux</p></div>
+    </div>
+    <div class="perk">
+      <span class="perk-icon">📊</span>
+      <div><p class="perk-t">Historique complet</p><p class="perk-s">Toutes tes cartes sauvegardées</p></div>
+    </div>
+    <div class="perk">
+      <span class="perk-icon">⚡</span>
+      <div><p class="perk-t">Priorité de traitement</p><p class="perk-s">Résultats encore plus rapides</p></div>
+    </div>
+  </div>
+
+  <div class="price-row">
+    <span class="price-main">4,99€</span>
+    <span class="price-per"> / mois</span>
+  </div>
+
+  <button class="paywall-cta" onclick="goToPremium()">Passer en Premium →</button>
+  <button class="paywall-skip" onclick="go('s-home')">Pas maintenant</button>
+</div>
+
+<!-- ACCOUNT -->
+<div class="screen" id="s-account">
+  <div class="acc-header">
+    <div class="acc-nav">
+      <span class="acc-back" onclick="go('s-home')">← Retour</span>
+      <span class="acc-title">Mon compte</span>
+    </div>
+    <div class="acc-avatar" id="acc-avatar">?</div>
+    <p class="acc-email" id="acc-email-display">—</p>
+    <span class="acc-plan free" id="acc-plan-badge">Gratuit</span>
+  </div>
+
+  <div class="acc-section">
+    <div class="acc-card">
+      <div class="acc-row">
+        <span class="acc-row-l">Grades ce mois</span>
+        <span class="acc-row-r" id="acc-grades-used">—</span>
+      </div>
+      <div class="acc-row">
+        <span class="acc-row-l">Restants</span>
+        <span class="acc-row-r" id="acc-grades-left">—</span>
+      </div>
+      <div class="acc-row">
+        <span class="acc-row-l">Plan</span>
+        <span class="acc-row-r" id="acc-plan-text">—</span>
+      </div>
+    </div>
+
+    <div id="upgrade-card" style="display:none">
+      <button class="btn-red-full" onclick="goToPremium()" style="margin-bottom:10px">Passer en Premium — 4,99€/mois →</button>
+    </div>
+
+    <p style="font-size:11px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.07em;margin:18px 0 8px">Historique</p>
+    <div class="acc-card" id="history-list">
+      <div class="acc-row"><span style="color:var(--g500);font-size:13px">Chargement…</span></div>
+    </div>
+
+    <button class="acc-logout" onclick="doLogout()">Se déconnecter</button>
+  </div>
+</div>
+
 </div>
 
 <script>
-/* ── Nav ── */
+// ── Supabase init ──────────────────────────────────────────────
+const SUPABASE_URL  = 'https://lbueoosnustkrhtfdafa.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_CXSmOan6oHh1Sq2MRQ03Aw_WLGyVrR-';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+let currentSession = null;
+let currentProfile = null;
+
+// ── Auth state ─────────────────────────────────────────────────
+sb.auth.onAuthStateChange(async (event, session) => {
+  currentSession = session;
+  if (session) {
+    await refreshProfile();
+    updateHomePill();
+    document.getElementById('home-note').style.display = 'none';
+  } else {
+    currentProfile = null;
+    document.getElementById('home-pill').style.display = 'none';
+    document.getElementById('home-note').style.display = 'block';
+  }
+});
+
+// Check success redirect (after Stripe payment)
+const params = new URLSearchParams(location.search);
+if (params.get('success') === 'true') {
+  history.replaceState({}, '', location.pathname);
+  setTimeout(() => alert('🎉 Premium activé ! Tu peux grader sans limite.'), 500);
+}
+
+async function refreshProfile() {
+  if (!currentSession) return;
+  const res = await fetch('/api/user', {
+    headers: { 'Authorization': 'Bearer ' + currentSession.access_token }
+  });
+  if (res.ok) {
+    const data = await res.json();
+    currentProfile = data.profile;
+  }
+}
+
+// ── Nav ────────────────────────────────────────────────────────
 let cur = 's-home';
 function go(id) {
   const p = document.getElementById(cur), n = document.getElementById(id);
@@ -623,7 +980,43 @@ function go(id) {
   n.classList.add('active'); n.scrollTop = 0; cur = id;
 }
 
-/* ── Upload ── */
+// ── Home pill ──────────────────────────────────────────────────
+function updateHomePill() {
+  if (!currentProfile) return;
+  const pill = document.getElementById('home-pill');
+  const txt  = document.getElementById('home-pill-text');
+  pill.style.display = 'inline-flex';
+  pill.className = 'grade-pill';
+  if (currentProfile.is_premium) {
+    txt.textContent = 'Premium — grades illimités';
+  } else {
+    const used = currentProfile.grades_this_month || 0;
+    const left = Math.max(0, 3 - used);
+    txt.textContent = `${left} grade${left > 1 ? 's' : ''} gratuit${left > 1 ? 's' : ''} restant${left > 1 ? 's' : ''}`;
+    if (left === 0) pill.classList.add('danger');
+    else if (left === 1) pill.classList.add('warning');
+  }
+}
+
+// ── Button handlers ────────────────────────────────────────────
+function handleAccountBtn() {
+  if (currentSession) {
+    loadAccount();
+    go('s-account');
+  } else {
+    go('s-login');
+  }
+}
+
+function handleGradeBtn() {
+  if (!currentSession) { go('s-login'); return; }
+  if (!currentProfile?.is_premium && (currentProfile?.grades_this_month || 0) >= 3) {
+    go('s-paywall'); return;
+  }
+  go('s-guide');
+}
+
+// ── Upload ─────────────────────────────────────────────────────
 let uploadedFile = null;
 function handleFile(e) {
   const f = e.target.files[0]; if (!f) return;
@@ -639,7 +1032,7 @@ function handleFile(e) {
   r.readAsDataURL(f);
 }
 
-/* ── Helpers ── */
+// ── Helpers ────────────────────────────────────────────────────
 function colFor(s) {
   if (s >= 9)   return '#15803D';
   if (s >= 7.5) return '#CC0000';
@@ -658,7 +1051,7 @@ function confFor(c) {
   return 'Confiance faible — reprends la photo (fond blanc, à plat)';
 }
 
-/* ── Steps animation ── */
+// ── Steps animation ────────────────────────────────────────────
 let stepTimer = null;
 function animSteps() {
   const ids = ['st1','st2','st3','st4','st5']; let i = 0;
@@ -669,14 +1062,32 @@ function animSteps() {
   }, 850);
 }
 
-/* ── Grading ── */
+// ── Grading ────────────────────────────────────────────────────
 async function startAnalysis() {
+  if (!currentSession) { go('s-login'); return; }
+
   go('s-analyzing'); animSteps();
   try {
     const fd = new FormData(); fd.append('image', uploadedFile);
-    const res = await fetch('/api/grade', { method:'POST', body:fd });
+    const res = await fetch('/api/grade', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + currentSession.access_token },
+      body: fd
+    });
+    if (res.status === 402) {
+      clearInterval(stepTimer);
+      go('s-paywall');
+      return;
+    }
     if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Erreur serveur'); }
     const data = await res.json();
+
+    // Update local profile
+    if (currentProfile) {
+      currentProfile.grades_this_month = data.grades_used;
+      updateHomePill();
+    }
+
     clearInterval(stepTimer);
     ['st1','st2','st3','st4','st5'].forEach(id => document.getElementById(id).className = 'step done');
     setTimeout(() => showResult(data.result), 600);
@@ -688,7 +1099,7 @@ async function startAnalysis() {
   }
 }
 
-/* ── Results ── */
+// ── Results ────────────────────────────────────────────────────
 function showResult(r) {
   const name = document.getElementById('card-name').value.trim() || 'Carte Pokémon';
   const g = r.global;
@@ -737,7 +1148,7 @@ function showResult(r) {
   }, 700);
 }
 
-/* ── Reset ── */
+// ── Reset ──────────────────────────────────────────────────────
 function resetAndGo() {
   uploadedFile = null;
   document.getElementById('preview-zone').style.display = 'none';
@@ -748,13 +1159,135 @@ function resetAndGo() {
   go('s-home');
 }
 
-/* ── Share ── */
+// ── Share ──────────────────────────────────────────────────────
 function shareResult() {
   const name = document.getElementById('res-name').textContent;
   const score = document.getElementById('sc-num').textContent;
   const badge = document.getElementById('sc-badge').textContent;
-  if (navigator.share) { navigator.share({ title:'PokeGrade', text:`${name} — ${score}/10 · ${badge}` }); }
-  else { alert(`${name}\n${score}/10 · ${badge}`); }
+  if (navigator.share) { navigator.share({ title:'PokeGrade', text:`${name} — ${score}/10 · ${badge} via PokeGrade` }); }
+  else { navigator.clipboard?.writeText(`${name} — ${score}/10 · ${badge}`).then(() => alert('Copié dans le presse-papier !')); }
+}
+
+// ── Auth ───────────────────────────────────────────────────────
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-error');
+  const btn   = document.getElementById('login-btn');
+  errEl.style.display = 'none';
+  btn.disabled = true; btn.textContent = 'Connexion…';
+
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  btn.disabled = false; btn.textContent = 'Se connecter';
+
+  if (error) {
+    errEl.textContent = 'Email ou mot de passe incorrect.';
+    errEl.style.display = 'block';
+  } else {
+    go('s-home');
+  }
+}
+
+async function doSignup() {
+  const email = document.getElementById('signup-email').value.trim();
+  const pass  = document.getElementById('signup-pass').value;
+  const errEl = document.getElementById('signup-error');
+  const btn   = document.getElementById('signup-btn');
+  errEl.style.display = 'none';
+
+  if (pass.length < 6) {
+    errEl.textContent = 'Mot de passe trop court (6 caractères min).';
+    errEl.style.display = 'block'; return;
+  }
+
+  btn.disabled = true; btn.textContent = 'Création…';
+  const { error } = await sb.auth.signUp({ email, password: pass });
+  btn.disabled = false; btn.textContent = 'Créer mon compte';
+
+  if (error) {
+    errEl.textContent = error.message;
+    errEl.style.display = 'block';
+  } else {
+    alert('Compte créé ! Vérifie ton email pour confirmer, puis connecte-toi.');
+    go('s-login');
+  }
+}
+
+async function doLogout() {
+  await sb.auth.signOut();
+  currentSession = null; currentProfile = null;
+  go('s-home');
+}
+
+// ── Account screen ─────────────────────────────────────────────
+async function loadAccount() {
+  if (!currentSession) return;
+  await refreshProfile();
+  const p = currentProfile;
+  if (!p) return;
+
+  const emailInitial = currentSession.user.email?.[0]?.toUpperCase() || '?';
+  document.getElementById('acc-avatar').textContent = emailInitial;
+  document.getElementById('acc-email-display').textContent = currentSession.user.email;
+
+  const badge = document.getElementById('acc-plan-badge');
+  if (p.is_premium) {
+    badge.textContent = '⭐ Premium'; badge.className = 'acc-plan premium';
+    document.getElementById('upgrade-card').style.display = 'none';
+  } else {
+    badge.textContent = 'Gratuit'; badge.className = 'acc-plan free';
+    document.getElementById('upgrade-card').style.display = 'block';
+  }
+
+  const used = p.grades_this_month || 0;
+  const left = p.is_premium ? '∞' : Math.max(0, 3 - used);
+  document.getElementById('acc-grades-used').textContent = used;
+  document.getElementById('acc-grades-left').textContent = left;
+  document.getElementById('acc-plan-text').textContent = p.is_premium ? 'Premium' : 'Gratuit (3/mois)';
+
+  // Load history
+  const hRes = await fetch('/api/grades', {
+    headers: { 'Authorization': 'Bearer ' + currentSession.access_token }
+  });
+  const hData = await hRes.json();
+  const list = document.getElementById('history-list');
+
+  if (!hData.grades || hData.grades.length === 0) {
+    list.innerHTML = '<div class="acc-row"><span style="color:var(--g500);font-size:13px">Aucun grade pour le moment</span></div>';
+    return;
+  }
+
+  list.innerHTML = hData.grades.map(g => {
+    const score = g.result?.global || 0;
+    const col = colFor(score);
+    const date = new Date(g.created_at).toLocaleDateString('fr-FR', { day:'numeric', month:'short' });
+    return `
+      <div class="history-item">
+        <div class="hist-badge" style="color:${col}">${score.toFixed(1)}</div>
+        <div class="hist-info">
+          <p class="hist-name">${g.result?.psa_label || 'Carte Pokémon'}</p>
+          <p class="hist-date">${date}</p>
+        </div>
+        <span class="hist-score" style="color:${col}">${score.toFixed(1)}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── Stripe Premium ─────────────────────────────────────────────
+async function goToPremium() {
+  if (!currentSession) { go('s-login'); return; }
+  try {
+    const res = await fetch('/api/create-checkout', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json' }
+    });
+    const data = await res.json();
+    if (data.url) { location.href = data.url; }
+    else { alert('Erreur : ' + (data.error || 'Réessaie')); }
+  } catch (err) {
+    alert('Erreur réseau. Réessaie.');
+  }
 }
 </script>
 </body>
