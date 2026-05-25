@@ -17,6 +17,10 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
+app.get("/", (req, res) => {
+  res.redirect("/pokégrade_prototype.html");
+});
+
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const GRADING_PROMPT = `Tu es un expert en grading de cartes Pokémon, formé aux standards PSA officiels. Analyse cette carte selon les 4 critères PSA.
