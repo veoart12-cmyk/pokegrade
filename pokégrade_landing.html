@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PokeGrade — Grade tes cartes Pokémon par IA</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --blue:       #185FA5;
+  --blue-mid:   #378ADD;
+  --blue-light: #E6F1FB;
+  --blue-dark:  #0C3D70;
+  --green:      #3B6D11;
+  --green-light:#EAF3DE;
+  --amber:      #BA7517;
+  --amber-light:#FAEEDA;
+  --gray-50:    #FAFAFA;
+  --gray-100:   #F4F4F4;
+  --gray-200:   #E8E8E8;
+  --gray-400:   #AAA;
+  --gray-600:   #666;
+  --gray-800:   #2A2A2A;
+  --gray-900:   #111;
+  --r:          14px;
+  --r-lg:       20px;
+  --max:        1080px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  color: var(--gray-900);
+  background: white;
+  line-height: 1.6;
+}
+
+/* ─── UTILITIES ─── */
+.container { max-width: var(--max); margin: 0 auto; padding: 0 24px; }
+.text-center { text-align: center; }
+
+/* ─── NAV ─── */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 0.5px solid var(--gray-200);
+  padding: 0 24px;
+}
+.nav-inner {
+  max-width: var(--max); margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 64px;
+}
+.nav-logo {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 20px; font-weight: 700; color: var(--gray-900);
+  text-decoration: none;
+}
+.logo-icon {
+  width: 36px; height: 36px; background: var(--blue);
+  border-radius: 10px; display: flex; align-items: center; justify-content: center;
+}
+.nav-links { display: flex; align-items: center; gap: 32px; }
+.nav-links a { font-size: 15px; color: var(--gray-600); text-decoration: none; transition: color 0.15s; }
+.nav-links a:hover { color: var(--gray-900); }
+.nav-cta {
+  background: var(--blue); color: white !important;
+  padding: 9px 20px; border-radius: 99px; font-weight: 500;
+  transition: background 0.15s !important;
+}
+.nav-cta:hover { background: var(--blue-dark) !important; color: white !important; }
+
+@media (max-width: 640px) {
+  .nav-links { display: none; }
+}
+
+/* ─── HERO ─── */
+.hero {
+  background: linear-gradient(160deg, var(--blue-dark) 0%, var(--blue) 60%, #2A7CC7 100%);
+  padding: 96px 24px 80px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 70% 40%, rgba(255,255,255,0.07) 0%, transparent 60%);
+}
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9);
+  font-size: 13px; font-weight: 500; padding: 6px 14px; border-radius: 99px;
+  border: 1px solid rgba(255,255,255,0.2);
+  margin-bottom: 28px;
+}
+.badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; animation: blink 2s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+.hero h1 {
+  font-size: clamp(36px, 6vw, 64px);
+  font-weight: 800; color: white;
+  line-height: 1.1; letter-spacing: -1.5px;
+  margin-bottom: 20px;
+  position: relative;
+}
+.hero h1 span { color: #7DD3FC; }
+
+.hero-sub {
+  font-size: clamp(16px, 2.5vw, 20px);
+  color: rgba(255,255,255,0.78);
+  max-width: 560px; margin: 0 auto 40px;
+  line-height: 1.6; position: relative;
+}
+
+.hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; position: relative; margin-bottom: 56px; }
+
+.btn-white {
+  background: white; color: var(--blue);
+  border: none; border-radius: 99px;
+  padding: 15px 32px; font-size: 16px; font-weight: 600;
+  cursor: pointer; text-decoration: none;
+  transition: transform 0.15s, box-shadow 0.15s;
+  display: inline-block;
+}
+.btn-white:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+
+.btn-outline-white {
+  background: transparent; color: white;
+  border: 1.5px solid rgba(255,255,255,0.45); border-radius: 99px;
+  padding: 15px 32px; font-size: 16px; font-weight: 500;
+  cursor: pointer; text-decoration: none;
+  transition: background 0.15s; display: inline-block;
+}
+.btn-outline-white:hover { background: rgba(255,255,255,0.1); }
+
+/* Hero card mockup */
+.hero-mockup {
+  position: relative; max-width: 480px; margin: 0 auto;
+  display: flex; justify-content: center;
+}
+
+.mockup-card {
+  background: white; border-radius: 20px;
+  padding: 20px; width: 100%; max-width: 360px;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.35);
+  position: relative;
+}
+.mockup-top {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.mockup-title { font-size: 14px; font-weight: 600; color: var(--gray-900); }
+.mockup-badge { background: var(--green-light); color: var(--green); font-size: 12px; font-weight: 500; padding: 4px 10px; border-radius: 99px; }
+
+.mockup-score-row { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+.mockup-score-num { font-size: 52px; font-weight: 800; color: var(--blue); line-height: 1; }
+.mockup-score-info { flex: 1; }
+.mockup-score-label { font-size: 12px; color: var(--gray-400); margin-bottom: 4px; }
+.mockup-score-psa { font-size: 14px; font-weight: 600; color: var(--green); }
+.mockup-score-sub { font-size: 12px; color: var(--gray-600); }
+
+.mockup-bars { display: flex; flex-direction: column; gap: 8px; }
+.mbar-row { display: flex; align-items: center; gap: 10px; }
+.mbar-label { font-size: 12px; color: var(--gray-600); width: 80px; flex-shrink: 0; }
+.mbar-track { flex: 1; height: 5px; background: var(--gray-100); border-radius: 99px; overflow: hidden; }
+.mbar-fill { height: 100%; border-radius: 99px; background: var(--blue); }
+.mbar-val { font-size: 12px; font-weight: 600; color: var(--gray-800); width: 28px; text-align: right; }
+
+/* Floating card images */
+.float-card {
+  position: absolute;
+  border-radius: 8px; border: 2px solid rgba(255,255,255,0.3);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+}
+
+/* ─── SOCIAL PROOF ─── */
+.social-proof {
+  padding: 20px 24px;
+  background: var(--gray-50);
+  border-bottom: 0.5px solid var(--gray-200);
+  text-align: center;
+}
+.sp-inner { max-width: var(--max); margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.sp-text { font-size: 14px; color: var(--gray-600); }
+.sp-avatars { display: flex; }
+.sp-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 2px solid white; margin-left: -8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: white;
+}
+.stars { color: #f59e0b; font-size: 14px; letter-spacing: -1px; }
+
+/* ─── HOW IT WORKS ─── */
+section { padding: 88px 24px; }
+
+.section-eyebrow {
+  font-size: 13px; font-weight: 600; color: var(--blue);
+  text-transform: uppercase; letter-spacing: .1em;
+  margin-bottom: 12px;
+}
+.section-title {
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 800; color: var(--gray-900);
+  letter-spacing: -0.5px; line-height: 1.15;
+  margin-bottom: 16px;
+}
+.section-sub { font-size: 18px; color: var(--gray-600); max-width: 560px; margin: 0 auto 56px; }
+
+.steps-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px; max-width: var(--max); margin: 0 auto;
+}
+.step-card {
+  background: var(--gray-50); border: 0.5px solid var(--gray-200);
+  border-radius: var(--r-lg); padding: 28px 24px;
+}
+.step-num {
+  width: 40px; height: 40px; border-radius: 12px;
+  background: var(--blue-light); color: var(--blue);
+  font-size: 18px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 16px;
+}
+.step-title { font-size: 17px; font-weight: 700; color: var(--gray-900); margin-bottom: 8px; }
+.step-desc  { font-size: 14px; color: var(--gray-600); line-height: 1.6; }
+
+/* ─── CRITERIA ─── */
+.criteria-section { background: var(--gray-50); }
+.criteria-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px; max-width: var(--max); margin: 0 auto;
+}
+.crit-card {
+  background: white; border: 0.5px solid var(--gray-200);
+  border-radius: var(--r); padding: 24px;
+}
+.crit-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: var(--blue-light); display: flex; align-items: center; justify-content: center;
+  margin-bottom: 14px;
+}
+.crit-title { font-size: 16px; font-weight: 700; color: var(--gray-900); margin-bottom: 6px; }
+.crit-desc  { font-size: 14px; color: var(--gray-600); line-height: 1.55; }
+
+/* ─── PRECISION ─── */
+.precision-section { background: white; }
+.precision-inner {
+  max-width: var(--max); margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;
+}
+@media (max-width: 720px) { .precision-inner { grid-template-columns: 1fr; gap: 40px; } }
+
+.big-stat { text-align: center; margin-bottom: 24px; }
+.big-stat-num { font-size: 80px; font-weight: 900; color: var(--blue); line-height: 1; letter-spacing: -3px; }
+.big-stat-label { font-size: 16px; color: var(--gray-600); margin-top: 8px; }
+
+.compare-table { width: 100%; border-collapse: collapse; }
+.compare-table th { font-size: 13px; color: var(--gray-400); font-weight: 500; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--gray-200); }
+.compare-table td { font-size: 14px; padding: 12px 14px; border-bottom: 0.5px solid var(--gray-200); color: var(--gray-800); }
+.compare-table tr:last-child td { border-bottom: none; }
+.td-check { color: var(--green); font-weight: 700; }
+.td-cross { color: #E24B4A; }
+.td-blue  { color: var(--blue); font-weight: 600; }
+
+/* ─── TESTIMONIALS ─── */
+.testi-section { background: var(--gray-50); }
+.testi-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px; max-width: var(--max); margin: 0 auto;
+}
+.testi-card {
+  background: white; border: 0.5px solid var(--gray-200);
+  border-radius: var(--r); padding: 24px;
+}
+.testi-stars { color: #f59e0b; font-size: 16px; margin-bottom: 12px; }
+.testi-text { font-size: 15px; color: var(--gray-800); line-height: 1.65; margin-bottom: 16px; font-style: italic; }
+.testi-author { display: flex; align-items: center; gap: 10px; }
+.testi-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; color: white; flex-shrink: 0;
+}
+.testi-name { font-size: 14px; font-weight: 600; color: var(--gray-900); }
+.testi-role { font-size: 12px; color: var(--gray-400); }
+
+/* ─── PRICING ─── */
+.pricing-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px; max-width: 800px; margin: 0 auto;
+}
+.price-card {
+  background: white; border: 0.5px solid var(--gray-200);
+  border-radius: var(--r-lg); padding: 32px 28px;
+  position: relative;
+}
+.price-card.featured {
+  border: 2px solid var(--blue);
+  box-shadow: 0 0 0 4px var(--blue-light);
+}
+.price-popular {
+  position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+  background: var(--blue); color: white;
+  font-size: 12px; font-weight: 600; padding: 4px 16px; border-radius: 99px;
+  white-space: nowrap;
+}
+.price-name { font-size: 14px; font-weight: 600; color: var(--gray-600); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .06em; }
+.price-amount { font-size: 48px; font-weight: 800; color: var(--gray-900); line-height: 1; margin-bottom: 4px; letter-spacing: -2px; }
+.price-amount span { font-size: 20px; font-weight: 500; color: var(--gray-400); }
+.price-period { font-size: 14px; color: var(--gray-400); margin-bottom: 24px; }
+.price-features { list-style: none; margin-bottom: 28px; }
+.price-features li { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: var(--gray-700); padding: 6px 0; }
+.pf-check { color: var(--green); font-weight: 700; flex-shrink: 0; }
+.btn-blue {
+  background: var(--blue); color: white; border: none;
+  border-radius: 99px; padding: 14px 0; font-size: 15px; font-weight: 600;
+  cursor: pointer; width: 100%; transition: background 0.15s;
+}
+.btn-blue:hover { background: var(--blue-dark); }
+.btn-border {
+  background: white; color: var(--blue); border: 1.5px solid var(--blue);
+  border-radius: 99px; padding: 14px 0; font-size: 15px; font-weight: 600;
+  cursor: pointer; width: 100%; transition: background 0.15s;
+}
+.btn-border:hover { background: var(--blue-light); }
+
+/* ─── FAQ ─── */
+.faq-section { background: var(--gray-50); }
+.faq-list { max-width: 680px; margin: 0 auto; }
+.faq-item {
+  background: white; border: 0.5px solid var(--gray-200);
+  border-radius: var(--r); margin-bottom: 8px; overflow: hidden;
+}
+.faq-q {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 20px; cursor: pointer; font-size: 15px; font-weight: 500;
+  color: var(--gray-900); gap: 12px;
+}
+.faq-chevron { font-size: 18px; color: var(--gray-400); transition: transform 0.2s; flex-shrink: 0; }
+.faq-item.open .faq-chevron { transform: rotate(180deg); }
+.faq-a {
+  padding: 0 20px; max-height: 0; overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s;
+  font-size: 14px; color: var(--gray-600); line-height: 1.65;
+}
+.faq-item.open .faq-a { max-height: 200px; padding: 0 20px 18px; }
+
+/* ─── CTA FINAL ─── */
+.cta-section {
+  background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue) 100%);
+  padding: 96px 24px; text-align: center;
+}
+.cta-title { font-size: clamp(28px, 4vw, 44px); font-weight: 800; color: white; letter-spacing: -0.5px; margin-bottom: 16px; }
+.cta-sub { font-size: 18px; color: rgba(255,255,255,0.75); margin-bottom: 36px; }
+.cta-note { font-size: 13px; color: rgba(255,255,255,0.5); margin-top: 16px; }
+
+/* ─── FOOTER ─── */
+footer {
+  background: var(--gray-900); color: var(--gray-400);
+  padding: 48px 24px 32px;
+}
+.footer-inner {
+  max-width: var(--max); margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 20px;
+}
+.footer-logo { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 700; color: white; }
+.footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
+.footer-links a { font-size: 14px; color: var(--gray-400); text-decoration: none; }
+.footer-links a:hover { color: white; }
+.footer-copy { font-size: 13px; color: var(--gray-600); text-align: center; margin-top: 32px; max-width: var(--max); margin-inline: auto; }
+</style>
+</head>
+<body>
+
+<!-- ═══ NAV ═══ -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <div class="logo-icon">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <circle cx="11" cy="11" r="9" stroke="white" stroke-width="1.5" opacity=".6"/>
+          <path d="M11 2 A9 9 0 0 1 20 11 L11 11 Z" fill="white" opacity=".35"/>
+          <circle cx="11" cy="11" r="3" fill="white" opacity=".9"/>
+          <line x1="2" y1="11" x2="20" y2="11" stroke="white" stroke-width="1" opacity=".4"/>
+        </svg>
+      </div>
+      PokeGrade
+    </a>
+    <div class="nav-links">
+      <a href="#comment">Comment ça marche</a>
+      <a href="#precision">Précision</a>
+      <a href="#tarifs">Tarifs</a>
+      <a href="#faq">FAQ</a>
+      <a href="#essai" class="nav-cta">Essayer gratuitement</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-badge">
+    <div class="badge-dot"></div>
+    Disponible maintenant — 3 grades gratuits
+  </div>
+  <h1>Grade tes cartes Pokémon<br><span>en 10 secondes</span> par IA</h1>
+  <p class="hero-sub">Prends une photo, reçois une note PSA précise. Sans envoyer ta carte, sans attendre des semaines.</p>
+
+  <div class="hero-btns">
+    <a href="#essai" class="btn-white">Grader une carte gratuitement →</a>
+    <a href="#comment" class="btn-outline-white">Voir comment ça marche</a>
+  </div>
+
+  <!-- Result card mockup -->
+  <div class="container">
+    <div class="hero-mockup">
+      <div class="mockup-card">
+        <div class="mockup-top">
+          <span class="mockup-title">Dracaufeu — 1ère Édition</span>
+          <span class="mockup-badge">PSA 8</span>
+        </div>
+        <div class="mockup-score-row">
+          <div class="mockup-score-num">8.5</div>
+          <div class="mockup-score-info">
+            <p class="mockup-score-label">Note globale estimée</p>
+            <p class="mockup-score-psa">Near Mint / Mint</p>
+            <p class="mockup-score-sub">Analysé en 8 secondes</p>
+          </div>
+        </div>
+        <div class="mockup-bars">
+          <div class="mbar-row">
+            <span class="mbar-label">Centering</span>
+            <div class="mbar-track"><div class="mbar-fill" style="width:85%"></div></div>
+            <span class="mbar-val">8.5</span>
+          </div>
+          <div class="mbar-row">
+            <span class="mbar-label">Corners</span>
+            <div class="mbar-track"><div class="mbar-fill" style="width:90%"></div></div>
+            <span class="mbar-val">9.0</span>
+          </div>
+          <div class="mbar-row">
+            <span class="mbar-label">Edges</span>
+            <div class="mbar-track"><div class="mbar-fill" style="width:80%"></div></div>
+            <span class="mbar-val">8.0</span>
+          </div>
+          <div class="mbar-row">
+            <span class="mbar-label">Surface</span>
+            <div class="mbar-track"><div class="mbar-fill" style="width:85%"></div></div>
+            <span class="mbar-val">8.5</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SOCIAL PROOF ═══ -->
+<div class="social-proof">
+  <div class="sp-inner">
+    <div class="sp-avatars">
+      <div class="sp-avatar" style="background:#185FA5">T</div>
+      <div class="sp-avatar" style="background:#639922">M</div>
+      <div class="sp-avatar" style="background:#BA7517">J</div>
+      <div class="sp-avatar" style="background:#A32D2D">S</div>
+      <div class="sp-avatar" style="background:#533AB7">L</div>
+    </div>
+    <span class="stars">★★★★★</span>
+    <p class="sp-text">Déjà <strong>500+ cartes</strong> gradées par notre communauté beta</p>
+  </div>
+</div>
+
+<!-- ═══ HOW IT WORKS ═══ -->
+<section id="comment">
+  <div class="container text-center">
+    <p class="section-eyebrow">Simple comme bonjour</p>
+    <h2 class="section-title">3 étapes, 10 secondes</h2>
+    <p class="section-sub">Pas besoin d'envoyer ta carte. Pas d'attente. Le résultat arrive en quelques secondes.</p>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <p class="step-title">Prends la photo</p>
+        <p class="step-desc">L'app te guide pour faire une photo parfaite — fond blanc, bonne lumière, carte à plat. Recto et verso.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <p class="step-title">L'IA analyse</p>
+        <p class="step-desc">Notre modèle examine chaque coin, chaque bord, la surface et le centrage selon les standards PSA officiels.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <p class="step-title">Reçois ta note</p>
+        <p class="step-desc">Note globale + détail des 4 critères. Tu sais en 10 secondes si ta carte vaut le coup d'être envoyée à PSA.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CRITERIA ═══ -->
+<section class="criteria-section">
+  <div class="container text-center">
+    <p class="section-eyebrow">Standards PSA officiels</p>
+    <h2 class="section-title">4 critères analysés en détail</h2>
+    <p class="section-sub">Les mêmes critères qu'un gradeur PSA professionnel, analysés par notre IA en quelques secondes.</p>
+    <div class="criteria-grid">
+      <div class="crit-card">
+        <div class="crit-icon">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <rect x="2" y="2" width="18" height="18" rx="2" stroke="#185FA5" stroke-width="1.8"/>
+            <rect x="5" y="5" width="12" height="12" rx="1" stroke="#185FA5" stroke-width="1.2" stroke-dasharray="2 1.5"/>
+          </svg>
+        </div>
+        <p class="crit-title">Centering</p>
+        <p class="crit-desc">Mesure si l'image est parfaitement centrée dans les bords de la carte. Un décentrage de plus de 60/40 peut faire chuter la note.</p>
+      </div>
+      <div class="crit-card">
+        <div class="crit-icon">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <path d="M4 4 L4 18 L18 18" stroke="#185FA5" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="4" cy="4" r="2.5" fill="#185FA5" opacity=".7"/>
+            <circle cx="18" cy="18" r="2.5" fill="#185FA5" opacity=".7"/>
+            <circle cx="4" cy="18" r="2.5" fill="#185FA5"/>
+          </svg>
+        </div>
+        <p class="crit-title">Corners</p>
+        <p class="crit-desc">Inspection des 4 coins — pliures, usure, arrondis. Les coins sont souvent le premier signe de mauvaise conservation.</p>
+      </div>
+      <div class="crit-card">
+        <div class="crit-icon">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <rect x="3" y="3" width="16" height="16" rx="2" stroke="#185FA5" stroke-width="1.8"/>
+            <line x1="3" y1="11" x2="19" y2="11" stroke="#185FA5" stroke-width="1" stroke-dasharray="2 2" opacity=".5"/>
+            <line x1="11" y1="3" x2="11" y2="19" stroke="#185FA5" stroke-width="1" stroke-dasharray="2 2" opacity=".5"/>
+          </svg>
+        </div>
+        <p class="crit-title">Edges</p>
+        <p class="crit-desc">État des 4 bords — effilochages, coupures nettes, égratignures. L'IA détecte les imperfections invisibles à l'œil nu.</p>
+      </div>
+      <div class="crit-card">
+        <div class="crit-icon">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <rect x="3" y="3" width="16" height="16" rx="2" fill="#E6F1FB" stroke="#185FA5" stroke-width="1.8"/>
+            <path d="M7 9 Q11 6 15 9 Q11 14 7 9Z" fill="#185FA5" opacity=".4"/>
+            <circle cx="14" cy="14" r="2" fill="#185FA5" opacity=".6"/>
+          </svg>
+        </div>
+        <p class="crit-title">Surface</p>
+        <p class="crit-desc">Rayures, taches, perte de brillance, dommages sur le hologramme. Analyse recto et verso pour une note complète.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PRECISION ═══ -->
+<section class="precision-section" id="precision">
+  <div class="container">
+    <div class="precision-inner">
+      <div>
+        <p class="section-eyebrow">Précision IA</p>
+        <h2 class="section-title" style="text-align:left; margin-bottom:16px;">Aussi précis<br>qu'un gradeur PSA</h2>
+        <p style="font-size:16px; color:var(--gray-600); margin-bottom:32px; line-height:1.65;">Notre modèle IA atteint une précision de ±0.5 point par rapport à la note PSA officielle. Pour les collectionneurs, c'est la différence entre envoyer une carte à 20€ ou à 100€ de frais inutiles.</p>
+
+        <div class="big-stat">
+          <div class="big-stat-num">±0.5</div>
+          <p class="big-stat-label">Écart moyen avec la note PSA officielle</p>
+        </div>
+      </div>
+
+      <div>
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>Critère</th>
+              <th>PokeGrade</th>
+              <th>PSA physique</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Délai du résultat</td>
+              <td class="td-blue">10 secondes</td>
+              <td>6–12 semaines</td>
+            </tr>
+            <tr>
+              <td>Coût par carte</td>
+              <td class="td-blue">Inclus dans l'abonnement</td>
+              <td>20€ – 100€</td>
+            </tr>
+            <tr>
+              <td>Disponibilité</td>
+              <td class="td-check">✓ 24h/24, 7j/7</td>
+              <td class="td-cross">✗ Horaires d'envoi</td>
+            </tr>
+            <tr>
+              <td>Carte à envoyer</td>
+              <td class="td-check">✓ Non, photo suffit</td>
+              <td class="td-cross">✗ Envoi obligatoire</td>
+            </tr>
+            <tr>
+              <td>Note officielle</td>
+              <td class="td-cross">✗ Estimation IA</td>
+              <td class="td-check">✓ Certification officielle</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style="font-size:12px; color:var(--gray-400); margin-top:10px; text-align:center;">Utilisez PokeGrade avant d'envoyer à PSA — économisez sur les cartes qui ne méritent pas la certification.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TESTIMONIALS ═══ -->
+<section class="testi-section">
+  <div class="container text-center">
+    <p class="section-eyebrow">Ils ont testé</p>
+    <h2 class="section-title">Ce que disent nos bêta-testeurs</h2>
+    <p class="section-sub" style="margin-bottom:40px;">Des collectionneurs comme toi qui ont testé PokeGrade sur leurs vraies cartes.</p>
+    <div class="testi-grid">
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"J'avais un Mewtwo que je pensais PSA 9. PokeGrade m'a dit 7.5 à cause des edges. Envoyé quand même pour vérifier — PSA l'a noté 8. Impressionnant."</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:#185FA5">TM</div>
+          <div>
+            <p class="testi-name">Thomas M.</p>
+            <p class="testi-role">Collectionneur depuis 12 ans</p>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"J'achète des lots sur eBay et je grade toutes les cartes avant de décider quoi envoyer à PSA. PokeGrade m'a fait économiser facilement 200€ de frais inutiles."</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:#639922">JB</div>
+          <div>
+            <p class="testi-name">Julien B.</p>
+            <p class="testi-role">Revendeur Pokémon</p>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★☆</div>
+        <p class="testi-text">"Super outil pour débuter. La photo guide est très claire, même ma mère a réussi à faire une bonne photo ! La note était à 0.5 point de PSA sur mes 3 tests."</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:#BA7517">SL</div>
+          <div>
+            <p class="testi-name">Sarah L.</p>
+            <p class="testi-role">Collectionneuse débutante</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PRICING ═══ -->
+<section id="tarifs">
+  <div class="container text-center">
+    <p class="section-eyebrow">Tarifs</p>
+    <h2 class="section-title">Simple et transparent</h2>
+    <p class="section-sub" style="margin-bottom:40px;">Commence gratuitement. Passe Premium quand tu en as besoin.</p>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <p class="price-name">Gratuit</p>
+        <p class="price-amount">0€<span></span></p>
+        <p class="price-period">pour toujours</p>
+        <ul class="price-features">
+          <li><span class="pf-check">✓</span> 3 grades par mois</li>
+          <li><span class="pf-check">✓</span> 4 critères PSA détaillés</li>
+          <li><span class="pf-check">✓</span> Guide photo intégré</li>
+          <li><span class="pf-check">✓</span> Résultat en 10 secondes</li>
+        </ul>
+        <button class="btn-border" onclick="location.href='#essai'">Commencer gratuitement</button>
+      </div>
+      <div class="price-card featured">
+        <div class="price-popular">⭐ Le plus populaire</div>
+        <p class="price-name">Premium</p>
+        <p class="price-amount">4,99€<span>/mois</span></p>
+        <p class="price-period">résiliable à tout moment</p>
+        <ul class="price-features">
+          <li><span class="pf-check">✓</span> Grades illimités</li>
+          <li><span class="pf-check">✓</span> 4 critères PSA détaillés</li>
+          <li><span class="pf-check">✓</span> Historique complet</li>
+          <li><span class="pf-check">✓</span> Export PDF du rapport</li>
+          <li><span class="pf-check">✓</span> Priorité sur les nouvelles fonctionnalités</li>
+          <li><span class="pf-check">✓</span> Support par email</li>
+        </ul>
+        <button class="btn-blue" onclick="location.href='#essai'">Essayer 7 jours gratuits →</button>
+      </div>
+    </div>
+    <p style="font-size:13px; color:var(--gray-400); margin-top:20px;">Aucune carte bancaire requise pour le plan gratuit · SSL sécurisé · Paiement Stripe</p>
+  </div>
+</section>
+
+<!-- ═══ FAQ ═══ -->
+<section class="faq-section" id="faq">
+  <div class="container text-center">
+    <p class="section-eyebrow">Questions fréquentes</p>
+    <h2 class="section-title">On répond à tout</h2>
+    <br>
+    <div class="faq-list">
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span>Est-ce que la note PokeGrade remplace la certification PSA officielle ?</span>
+          <span class="faq-chevron">›</span>
+        </div>
+        <div class="faq-a">Non, PokeGrade est un outil d'estimation. Il ne remplace pas la certification officielle PSA. En revanche, il te permet de savoir à l'avance si ta carte mérite d'être envoyée à PSA — et ainsi éviter de payer 20€ à 100€ de frais pour une carte qui n'obtiendrait qu'un PSA 5.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span>Quelle est la précision réelle de l'IA ?</span>
+          <span class="faq-chevron">›</span>
+        </div>
+        <div class="faq-a">Sur nos tests bêta, l'IA est précise à ±0.5 point par rapport à la note PSA officielle dans 80% des cas. La qualité de la photo influence beaucoup ce résultat — c'est pourquoi notre guide photo est si important. Sur une bonne photo (fond blanc, lumière naturelle, carte à plat), la précision monte significativement.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span>Mes photos de cartes sont-elles stockées ?</span>
+          <span class="faq-chevron">›</span>
+        </div>
+        <div class="faq-a">Les photos sont traitées pour l'analyse puis supprimées automatiquement. Nous ne conservons jamais tes images sur nos serveurs plus longtemps que nécessaire. Seul le résultat du grade est sauvegardé dans ton historique si tu as un compte.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span>Quels types de cartes sont supportés ?</span>
+          <span class="faq-chevron">›</span>
+        </div>
+        <div class="faq-a">PokeGrade supporte toutes les cartes Pokémon — éditions anciennes (Base Set, Jungle, Fossil…) comme les éditions modernes. Le modèle IA a été entraîné sur des milliers de cartes de toutes générations.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span>Puis-je annuler mon abonnement à tout moment ?</span>
+          <span class="faq-chevron">›</span>
+        </div>
+        <div class="faq-a">Oui, sans condition et sans frais. L'annulation se fait en un clic depuis ton compte. Tu gardes l'accès Premium jusqu'à la fin de la période déjà payée.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CTA FINAL ═══ -->
+<section class="cta-section" id="essai">
+  <h2 class="cta-title">Prêt à grader ta première carte ?</h2>
+  <p class="cta-sub">3 grades offerts. Aucune carte bancaire requise.</p>
+  <div class="hero-btns">
+    <a href="pokégrade_prototype.html" class="btn-white">Commencer gratuitement →</a>
+  </div>
+  <p class="cta-note">Déjà 500+ cartes gradées · Standards PSA officiels · Résultat en 10 secondes</p>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">
+      <div class="logo-icon">
+        <svg width="20" height="20" viewBox="0 0 22 22" fill="none">
+          <circle cx="11" cy="11" r="9" stroke="white" stroke-width="1.5" opacity=".6"/>
+          <path d="M11 2 A9 9 0 0 1 20 11 L11 11 Z" fill="white" opacity=".3"/>
+          <circle cx="11" cy="11" r="3" fill="white" opacity=".9"/>
+        </svg>
+      </div>
+      PokeGrade
+    </div>
+    <div class="footer-links">
+      <a href="#">Confidentialité</a>
+      <a href="#">Mentions légales</a>
+      <a href="#">Contact</a>
+      <a href="#">Blog</a>
+    </div>
+  </div>
+  <p class="footer-copy">© 2026 PokeGrade. Tous droits réservés. PokeGrade n'est pas affilié à PSA, Nintendo ou The Pokémon Company.</p>
+</footer>
+
+<script>
+function toggleFaq(el) {
+  const item = el.parentElement;
+  item.classList.toggle('open');
+}
+</script>
+</body>
+</html>

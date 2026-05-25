@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>PokeGrade</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  --red:      #CC0000;
+  --red-dark: #A00000;
+  --red-bg:   #FFF5F5;
+  --black:    #0A0A0A;
+  --g900:     #111;
+  --g700:     #333;
+  --g500:     #777;
+  --g300:     #CCC;
+  --g200:     #E8E8E8;
+  --g100:     #F4F4F4;
+  --g50:      #FAFAFA;
+  --white:    #FFF;
+  --green:    #15803D;
+  --green-bg: #F0FDF4;
+  --amber:    #B45309;
+  --amber-bg: #FFFBEB;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+  background: #E5E5E5;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+}
+
+.phone {
+  width: 100%; max-width: 390px;
+  min-height: 100vh;
+  background: var(--white);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 80px rgba(0,0,0,0.15);
+}
+
+.screen {
+  position: absolute; inset: 0;
+  overflow-y: auto; overflow-x: hidden;
+  transform: translateX(100%);
+  transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+  min-height: 100vh;
+  background: var(--white);
+}
+.screen.active  { transform: translateX(0); }
+.screen.exiting { transform: translateX(-22%); }
+
+/* ── NAV ── */
+.nav {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 54px 22px 14px;
+  background: var(--white);
+  border-bottom: 1px solid var(--g100);
+}
+.nav-back   { font-size: 15px; color: var(--red); font-weight: 600; cursor: pointer; }
+.nav-title  { font-size: 15px; font-weight: 700; color: var(--black); }
+.nav-skip   { font-size: 14px; color: var(--g500); cursor: pointer; }
+
+/* ══════════════
+   HOME
+══════════════ */
+#s-home { display: flex; flex-direction: column; min-height: 100vh; }
+
+.home-header {
+  padding: 60px 26px 0;
+  display: flex; align-items: center; gap: 10px;
+}
+.logo-mark {
+  width: 36px; height: 36px;
+  background: var(--red); border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.logo-name { font-size: 20px; font-weight: 900; color: var(--black); letter-spacing: -0.5px; }
+
+.home-copy { padding: 28px 26px 0; }
+.home-h1 {
+  font-size: 42px; font-weight: 900;
+  color: var(--black); line-height: 1.05;
+  letter-spacing: -2px; margin-bottom: 12px;
+}
+.home-h1 em { color: var(--red); font-style: normal; }
+.home-p { font-size: 15px; color: var(--g500); line-height: 1.5; }
+
+/* Card showcase */
+.cards-showcase {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 0;
+  position: relative;
+  overflow: hidden;
+  min-height: 200px;
+}
+
+.card-fan {
+  position: relative;
+  width: 200px; height: 160px;
+}
+
+.fan-card {
+  position: absolute;
+  width: 100px; height: 140px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+  border: 1px solid rgba(255,255,255,0.3);
+  top: 10px;
+}
+.fan-card img { width: 100%; height: 100%; object-fit: cover; }
+.fan-card.c1 { left: 0px;  transform: rotate(-10deg); z-index: 1; }
+.fan-card.c2 { left: 50px; transform: rotate(-2deg);  z-index: 3; top: 0; }
+.fan-card.c3 { left: 100px; transform: rotate(8deg);  z-index: 2; }
+
+/* Stats strip */
+.stats-strip {
+  display: flex;
+  border-top: 1px solid var(--g100);
+  border-bottom: 1px solid var(--g100);
+  margin: 0 0 0;
+}
+.stat-item {
+  flex: 1; text-align: center;
+  padding: 16px 8px;
+  border-right: 1px solid var(--g100);
+}
+.stat-item:last-child { border-right: none; }
+.stat-n { font-size: 20px; font-weight: 900; color: var(--black); letter-spacing: -0.5px; }
+.stat-l { font-size: 11px; color: var(--g500); margin-top: 2px; font-weight: 500; }
+
+.home-cta { padding: 20px 26px 44px; }
+.btn-red {
+  width: 100%; padding: 18px;
+  background: var(--red); color: var(--white);
+  border: none; border-radius: 16px;
+  font-size: 17px; font-weight: 800;
+  letter-spacing: -0.3px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+.btn-red:active { background: var(--red-dark); transform: scale(0.98); }
+.home-note { font-size: 12px; color: var(--g300); text-align: center; margin-top: 10px; }
+
+/* ══════════════
+   GUIDE
+══════════════ */
+.guide-visual {
+  background: var(--g50);
+  margin: 16px;
+  border-radius: 20px;
+  padding: 28px 20px;
+  display: flex; flex-direction: column; align-items: center;
+}
+.card-frame {
+  width: 110px; height: 154px;
+  border: 2px dashed var(--red);
+  border-radius: 9px;
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 12px;
+}
+.cdot { position: absolute; width: 9px; height: 9px; border-radius: 50%; background: var(--red); }
+.cdot.tl { top:-4px; left:-4px; } .cdot.tr { top:-4px; right:-4px; }
+.cdot.bl { bottom:-4px; left:-4px; } .cdot.br { bottom:-4px; right:-4px; }
+.card-bg-ph { width: 86px; height: 120px; background: var(--g200); border-radius: 5px; }
+.scan {
+  position: absolute; width: 88%; height: 1.5px;
+  background: var(--red); opacity: .65; left: 6%;
+  animation: scanA 2s ease-in-out infinite;
+}
+@keyframes scanA { 0%,100%{top:12%;opacity:.3} 50%{top:82%;opacity:.8} }
+.guide-hint { font-size: 13px; color: var(--g500); }
+
+.rules { margin: 0 16px; display: flex; flex-direction: column; gap: 8px; }
+.rule {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: var(--g50); border-radius: 14px;
+  padding: 14px 16px;
+}
+.rule-n {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--black); color: var(--white);
+  font-size: 12px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+}
+.rule-t { font-size: 14px; font-weight: 700; color: var(--black); }
+.rule-s { font-size: 12px; color: var(--g500); margin-top: 2px; }
+.ck { display:inline-block; background:var(--green-bg); color:var(--green); font-size:11px; font-weight:700; padding:1px 7px; border-radius:99px; }
+.cx { display:inline-block; background:var(--red-bg); color:var(--red); font-size:11px; font-weight:700; padding:1px 7px; border-radius:99px; }
+
+.btn-block {
+  display: block; margin: 20px 16px 36px;
+  width: calc(100% - 32px);
+  padding: 17px; background: var(--red); color: var(--white);
+  border: none; border-radius: 16px;
+  font-size: 16px; font-weight: 800; cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-block:active { background: var(--red-dark); }
+
+/* ══════════════
+   UPLOAD
+══════════════ */
+.upload-zone {
+  margin: 16px;
+  border: 2px dashed var(--g200);
+  border-radius: 20px;
+  background: var(--g50);
+  padding: 44px 20px;
+  text-align: center;
+  cursor: pointer;
+  position: relative; overflow: hidden;
+  transition: border-color 0.2s;
+}
+.upload-zone:hover { border-color: var(--red); }
+.upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.upload-ico {
+  width: 56px; height: 56px;
+  background: var(--white); border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 14px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+}
+.upload-t { font-size: 17px; font-weight: 800; color: var(--black); margin-bottom: 4px; }
+.upload-s { font-size: 13px; color: var(--g500); }
+
+.preview-zone {
+  display: none;
+  margin: 16px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--g50);
+}
+.preview-zone img { width: 100%; max-height: 280px; object-fit: contain; display: block; padding: 16px; }
+.preview-change {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 13px; background: var(--white);
+  border-top: 1px solid var(--g100);
+  font-size: 13px; font-weight: 700; color: var(--red);
+  cursor: pointer; position: relative;
+}
+.preview-change input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+.name-row {
+  margin: 0 16px 14px;
+  background: var(--g50);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+.name-lbl { font-size: 11px; font-weight: 700; color: var(--g500); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 8px; }
+.name-inp {
+  width: 100%; background: none; border: none; outline: none;
+  font-size: 16px; font-weight: 700; color: var(--black);
+}
+.name-inp::placeholder { color: var(--g300); font-weight: 400; }
+
+/* ══════════════
+   ANALYZING
+══════════════ */
+#s-analyzing {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 40px 28px; text-align: center; min-height: 100vh;
+}
+.orb-wrap { position: relative; margin-bottom: 36px; }
+.orb {
+  width: 96px; height: 96px; border-radius: 50%;
+  background: var(--red-bg);
+  display: flex; align-items: center; justify-content: center;
+}
+.orb-r {
+  position: absolute; border-radius: 50%;
+  border: 2.5px solid transparent;
+  border-top-color: var(--red);
+  animation: spin 1s linear infinite;
+}
+.r1 { inset: -10px; }
+.r2 { inset: -20px; border-width: 2px; border-top-color: var(--g200); animation-duration: 1.7s; animation-direction: reverse; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.an-h { font-size: 26px; font-weight: 900; color: var(--black); letter-spacing: -0.8px; margin-bottom: 8px; }
+.an-s { font-size: 14px; color: var(--g500); }
+
+.steps { margin-top: 36px; width: 100%; max-width: 280px; }
+.step {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 0; border-bottom: 1px solid var(--g100);
+  font-size: 14px; color: var(--g300); transition: color 0.3s;
+}
+.step:last-child { border-bottom: none; }
+.step.active { color: var(--black); font-weight: 700; }
+.step.done   { color: var(--green); }
+.sdot { width: 7px; height: 7px; border-radius: 50%; background: var(--g200); flex-shrink: 0; transition: background 0.3s; }
+.step.active .sdot { background: var(--red); animation: pd 1s ease-in-out infinite; }
+.step.done   .sdot { background: var(--green); }
+@keyframes pd { 0%,100%{transform:scale(1)} 50%{transform:scale(1.9);opacity:.5} }
+
+/* ══════════════
+   RESULT
+══════════════ */
+#s-result { background: var(--g50); }
+
+.res-bar {
+  position: sticky; top: 0; z-index: 10;
+  background: var(--white);
+  padding: 52px 22px 16px;
+  border-bottom: 1px solid var(--g100);
+}
+.res-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px;
+}
+.res-back  { font-size: 15px; color: var(--red); font-weight: 600; cursor: pointer; }
+.res-share { font-size: 14px; color: var(--g500); cursor: pointer; }
+
+.res-card-row { display: flex; align-items: center; gap: 12px; }
+.res-thumb {
+  width: 44px; height: 62px; border-radius: 5px;
+  background: var(--g200); overflow: hidden; flex-shrink: 0;
+}
+.res-thumb img { width: 100%; height: 100%; object-fit: cover; display: none; }
+.res-cn { font-size: 18px; font-weight: 800; color: var(--black); letter-spacing: -0.3px; }
+.res-cs { font-size: 12px; color: var(--g500); margin-top: 2px; }
+
+/* Score block */
+.score-block {
+  background: var(--white);
+  margin: 14px 14px 10px;
+  border-radius: 20px;
+  padding: 24px 22px;
+  text-align: center;
+}
+.sc-lbl { font-size: 11px; font-weight: 700; color: var(--g500); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 10px; }
+.sc-row { display: flex; align-items: baseline; justify-content: center; gap: 3px; margin-bottom: 18px; }
+.sc-n { font-size: 84px; font-weight: 900; line-height: 1; letter-spacing: -5px; }
+.sc-d { font-size: 30px; font-weight: 400; color: var(--g300); }
+
+.ring-wrap { display: flex; justify-content: center; margin-bottom: 18px; }
+
+.psa-tag {
+  display: inline-block;
+  font-size: 14px; font-weight: 800;
+  padding: 7px 18px; border-radius: 99px;
+  margin-bottom: 6px;
+}
+.sc-eq { font-size: 13px; color: var(--g500); }
+
+/* Criteria */
+.crit-head-row {
+  padding: 14px 18px 8px;
+  font-size: 11px; font-weight: 700;
+  color: var(--g500); text-transform: uppercase; letter-spacing: .1em;
+}
+.crit {
+  background: var(--white);
+  margin: 0 14px 8px;
+  border-radius: 16px;
+  padding: 16px;
+}
+.crit-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.crit-nm  { font-size: 15px; font-weight: 800; color: var(--black); }
+.crit-sc  { font-size: 16px; font-weight: 900; }
+.crit-ob  { font-size: 13px; color: var(--g500); line-height: 1.45; margin-bottom: 10px; }
+.crit-bar { height: 4px; background: var(--g100); border-radius: 99px; overflow: hidden; margin-bottom: 5px; }
+.crit-f   { height: 100%; border-radius: 99px; transition: width 1.2s cubic-bezier(0.4,0,0.2,1); width: 0%; }
+.crit-cf  { font-size: 11px; color: var(--g300); font-weight: 600; }
+
+/* Bottom actions */
+.res-bottom { padding: 6px 14px 44px; }
+.btn-red-full {
+  width: 100%; padding: 18px;
+  background: var(--red); color: var(--white);
+  border: none; border-radius: 16px;
+  font-size: 16px; font-weight: 800; cursor: pointer;
+  margin-bottom: 10px;
+  transition: background 0.15s;
+}
+.btn-red-full:active { background: var(--red-dark); }
+.btn-outline {
+  width: 100%; padding: 16px;
+  background: var(--white); color: var(--black);
+  border: 1.5px solid var(--g200); border-radius: 16px;
+  font-size: 15px; font-weight: 700; cursor: pointer;
+  margin-bottom: 14px;
+}
+.disc { font-size: 11px; color: var(--g300); text-align: center; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="phone">
+
+<!-- HOME -->
+<div class="screen active" id="s-home">
+  <div class="home-header">
+    <div class="logo-mark">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+        <circle cx="11" cy="11" r="8.5" stroke="white" stroke-width="1.6" opacity=".5"/>
+        <path d="M11 2.5 A8.5 8.5 0 0 1 19.5 11 L11 11Z" fill="white" opacity=".4"/>
+        <circle cx="11" cy="11" r="3" fill="white"/>
+        <line x1="2.5" y1="11" x2="19.5" y2="11" stroke="white" stroke-width="1.1" opacity=".4"/>
+      </svg>
+    </div>
+    <span class="logo-name">PokeGrade</span>
+  </div>
+
+  <div class="home-copy">
+    <h1 class="home-h1">Grade tes<br>cartes par <em>IA</em>.</h1>
+    <p class="home-p">Note PSA en 10 secondes.<br>Sans envoyer ta carte.</p>
+  </div>
+
+  <!-- Vraies cartes Pokémon -->
+  <div class="cards-showcase">
+    <div class="card-fan">
+      <div class="fan-card c1">
+        <img src="https://images.pokemontcg.io/base1/4_hires.png" alt="Charizard" onerror="this.parentElement.style.background='linear-gradient(135deg,#b71c1c,#c62828)'">
+      </div>
+      <div class="fan-card c2">
+        <img src="https://images.pokemontcg.io/neo4/9_hires.png" alt="Lugia" onerror="this.parentElement.style.background='linear-gradient(135deg,#1a237e,#283593)'">
+      </div>
+      <div class="fan-card c3">
+        <img src="https://images.pokemontcg.io/base1/10_hires.png" alt="Mewtwo" onerror="this.parentElement.style.background='linear-gradient(135deg,#4a148c,#6a1b9a)'">
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-strip">
+    <div class="stat-item"><div class="stat-n">±0.5</div><div class="stat-l">Précision</div></div>
+    <div class="stat-item"><div class="stat-n">4</div><div class="stat-l">Critères PSA</div></div>
+    <div class="stat-item"><div class="stat-n">10s</div><div class="stat-l">Résultat</div></div>
+  </div>
+
+  <div class="home-cta">
+    <button class="btn-red" onclick="go('s-guide')">Grader une carte →</button>
+    <p class="home-note">3 grades gratuits · Sans carte bancaire</p>
+  </div>
+</div>
+
+<!-- GUIDE -->
+<div class="screen" id="s-guide">
+  <div class="nav">
+    <span class="nav-back" onclick="go('s-home')">← Retour</span>
+    <span class="nav-title">Prépare ta photo</span>
+    <span class="nav-skip" onclick="go('s-upload')">Passer</span>
+  </div>
+
+  <div class="guide-visual">
+    <div class="card-frame">
+      <div class="cdot tl"></div><div class="cdot tr"></div>
+      <div class="cdot bl"></div><div class="cdot br"></div>
+      <div class="card-bg-ph"></div>
+      <div class="scan"></div>
+    </div>
+    <p class="guide-hint">Centre ta carte dans le cadre</p>
+  </div>
+
+  <div class="rules">
+    <div class="rule">
+      <div class="rule-n">1</div>
+      <div>
+        <p class="rule-t">Fond blanc</p>
+        <p class="rule-s"><span class="ck">Bien</span> Table, feuille A4 &nbsp;<span class="cx">Non</span> Tissu, couette</p>
+      </div>
+    </div>
+    <div class="rule">
+      <div class="rule-n">2</div>
+      <div>
+        <p class="rule-t">Lumière naturelle</p>
+        <p class="rule-s"><span class="ck">Bien</span> Fenêtre &nbsp;<span class="cx">Non</span> Flash direct</p>
+      </div>
+    </div>
+    <div class="rule">
+      <div class="rule-n">3</div>
+      <div>
+        <p class="rule-t">Carte à plat</p>
+        <p class="rule-s"><span class="cx">Non</span> Tenir en main — perd en précision</p>
+      </div>
+    </div>
+    <div class="rule">
+      <div class="rule-n">4</div>
+      <div>
+        <p class="rule-t">Recto + verso</p>
+        <p class="rule-s">Les deux faces pour un grade complet</p>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-block" onclick="go('s-upload')">C'est parti →</button>
+</div>
+
+<!-- UPLOAD -->
+<div class="screen" id="s-upload">
+  <div class="nav">
+    <span class="nav-back" onclick="go('s-guide')">← Retour</span>
+    <span class="nav-title">Ta carte</span>
+    <span class="nav-skip"></span>
+  </div>
+
+  <div class="upload-zone" id="upload-zone">
+    <input type="file" accept="image/*" capture="environment" onchange="handleFile(event)">
+    <div class="upload-ico">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+        <path d="M13 4v16M5 12l8-8 8 8" stroke="#CC0000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M3 22h20" stroke="#CC0000" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <p class="upload-t">Ajoute ta carte</p>
+    <p class="upload-s">Caméra ou galerie</p>
+  </div>
+
+  <div class="preview-zone" id="preview-zone">
+    <img id="preview-img" src="" alt="">
+    <label class="preview-change">
+      Changer la photo
+      <input type="file" accept="image/*" capture="environment" onchange="handleFile(event)">
+    </label>
+  </div>
+
+  <div class="name-row">
+    <p class="name-lbl">Nom de la carte</p>
+    <input class="name-inp" type="text" id="card-name" placeholder="Charizard, Pikachu…">
+  </div>
+
+  <button class="btn-block" id="btn-go" onclick="startAnalysis()" disabled style="opacity:.3">Analyser →</button>
+</div>
+
+<!-- ANALYZING -->
+<div class="screen" id="s-analyzing">
+  <div class="orb-wrap">
+    <div class="orb">
+      <div class="orb-r r1"></div>
+      <div class="orb-r r2"></div>
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+        <circle cx="20" cy="20" r="15" stroke="#CC0000" stroke-width="1.8" opacity=".35"/>
+        <path d="M20 5 A15 15 0 0 1 35 20 L20 20Z" fill="#CC0000" opacity=".15"/>
+        <circle cx="20" cy="20" r="5" fill="#CC0000" opacity=".7"/>
+        <circle cx="20" cy="20" r="3" fill="white"/>
+        <line x1="5" y1="20" x2="35" y2="20" stroke="#CC0000" stroke-width="1" opacity=".3"/>
+      </svg>
+    </div>
+  </div>
+  <h2 class="an-h">Analyse en cours…</h2>
+  <p class="an-s">Standards PSA officiels</p>
+  <div class="steps">
+    <div class="step active" id="st1"><div class="sdot"></div><span>Détection de la carte</span></div>
+    <div class="step"        id="st2"><div class="sdot"></div><span>Centering</span></div>
+    <div class="step"        id="st3"><div class="sdot"></div><span>Corners & Edges</span></div>
+    <div class="step"        id="st4"><div class="sdot"></div><span>Surface</span></div>
+    <div class="step"        id="st5"><div class="sdot"></div><span>Note finale</span></div>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div class="screen" id="s-result">
+  <div class="res-bar">
+    <div class="res-nav">
+      <span class="res-back" onclick="resetAndGo()">← Nouveau grade</span>
+      <span class="res-share" onclick="shareResult()">Partager</span>
+    </div>
+    <div class="res-card-row">
+      <div class="res-thumb"><img id="res-img" src="" alt=""></div>
+      <div>
+        <p class="res-cn" id="res-name">Carte Pokémon</p>
+        <p class="res-cs">Analyse IA · Standards PSA</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="score-block">
+    <p class="sc-lbl">Note globale</p>
+    <div class="sc-row">
+      <span class="sc-n" id="sc-num">—</span>
+      <span class="sc-d">/10</span>
+    </div>
+    <div class="ring-wrap">
+      <svg width="96" height="96" viewBox="0 0 96 96">
+        <circle cx="48" cy="48" r="38" fill="none" stroke="#F4F4F4" stroke-width="7"/>
+        <circle id="sc-ring" cx="48" cy="48" r="38" fill="none"
+          stroke="#CC0000" stroke-width="7" stroke-linecap="round"
+          stroke-dasharray="239" stroke-dashoffset="239"
+          transform="rotate(-90 48 48)"
+          style="transition: stroke-dashoffset 1.4s cubic-bezier(0.4,0,0.2,1), stroke 0.4s;"/>
+      </svg>
+    </div>
+    <div class="psa-tag" id="sc-badge">—</div>
+    <p class="sc-eq" id="sc-equiv">—</p>
+  </div>
+
+  <p class="crit-head-row">Détail des critères</p>
+  <div id="crit-centering" class="crit"></div>
+  <div id="crit-corners"   class="crit"></div>
+  <div id="crit-edges"     class="crit"></div>
+  <div id="crit-surface"   class="crit"></div>
+
+  <div class="res-bottom">
+    <button class="btn-red-full">Envoyer à PSA →</button>
+    <button class="btn-outline"  onclick="resetAndGo()">Grader une autre carte</button>
+    <p class="disc">Estimation IA, non officielle. Pour une certification, soumettez à PSA.</p>
+  </div>
+</div>
+
+</div>
+
+<script>
+/* ── Nav ── */
+let cur = 's-home';
+function go(id) {
+  const p = document.getElementById(cur), n = document.getElementById(id);
+  p.classList.remove('active'); p.classList.add('exiting');
+  setTimeout(() => p.classList.remove('exiting'), 320);
+  n.classList.add('active'); n.scrollTop = 0; cur = id;
+}
+
+/* ── Upload ── */
+let uploadedFile = null;
+function handleFile(e) {
+  const f = e.target.files[0]; if (!f) return;
+  uploadedFile = f;
+  const r = new FileReader();
+  r.onload = ev => {
+    document.getElementById('preview-img').src = ev.target.result;
+    document.getElementById('preview-zone').style.display = 'block';
+    document.getElementById('upload-zone').style.display = 'none';
+    const b = document.getElementById('btn-go');
+    b.disabled = false; b.style.opacity = '1';
+  };
+  r.readAsDataURL(f);
+}
+
+/* ── Helpers ── */
+function colFor(s) {
+  if (s >= 9)   return '#15803D';
+  if (s >= 7.5) return '#CC0000';
+  if (s >= 6)   return '#B45309';
+  return '#DC2626';
+}
+function badgeFor(s) {
+  if (s >= 9)   return { bg:'#F0FDF4', c:'#15803D' };
+  if (s >= 7.5) return { bg:'#FFF5F5', c:'#CC0000' };
+  if (s >= 6)   return { bg:'#FFFBEB', c:'#B45309' };
+  return { bg:'#FFF5F5', c:'#B91C1C' };
+}
+function confFor(c) {
+  if (c === 'élevée')  return 'Confiance élevée';
+  if (c === 'moyenne') return 'Confiance moyenne';
+  return 'Confiance faible — reprends la photo (fond blanc, à plat)';
+}
+
+/* ── Steps animation ── */
+let stepTimer = null;
+function animSteps() {
+  const ids = ['st1','st2','st3','st4','st5']; let i = 0;
+  stepTimer = setInterval(() => {
+    if (i > 0) document.getElementById(ids[i-1]).className = 'step done';
+    if (i < ids.length) { document.getElementById(ids[i]).className = 'step active'; i++; }
+    else { ids.forEach(id => document.getElementById(id).className = 'step'); i = 0; }
+  }, 850);
+}
+
+/* ── Grading ── */
+async function startAnalysis() {
+  go('s-analyzing'); animSteps();
+  try {
+    const fd = new FormData(); fd.append('image', uploadedFile);
+    const res = await fetch('http://localhost:3000/api/grade', { method:'POST', body:fd });
+    if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Erreur serveur'); }
+    const data = await res.json();
+    clearInterval(stepTimer);
+    ['st1','st2','st3','st4','st5'].forEach(id => document.getElementById(id).className = 'step done');
+    setTimeout(() => showResult(data.result), 600);
+  } catch(err) {
+    clearInterval(stepTimer);
+    alert('Erreur : ' + err.message);
+    go('s-upload');
+    ['st1','st2','st3','st4','st5'].forEach((id,i) => document.getElementById(id).className = 'step' + (i===0?' active':''));
+  }
+}
+
+/* ── Results ── */
+function showResult(r) {
+  const name = document.getElementById('card-name').value.trim() || 'Carte Pokémon';
+  const g = r.global;
+  document.getElementById('res-name').textContent = name;
+
+  if (uploadedFile) {
+    const rd = new FileReader();
+    rd.onload = ev => { const img = document.getElementById('res-img'); img.src = ev.target.result; img.style.display='block'; };
+    rd.readAsDataURL(uploadedFile);
+  }
+
+  const col = colFor(g), badge = badgeFor(g);
+  document.getElementById('sc-num').textContent = g.toFixed(1);
+  document.getElementById('sc-num').style.color = col;
+  document.getElementById('sc-badge').textContent = r.psa_label;
+  document.getElementById('sc-badge').style.cssText = `background:${badge.bg};color:${badge.c}`;
+  document.getElementById('sc-equiv').textContent = r.psa_equiv;
+
+  setTimeout(() => {
+    document.getElementById('sc-ring').style.strokeDashoffset = 239 - (g/10)*239;
+    document.getElementById('sc-ring').style.stroke = col;
+  }, 400);
+
+  function setCrit(id, crit, label) {
+    const c = colFor(crit.score);
+    document.getElementById(id).innerHTML = `
+      <div class="crit-top">
+        <span class="crit-nm">${label}</span>
+        <span class="crit-sc" style="color:${c}">${crit.score.toFixed(1)}</span>
+      </div>
+      <p class="crit-ob">${crit.observation}</p>
+      <div class="crit-bar"><div class="crit-f" id="${id}-f" style="background:${c}"></div></div>
+      <p class="crit-cf">${confFor(crit.confidence)}</p>
+    `;
+    setTimeout(() => { document.getElementById(id+'-f').style.width = (crit.score*10)+'%'; }, 500);
+  }
+
+  setCrit('crit-centering', r.centering, 'Centering');
+  setCrit('crit-corners',   r.corners,   'Corners');
+  setCrit('crit-edges',     r.edges,     'Edges');
+  setCrit('crit-surface',   r.surface,   'Surface');
+  go('s-result');
+
+  setTimeout(() => {
+    ['st1','st2','st3','st4','st5'].forEach((id,i) => document.getElementById(id).className='step'+(i===0?' active':''));
+  }, 700);
+}
+
+/* ── Reset ── */
+function resetAndGo() {
+  uploadedFile = null;
+  document.getElementById('preview-zone').style.display = 'none';
+  document.getElementById('upload-zone').style.display = 'block';
+  document.getElementById('card-name').value = '';
+  const b = document.getElementById('btn-go'); b.disabled=true; b.style.opacity='0.3';
+  document.getElementById('sc-ring').style.strokeDashoffset = '239';
+  go('s-home');
+}
+
+/* ── Share ── */
+function shareResult() {
+  const name = document.getElementById('res-name').textContent;
+  const score = document.getElementById('sc-num').textContent;
+  const badge = document.getElementById('sc-badge').textContent;
+  if (navigator.share) { navigator.share({ title:'PokeGrade', text:`${name} — ${score}/10 · ${badge}` }); }
+  else { alert(`${name}\n${score}/10 · ${badge}`); }
+}
+</script>
+</body>
+</html>
