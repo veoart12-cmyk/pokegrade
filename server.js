@@ -16,6 +16,8 @@ const app = express();
 const upload = multer({ dest: "uploads/" });
 
 app.use(cors());
+// Webhook Stripe doit recevoir le body RAW — doit être AVANT express.json()
+app.use('/api/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json());
 app.use(express.static(__dirname));
 
@@ -252,29 +254,34 @@ app.post("/api/create-checkout", requireAuth, async (req, res) => {
 });
 
 // ── Stripe webhook ───────────────────────────────────────────────
-app.post("/api/webhook", express.raw({ type: "application/json" }), async (req, res) => {
+app.post("/api/webhook", async (req, res) => {
   const sig = req.headers["stripe-signature"];
   let event;
 
   try {
     event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
-    console.error("Webhook error:", err.message);
-    return res.status(400).json({ error: err.message });
+    console.error("Webhook signature error:", err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
   }
+
+  console.log("Webhook reçu:", event.type);
 
   if (event.type === "customer.subscription.created" || event.type === "customer.subscription.updated") {
     const sub = event.data.object;
     const isActive = sub.status === "active";
-    await supabase.from("profiles")
+    console.log(`Mise à jour premium: customer=${sub.customer}, active=${isActive}`);
+    const { error } = await supabase.from("profiles")
       .update({ is_premium: isActive, stripe_subscription_id: sub.id })
       .eq("stripe_customer_id", sub.customer);
+    if (error) console.error("Supabase update error:", error.message);
   }
 
   if (event.type === "customer.subscription.deleted") {
-    await supabase.from("profiles")
+    const { error } = await supabase.from("profiles")
       .update({ is_premium: false, stripe_subscription_id: null })
       .eq("stripe_customer_id", event.data.object.customer);
+    if (error) console.error("Supabase update error:", error.message);
   }
 
   res.json({ received: true });
