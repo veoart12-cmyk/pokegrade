@@ -962,6 +962,7 @@ body {
 
   <div class="home-cta">
     <button class="btn-red" onclick="handleGradeBtn()">Grader une carte →</button>
+    <button class="btn-outline" onclick="openROI('s-home')" style="margin-top:10px">📊 Calculateur ROI grading</button>
     <p class="home-note" id="home-note">3 grades gratuits · Sans carte bancaire</p>
   </div>
 </div>
@@ -1192,7 +1193,10 @@ body {
 <!-- COLLECTION (POKÉDEX) -->
 <div class="screen" id="s-collection">
   <div class="coll-header">
-    <p class="coll-title">Ma Collection</p>
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <p class="coll-title">Ma Collection</p>
+      <button onclick="openROI('s-collection')" style="background:var(--g50);border:1px solid var(--g200);border-radius:99px;padding:6px 14px;font-size:12px;font-weight:700;color:var(--g700);cursor:pointer">📊 ROI</button>
+    </div>
     <p class="coll-sub" id="coll-sub">Chargement…</p>
   </div>
   <div class="coll-stats" id="coll-stats" style="display:none">
@@ -2400,10 +2404,14 @@ async function loadAccount() {
 let roiServiceCost = 25;
 let lastResult = null; // set in showResult()
 
-function openROI() {
-  // Pre-fill estimated value from last grading result
+function openROI(fromScreen) {
+  // Update back button destination
+  const from = fromScreen || 's-result';
+  document.getElementById('roi-back').onclick = () => go(from);
+
+  // Pre-fill estimated value from last grading result (only when coming from result screen)
   const price = lastResult?.price;
-  const avg = price?.low > 0 ? Math.round((price.low + price.high) / 2) : 0;
+  const avg = (from === 's-result' && price?.low > 0) ? Math.round((price.low + price.high) / 2) : 0;
   const inp = document.getElementById('roi-value');
   if (inp) inp.value = avg > 0 ? avg : '';
   document.getElementById('roi-buy').value = '';
