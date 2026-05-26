@@ -250,6 +250,48 @@ app.post("/api/grade", requireAuth, upload.fields([{ name: "front", maxCount: 1 
   }
 });
 
+// ── Set profile (username / public toggle) ───────────────────────
+app.post("/api/set-profile", requireAuth, async (req, res) => {
+  const { username, is_collection_public } = req.body;
+  const updates = {};
+  if (typeof username === "string") {
+    const clean = username.toLowerCase().replace(/[^a-z0-9_]/g, "");
+    if (clean.length < 3 || clean.length > 20) {
+      return res.status(400).json({ error: "Pseudo invalide (3–20 caractères, lettres et chiffres)" });
+    }
+    updates.username = clean;
+  }
+  if (typeof is_collection_public === "boolean") {
+    updates.is_collection_public = is_collection_public;
+  }
+  if (Object.keys(updates).length === 0) {
+    return res.status(400).json({ error: "Aucune donnée à mettre à jour" });
+  }
+  const { error } = await supabase.from("profiles").update(updates).eq("id", req.user.id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ ok: true });
+});
+
+// ── Public collection profile ────────────────────────────────────
+app.get("/api/public/:userId", async (req, res) => {
+  const { userId } = req.params;
+  const { data: profile, error: pErr } = await supabase
+    .from("profiles")
+    .select("username, is_collection_public")
+    .eq("id", userId)
+    .single();
+  if (pErr || !profile?.is_collection_public) {
+    return res.status(403).json({ error: "Ce profil n'est pas public" });
+  }
+  const { data: grades } = await supabase
+    .from("grades")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(50);
+  res.json({ username: profile.username || null, grades: grades || [] });
+});
+
 // ── Stripe checkout ──────────────────────────────────────────────
 app.post("/api/create-checkout", requireAuth, async (req, res) => {
   try {
