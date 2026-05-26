@@ -591,12 +591,50 @@ body {
   background: var(--white); color: var(--red);
   border: 1.5px solid var(--red-bg); border-radius: 16px;
   font-size: 15px; font-weight: 700; cursor: pointer;
-  margin: 0 0 40px;
+  margin: 0 0 16px;
+}
+.legal-links {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  padding: 0 0 40px;
+}
+.legal-links a {
+  font-size: 12px; color: var(--g500); text-decoration: none;
+  padding: 4px 10px; background: var(--g50); border-radius: 99px;
+}
+
+/* ── Cookie banner ── */
+#cookie-banner {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 390px;
+  background: var(--black); color: var(--white);
+  padding: 16px 20px; z-index: 9999;
+  display: none;
+}
+.cookie-t  { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.cookie-s  { font-size: 12px; color: #999; margin-bottom: 12px; line-height: 1.5; }
+.cookie-btns { display: flex; gap: 8px; }
+.cookie-accept {
+  flex: 1; padding: 10px; background: var(--red); color: white;
+  border: none; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer;
+}
+.cookie-decline {
+  padding: 10px 14px; background: #333; color: #ccc;
+  border: none; border-radius: 10px; font-size: 13px; cursor: pointer;
 }
 </style>
 </head>
 <body>
 <div class="phone">
+
+<!-- COOKIE BANNER -->
+<div id="cookie-banner">
+  <p class="cookie-t">🍪 Cookies</p>
+  <p class="cookie-s">Nous utilisons des cookies essentiels pour le fonctionnement du service. <a href="/legal.html#cookies" style="color:#CC0000">En savoir plus</a></p>
+  <div class="cookie-btns">
+    <button class="cookie-accept" onclick="acceptCookies()">Accepter</button>
+    <button class="cookie-decline" onclick="declineCookies()">Refuser</button>
+  </div>
+</div>
 
 <!-- HOME -->
 <div class="screen active" id="s-home">
@@ -1003,12 +1041,37 @@ body {
     </div>
 
     <button class="acc-logout" onclick="doLogout()">Se déconnecter</button>
+
+    <div class="legal-links">
+      <a href="/legal.html#mentions">Mentions légales</a>
+      <a href="/legal.html#cgu">CGU</a>
+      <a href="/legal.html#cgv">CGV</a>
+      <a href="/legal.html#confidentialite">Confidentialité</a>
+      <a href="/legal.html#cookies">Cookies</a>
+      <a href="mailto:contact@pokegrade.com">Contact</a>
+    </div>
   </div>
 </div>
 
 </div>
 
 <script>
+// ── Cookies ────────────────────────────────────────────────────
+function initCookieBanner() {
+  if (!localStorage.getItem('pg_cookie_consent')) {
+    document.getElementById('cookie-banner').style.display = 'block';
+  }
+}
+function acceptCookies() {
+  localStorage.setItem('pg_cookie_consent', 'accepted');
+  document.getElementById('cookie-banner').style.display = 'none';
+}
+function declineCookies() {
+  localStorage.setItem('pg_cookie_consent', 'declined');
+  document.getElementById('cookie-banner').style.display = 'none';
+}
+initCookieBanner();
+
 // ── Supabase init ──────────────────────────────────────────────
 const SUPABASE_URL  = 'https://lbueoosnustkrhtfdafa.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_CXSmOan6oHh1Sq2MRQ03Aw_WLGyVrR-';
