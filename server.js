@@ -22,7 +22,9 @@ app.use(express.json());
 app.use(express.static(__dirname));
 
 app.get("/", (req, res) => {
-  res.redirect("/pokégrade_prototype.html");
+  // Preserve query string (e.g. ?profile=UUID for public profiles)
+  const qs = req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "";
+  res.redirect("/pok%C3%A9grade_prototype.html" + qs);
 });
 
 // Clients
@@ -75,28 +77,36 @@ app.get("/api/grades", requireAuth, async (req, res) => {
 const GRADING_PROMPT = `Tu es un expert en grading et identification de cartes Pokémon, formé aux standards PSA officiels.
 
 ÉTAPE 1 — IDENTIFICATION PRÉCISE DE LA CARTE :
-Pour identifier le set, lis les indices dans CET ORDRE de priorité :
-1. NUMÉRO DE CARTE (bas de la carte, format X/Y) : le total Y identifie le set de façon quasi-certaine.
-2. SYMBOLE DU SET : petit icône juste avant le numéro de carte (coin bas droit).
-3. MARQUE DE RÉGULATION : lettre dans un losange (ex. F, G, H) imprimée en bas de la carte.
-4. ANNÉE DE COPYRIGHT : visible en bas de la carte.
-5. NOM ET ARTWORK du Pokémon en dernier recours seulement.
 
-Correspondances sets Écarlate & Violet (ne jamais confondre) :
-- SV1  : Écarlate et Violet (base) — 258 cartes
-- SV2  : Évolutions à Paldea — 193 cartes
-- SV3  : Flammes Obsidiennes — 197 cartes
-- SV3a : Cadres Brillants (Pokémon 151) — 207 cartes
-- SV4  : Failles Paradoxales — 266 cartes
-- SV4a : Choc de Destin (Shiny Treasure ex) — 190+ cartes
-- SV5  : Temporal Forces — 218 cartes
-- SV5K : Mascarade Crépusculaire — 167 cartes
-- SV6  : Couronnes Chromatiques — 101 cartes
-- SV7  : Sept Astres Célestes (Stellar Crown) — 175 cartes
-- SV8  : Héros Transcendant (Surging Sparks) — 191 cartes
-- SV8a : Paldean Fates / Destins de Paldea — 245 cartes
+⛔ INTERDIT : identifier le set depuis le nom du Pokémon, son artwork ou sa couleur. Ces éléments sont communs à plusieurs sets et trompeurs.
 
-Règle absolue : si le numéro total Y n'est pas lisible avec certitude, mets set = "Inconnu" plutôt que de deviner. Une erreur de set = une estimation de prix fausse.
+PROTOCOLE OBLIGATOIRE — suivre dans cet ordre exact :
+
+A. LIS LE NUMÉRO DE CARTE (bas droit, format "X/Y", ex : "025/175").
+   → Extrais Y (le total). C'est l'identifiant le plus fiable du set.
+   → Si Y n'est pas lisible avec certitude à 100% → set = "Inconnu", passe directement à B.
+
+   TABLE DE LOOKUP Y → SET (Écarlate & Violet) :
+   Y = 258 → SV1   Écarlate et Violet (base)
+   Y = 193 → SV2   Évolutions à Paldea
+   Y = 197 → SV3   Flammes Obsidiennes
+   Y = 207 → SV3a  Pokémon 151 (Cadres Brillants)
+   Y = 266 → SV4   Failles Paradoxales
+   Y = 190 → SV4a  Choc de Destin (Shiny Treasure ex)
+   Y = 218 → SV5   Temporal Forces
+   Y = 167 → SV5K  Mascarade Crépusculaire
+   Y = 101 → SV6   Couronnes Chromatiques
+   Y = 175 → SV7   Sept Astres Célestes (Stellar Crown)
+   Y = 191 → SV8   Héros Transcendant (Surging Sparks)
+   Y = 245 → SV8a  Destins de Paldea (Paldean Fates)
+
+   ⚠️ SV7 (175 cartes) et SV8 (191 cartes) sont les plus souvent confondus — 175 ≠ 191, vérifie chaque chiffre.
+
+B. SI Y illisible → lis le SYMBOLE DU SET (icône avant le numéro, coin bas droit).
+C. SI symbole illisible → lis la MARQUE DE RÉGULATION (lettre dans un losange, bas de la carte).
+D. SI toujours incertain → set = "Inconnu". Ne jamais deviner.
+
+Règle absolue : une erreur de set = estimation de prix fausse = résultat inutilisable.
 
 ÉTAPE 2 — GRADING : Analyse selon les 4 critères PSA (notes de 1 à 10 avec demi-points).
 ÉTAPE 3 — ESTIMATION DE PRIX : Estime la valeur marchande selon le grade PSA obtenu.
