@@ -602,6 +602,125 @@ body {
   padding: 4px 10px; background: var(--g50); border-radius: 99px;
 }
 
+/* ── Bottom nav ── */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 390px;
+  background: var(--white); border-top: 1px solid var(--g100);
+  display: flex; z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+.nav-tab {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  padding: 10px 0 12px; cursor: pointer; border: none; background: none;
+  gap: 4px; transition: color 0.15s;
+}
+.nav-tab svg { transition: transform 0.15s; }
+.nav-tab.active svg { transform: scale(1.1); }
+.nav-tab span { font-size: 10px; font-weight: 700; letter-spacing: .02em; }
+.nav-tab.active span { color: var(--red); }
+.nav-tab:not(.active) span { color: var(--g500); }
+
+/* ── Collection (Pokédex) ── */
+#s-collection { background: var(--g50); }
+.coll-header {
+  background: var(--white); padding: 54px 22px 16px;
+  border-bottom: 1px solid var(--g100);
+  position: sticky; top: 0; z-index: 10;
+}
+.coll-title { font-size: 22px; font-weight: 900; letter-spacing: -0.6px; color: var(--black); }
+.coll-sub { font-size: 13px; color: var(--g500); margin-top: 3px; }
+.coll-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 12px; padding: 16px;
+}
+.coll-card {
+  background: var(--white); border-radius: 16px;
+  overflow: hidden; cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  transition: transform 0.15s;
+}
+.coll-card:active { transform: scale(0.97); }
+.coll-card-img {
+  width: 100%; aspect-ratio: 3/4;
+  background: var(--g100); display: flex;
+  align-items: center; justify-content: center;
+  font-size: 32px; font-weight: 900;
+}
+.coll-card-body { padding: 10px 12px 12px; }
+.coll-card-name { font-size: 13px; font-weight: 800; color: var(--black); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.coll-card-set  { font-size: 11px; color: var(--g500); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.coll-card-score {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 8px;
+}
+.coll-score-n { font-size: 18px; font-weight: 900; }
+.coll-psa-tag {
+  font-size: 10px; font-weight: 800; padding: 2px 8px;
+  border-radius: 99px;
+}
+.coll-empty {
+  text-align: center; padding: 60px 32px;
+  grid-column: 1 / -1;
+}
+.coll-empty-icon { font-size: 48px; margin-bottom: 14px; }
+.coll-empty-t { font-size: 17px; font-weight: 800; color: var(--black); margin-bottom: 6px; }
+.coll-empty-s { font-size: 13px; color: var(--g500); line-height: 1.5; }
+
+/* ── Gradage physique ── */
+#s-grading { background: var(--g50); }
+.grading-header {
+  background: var(--white); padding: 54px 22px 16px;
+  border-bottom: 1px solid var(--g100);
+}
+.grading-title { font-size: 22px; font-weight: 900; letter-spacing: -0.6px; color: var(--black); }
+.grading-sub { font-size: 13px; color: var(--g500); margin-top: 3px; line-height: 1.5; }
+.grading-list { padding: 14px 14px 100px; display: flex; flex-direction: column; gap: 12px; }
+.grading-service {
+  background: var(--white); border-radius: 20px;
+  overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.grading-service-header {
+  padding: 18px 18px 14px;
+  display: flex; align-items: center; gap: 12px;
+  border-bottom: 1px solid var(--g50);
+}
+.service-logo {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.service-name { font-size: 16px; font-weight: 900; color: var(--black); }
+.service-country { font-size: 12px; color: var(--g500); margin-top: 2px; }
+.grading-service-body { padding: 14px 18px; }
+.service-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 6px 0; border-bottom: 1px solid var(--g50); font-size: 13px;
+}
+.service-row:last-of-type { border-bottom: none; }
+.service-row-l { color: var(--g500); font-weight: 500; }
+.service-row-r { font-weight: 700; color: var(--black); }
+.service-btn {
+  width: 100%; margin-top: 14px; padding: 14px;
+  background: var(--black); color: var(--white);
+  border: none; border-radius: 14px;
+  font-size: 14px; font-weight: 800; cursor: pointer;
+  text-decoration: none; display: block; text-align: center;
+  transition: background 0.15s;
+}
+.service-btn:active { background: var(--g700); }
+.service-btn.red { background: var(--red); }
+.service-recommended {
+  display: inline-block; font-size: 10px; font-weight: 800;
+  padding: 2px 8px; border-radius: 99px;
+  background: #FFF9E6; color: #B45309; margin-left: 8px;
+}
+
+/* ── Screens with bottom nav need padding ── */
+#s-home       { padding-bottom: 72px; }
+#s-collection { padding-bottom: 72px; }
+#s-grading    { padding-bottom: 72px; }
+
 /* ── Cookie banner ── */
 #cookie-banner {
   position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
@@ -899,9 +1018,106 @@ body {
   <div id="crit-surface"   class="crit"></div>
 
   <div class="res-bottom">
-    <button class="btn-red-full">Envoyer à PSA →</button>
+    <button class="btn-red-full" onclick="goToGrading()">Envoyer au gradage physique →</button>
     <button class="btn-outline"  onclick="resetAndGo()">Grader une autre carte</button>
-    <p class="disc">Estimation IA, non officielle. Pour une certification, soumettez à PSA.</p>
+    <p class="disc">Estimation IA, non officielle. Pour une certification officielle, utilisez PSA, Aura Collect ou CCC.</p>
+  </div>
+</div>
+
+<!-- COLLECTION (POKÉDEX) -->
+<div class="screen" id="s-collection">
+  <div class="coll-header">
+    <p class="coll-title">Ma Collection</p>
+    <p class="coll-sub" id="coll-sub">Chargement…</p>
+  </div>
+  <div class="coll-grid" id="coll-grid">
+    <div class="coll-empty">
+      <div class="coll-empty-icon">📦</div>
+      <p class="coll-empty-t">Aucune carte encore</p>
+      <p class="coll-empty-s">Grade ta première carte pour la voir apparaître ici</p>
+    </div>
+  </div>
+</div>
+
+<!-- GRADAGE PHYSIQUE -->
+<div class="screen" id="s-grading">
+  <div class="grading-header">
+    <p class="grading-title">Gradage Physique</p>
+    <p class="grading-sub">Envoie ta carte aux meilleurs experts pour une certification officielle.</p>
+  </div>
+  <div class="grading-list">
+
+    <!-- PSA -->
+    <div class="grading-service">
+      <div class="grading-service-header">
+        <div class="service-logo" style="background:#003087;color:white;font-size:14px;font-weight:900">PSA</div>
+        <div>
+          <p class="service-name">PSA <span class="service-recommended">⭐ Référence mondiale</span></p>
+          <p class="service-country">🇺🇸 États-Unis — Professional Sports Authenticator</p>
+        </div>
+      </div>
+      <div class="grading-service-body">
+        <div class="service-row"><span class="service-row-l">Tarif de base</span><span class="service-row-r">~25€ / carte</span></div>
+        <div class="service-row"><span class="service-row-l">Délai standard</span><span class="service-row-r">60–120 jours</span></div>
+        <div class="service-row"><span class="service-row-l">Délai express</span><span class="service-row-r">10–30 jours (150€+)</span></div>
+        <div class="service-row"><span class="service-row-l">Valeur ajoutée</span><span class="service-row-r">+100% sur valeur de revente</span></div>
+        <a class="service-btn red" href="https://www.psacard.com/services/tradingcardgrading" target="_blank">Soumettre sur PSA →</a>
+      </div>
+    </div>
+
+    <!-- Aura Collect -->
+    <div class="grading-service">
+      <div class="grading-service-header">
+        <div class="service-logo" style="background:#1a1a2e;font-size:18px">✨</div>
+        <div>
+          <p class="service-name">Aura Collect <span class="service-recommended">🇫🇷 Français</span></p>
+          <p class="service-country">🇫🇷 France — Gradage européen de référence</p>
+        </div>
+      </div>
+      <div class="grading-service-body">
+        <div class="service-row"><span class="service-row-l">Tarif de base</span><span class="service-row-r">~15€ / carte</span></div>
+        <div class="service-row"><span class="service-row-l">Délai standard</span><span class="service-row-r">30–60 jours</span></div>
+        <div class="service-row"><span class="service-row-l">Délai express</span><span class="service-row-r">7–14 jours</span></div>
+        <div class="service-row"><span class="service-row-l">Avantage</span><span class="service-row-r">Pas de douane, livraison FR</span></div>
+        <a class="service-btn" href="https://www.auracollect.com" target="_blank">Soumettre sur Aura Collect →</a>
+      </div>
+    </div>
+
+    <!-- CCC -->
+    <div class="grading-service">
+      <div class="grading-service-header">
+        <div class="service-logo" style="background:#2d6a4f;color:white;font-size:13px;font-weight:900">CCC</div>
+        <div>
+          <p class="service-name">CCC Grading</p>
+          <p class="service-country">🇪🇺 Europe — Certified Card Collector</p>
+        </div>
+      </div>
+      <div class="grading-service-body">
+        <div class="service-row"><span class="service-row-l">Tarif de base</span><span class="service-row-r">~12€ / carte</span></div>
+        <div class="service-row"><span class="service-row-l">Délai standard</span><span class="service-row-r">30–45 jours</span></div>
+        <div class="service-row"><span class="service-row-l">Avantage</span><span class="service-row-r">Prix compétitif, EU</span></div>
+        <a class="service-btn" href="https://www.cccgrading.com" target="_blank">Soumettre sur CCC →</a>
+      </div>
+    </div>
+
+    <!-- Beckett -->
+    <div class="grading-service">
+      <div class="grading-service-header">
+        <div class="service-logo" style="background:#c8a800;color:white;font-size:13px;font-weight:900">BGS</div>
+        <div>
+          <p class="service-name">Beckett Grading (BGS)</p>
+          <p class="service-country">🇺🇸 États-Unis — Beckett Grading Services</p>
+        </div>
+      </div>
+      <div class="grading-service-body">
+        <div class="service-row"><span class="service-row-l">Tarif de base</span><span class="service-row-r">~22€ / carte</span></div>
+        <div class="service-row"><span class="service-row-l">Délai standard</span><span class="service-row-r">60–90 jours</span></div>
+        <div class="service-row"><span class="service-row-l">Spécialité</span><span class="service-row-r">Sous-grades détaillés</span></div>
+        <a class="service-btn" href="https://www.beckett.com/grading" target="_blank">Soumettre sur Beckett →</a>
+      </div>
+    </div>
+
+    <p style="font-size:11px;color:var(--g500);text-align:center;padding:8px 0 20px;line-height:1.6">Les tarifs et délais sont indicatifs et peuvent varier.<br>Vérifie les prix actuels sur chaque site.</p>
   </div>
 </div>
 
@@ -1053,6 +1269,38 @@ body {
   </div>
 </div>
 
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav" id="bottom-nav" style="display:none">
+  <button class="nav-tab active" id="tab-home" onclick="switchTab('s-home')">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+      <path d="M3 9.5L11 3l8 6.5V19a1 1 0 01-1 1H14v-5H8v5H4a1 1 0 01-1-1V9.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+    </svg>
+    <span>Accueil</span>
+  </button>
+  <button class="nav-tab" id="tab-grade" onclick="handleGradeBtn()">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+      <circle cx="11" cy="11" r="8.5" stroke="currentColor" stroke-width="1.6"/>
+      <path d="M11 3.5 A7.5 7.5 0 0 1 18.5 11 L11 11Z" fill="currentColor" opacity=".35"/>
+      <circle cx="11" cy="11" r="2.5" fill="currentColor"/>
+      <line x1="3.5" y1="11" x2="18.5" y2="11" stroke="currentColor" stroke-width="1.1" opacity=".5"/>
+    </svg>
+    <span>Grader</span>
+  </button>
+  <button class="nav-tab" id="tab-collection" onclick="switchTab('s-collection')">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+      <rect x="3" y="5" width="10" height="14" rx="2" stroke="currentColor" stroke-width="1.6"/>
+      <rect x="7" y="3" width="10" height="14" rx="2" stroke="currentColor" stroke-width="1.6"/>
+    </svg>
+    <span>Collection</span>
+  </button>
+  <button class="nav-tab" id="tab-grading" onclick="switchTab('s-grading')">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+      <path d="M11 2l2.4 6.6H20l-5.4 4 2 6.4L11 15l-5.6 4 2-6.4L2 8.6h6.6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+    </svg>
+    <span>Gradage</span>
+  </button>
+</nav>
+
 </div>
 
 <script>
@@ -1094,6 +1342,9 @@ sb.auth.onAuthStateChange(async (event, session) => {
   }
 });
 
+// Show bottom nav on initial load (home screen is active)
+document.getElementById('bottom-nav').style.display = 'flex';
+
 // Check success redirect (after Stripe payment)
 const params = new URLSearchParams(location.search);
 if (params.get('success') === 'true') {
@@ -1113,12 +1364,94 @@ async function refreshProfile() {
 }
 
 // ── Nav ────────────────────────────────────────────────────────
+const BOTTOM_NAV_SCREENS = new Set(['s-home', 's-collection', 's-grading']);
+const TAB_MAP = { 's-home': 'tab-home', 's-collection': 'tab-collection', 's-grading': 'tab-grading' };
+
 let cur = 's-home';
 function go(id) {
   const p = document.getElementById(cur), n = document.getElementById(id);
   p.classList.remove('active'); p.classList.add('exiting');
   setTimeout(() => p.classList.remove('exiting'), 320);
   n.classList.add('active'); n.scrollTop = 0; cur = id;
+
+  // Show / hide bottom nav
+  const nav = document.getElementById('bottom-nav');
+  if (BOTTOM_NAV_SCREENS.has(id)) {
+    nav.style.display = 'flex';
+    // Update active tab
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    const activeTab = TAB_MAP[id];
+    if (activeTab) document.getElementById(activeTab).classList.add('active');
+  } else {
+    nav.style.display = 'none';
+  }
+}
+
+// Switch between bottom-nav tabs
+function switchTab(screenId) {
+  if (screenId === 's-collection') {
+    if (!currentSession) { go('s-login'); return; }
+    loadCollection();
+  }
+  go(screenId);
+}
+
+// ── Gradage physique ───────────────────────────────────────────
+function goToGrading() {
+  go('s-grading');
+}
+
+// ── Ma Collection ──────────────────────────────────────────────
+async function loadCollection() {
+  if (!currentSession) return;
+  const grid = document.getElementById('coll-grid');
+  const sub  = document.getElementById('coll-sub');
+  grid.innerHTML = '<div class="coll-empty"><div class="coll-empty-icon">⏳</div><p class="coll-empty-t">Chargement…</p></div>';
+
+  try {
+    const res = await fetch('/api/grades', {
+      headers: { 'Authorization': 'Bearer ' + currentSession.access_token }
+    });
+    const data = await res.json();
+    const grades = data.grades || [];
+
+    sub.textContent = grades.length === 0 ? '0 carte gradée' : `${grades.length} carte${grades.length > 1 ? 's' : ''} gradée${grades.length > 1 ? 's' : ''}`;
+
+    if (grades.length === 0) {
+      grid.innerHTML = `
+        <div class="coll-empty">
+          <div class="coll-empty-icon">📦</div>
+          <p class="coll-empty-t">Aucune carte encore</p>
+          <p class="coll-empty-s">Grade ta première carte pour la voir apparaître ici</p>
+        </div>`;
+      return;
+    }
+
+    grid.innerHTML = grades.map(g => {
+      const r = g.result || {};
+      const score = r.global || 0;
+      const col   = colFor(score);
+      const badge = badgeFor(score);
+      const name  = r.card?.name && r.card.name !== 'Inconnue' ? r.card.name : (r.psa_label ? r.psa_label.split('—')[0].trim() : 'Carte');
+      const set   = [r.card?.set, r.card?.number].filter(Boolean).join(' · ') || (r.card?.year || '');
+      const psaShort = r.psa_label ? r.psa_label.split('—')[0].trim() : 'PSA ?';
+      const emoji = score >= 9 ? '💎' : score >= 7.5 ? '⭐' : score >= 6 ? '✅' : '📋';
+      return `
+        <div class="coll-card">
+          <div class="coll-card-img">${emoji}</div>
+          <div class="coll-card-body">
+            <p class="coll-card-name">${name}</p>
+            <p class="coll-card-set">${set || '—'}</p>
+            <div class="coll-card-score">
+              <span class="coll-score-n" style="color:${col}">${score.toFixed(1)}</span>
+              <span class="coll-psa-tag" style="background:${badge.bg};color:${badge.c}">${psaShort}</span>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  } catch (err) {
+    grid.innerHTML = '<div class="coll-empty"><p class="coll-empty-t">Erreur de chargement</p><p class="coll-empty-s">Vérifie ta connexion et réessaie</p></div>';
+  }
 }
 
 // ── Home pill ──────────────────────────────────────────────────
