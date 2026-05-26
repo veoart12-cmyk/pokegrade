@@ -1392,15 +1392,33 @@ async function doSignup() {
   }
 
   btn.disabled = true; btn.textContent = 'Création…';
-  const { error } = await sb.auth.signUp({ email, password: pass });
+
+  const { data: signUpData, error: signUpError } = await sb.auth.signUp({ email, password: pass });
+
+  if (signUpError) {
+    btn.disabled = false; btn.textContent = 'Créer mon compte';
+    errEl.textContent = signUpError.message;
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // Si la session est directement disponible (confirmation email désactivée)
+  if (signUpData.session) {
+    btn.disabled = false; btn.textContent = 'Créer mon compte';
+    go('s-home');
+    return;
+  }
+
+  // Sinon connecter directement
+  const { error: loginError } = await sb.auth.signInWithPassword({ email, password: pass });
   btn.disabled = false; btn.textContent = 'Créer mon compte';
 
-  if (error) {
-    errEl.textContent = error.message;
+  if (loginError) {
+    errEl.textContent = 'Compte créé ! Connecte-toi maintenant.';
     errEl.style.display = 'block';
+    setTimeout(() => go('s-login'), 1500);
   } else {
-    alert('Compte créé ! Vérifie ton email pour confirmer, puis connecte-toi.');
-    go('s-login');
+    go('s-home');
   }
 }
 
