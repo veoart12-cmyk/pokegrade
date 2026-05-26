@@ -74,7 +74,30 @@ app.get("/api/grades", requireAuth, async (req, res) => {
 // ── Grading ──────────────────────────────────────────────────────
 const GRADING_PROMPT = `Tu es un expert en grading et identification de cartes Pokémon, formé aux standards PSA officiels.
 
-ÉTAPE 1 — IDENTIFICATION : Identifie précisément la carte.
+ÉTAPE 1 — IDENTIFICATION PRÉCISE DE LA CARTE :
+Pour identifier le set, lis les indices dans CET ORDRE de priorité :
+1. NUMÉRO DE CARTE (bas de la carte, format X/Y) : le total Y identifie le set de façon quasi-certaine.
+2. SYMBOLE DU SET : petit icône juste avant le numéro de carte (coin bas droit).
+3. MARQUE DE RÉGULATION : lettre dans un losange (ex. F, G, H) imprimée en bas de la carte.
+4. ANNÉE DE COPYRIGHT : visible en bas de la carte.
+5. NOM ET ARTWORK du Pokémon en dernier recours seulement.
+
+Correspondances sets Écarlate & Violet (ne jamais confondre) :
+- SV1  : Écarlate et Violet (base) — 258 cartes
+- SV2  : Évolutions à Paldea — 193 cartes
+- SV3  : Flammes Obsidiennes — 197 cartes
+- SV3a : Cadres Brillants (Pokémon 151) — 207 cartes
+- SV4  : Failles Paradoxales — 266 cartes
+- SV4a : Choc de Destin (Shiny Treasure ex) — 190+ cartes
+- SV5  : Temporal Forces — 218 cartes
+- SV5K : Mascarade Crépusculaire — 167 cartes
+- SV6  : Couronnes Chromatiques — 101 cartes
+- SV7  : Sept Astres Célestes (Stellar Crown) — 175 cartes
+- SV8  : Héros Transcendant (Surging Sparks) — 191 cartes
+- SV8a : Paldean Fates / Destins de Paldea — 245 cartes
+
+Règle absolue : si le numéro total Y n'est pas lisible avec certitude, mets set = "Inconnu" plutôt que de deviner. Une erreur de set = une estimation de prix fausse.
+
 ÉTAPE 2 — GRADING : Analyse selon les 4 critères PSA (notes de 1 à 10 avec demi-points).
 ÉTAPE 3 — ESTIMATION DE PRIX : Estime la valeur marchande selon le grade PSA obtenu.
 
@@ -84,7 +107,7 @@ Critères de grading :
 3. EDGES : Bords parfaits = 10, légères marques = 8, effilochage = 6, endommagés = 4.
 4. SURFACE : Aucune rayure = 10, légères marques = 8, rayures visibles = 6, dommages = 4.
 
-Pour l'estimation de prix, base-toi sur les prix réels du marché PSA (eBay, TCGPlayer) pour cette carte spécifique à ce grade. Donne une fourchette réaliste en euros.
+Pour l'estimation de prix, base-toi sur les prix réels du marché PSA (eBay, TCGPlayer) pour cette carte ET ce set spécifique à ce grade. Donne une fourchette réaliste en euros. Si le set est "Inconnu", mets low:0 et high:0.
 
 ÉTAPE 4 — DÉTECTION DE CONTREFAÇON : Analyse si la carte présente des signes de faux.
 Indices à vérifier : qualité d'impression (pixels visibles, couleurs ternes), texture du dos (motif Pokéball flou ou déformé), police de caractères (différente de l'officielle), hologramme (absent, mal positionné ou de mauvaise qualité), bords (trop épais, trop fins ou irréguliers), brillance anormale.
