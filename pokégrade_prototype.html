@@ -1790,118 +1790,253 @@ function resetAndGo() {
   go('s-home');
 }
 
-// ── Share — slab PSA canvas ────────────────────────────────────
+// ── Slab canvas helpers ────────────────────────────────────────
 function rrect(ctx, x, y, w, h, r) {
+  const rr = Math.min(r, w/2, h/2);
   ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.moveTo(x + rr, y);
+  ctx.lineTo(x + w - rr, y); ctx.quadraticCurveTo(x+w, y, x+w, y+rr);
+  ctx.lineTo(x + w, y + h - rr); ctx.quadraticCurveTo(x+w, y+h, x+w-rr, y+h);
+  ctx.lineTo(x + rr, y + h); ctx.quadraticCurveTo(x, y+h, x, y+h-rr);
+  ctx.lineTo(x, y + rr); ctx.quadraticCurveTo(x, y, x+rr, y);
   ctx.closePath();
 }
 
+// ── Share — slab premium PokeGrade ────────────────────────────
 async function shareResult() {
   const name  = document.getElementById('res-name').textContent;
   const score = document.getElementById('sc-num').textContent;
   const badge = document.getElementById('sc-badge').textContent;
   const grade = parseFloat(score) || 0;
 
-  const W = 400, H = 580;
+  const detectedName   = document.getElementById('detected-name').textContent;
+  const detectedInfo   = document.getElementById('detected-info').textContent;
+  const detectedRarity = document.getElementById('detected-rarity').textContent;
+  const cardName = (detectedName && detectedName !== '—') ? detectedName : name;
+
+  // Grade tier colors
+  const psaNum = grade >= 9.5 ? 10 : grade >= 8.5 ? 9 : grade >= 7.5 ? 8 : grade >= 6.5 ? 7 : grade >= 5.5 ? 6 : 5;
+  const tiers = {
+    10: { bg:'#140E00', border:'#C9A227', accent:'#F5D97F', dim:'#8B6B14', label:'GEM-MINT' },
+     9: { bg:'#040E1E', border:'#1E88E5', accent:'#64B5F6', dim:'#0D4D88', label:'MINT' },
+     8: { bg:'#03110A', border:'#2E7D32', accent:'#66BB6A', dim:'#155218', label:'NM-MT' },
+     7: { bg:'#0E051C', border:'#7B1FA2', accent:'#CE93D8', dim:'#4A1169', label:'NEAR MINT' },
+     6: { bg:'#160600', border:'#BF360C', accent:'#FF8A65', dim:'#7A2208', label:'EX-MT' },
+     5: { bg:'#0A0A0A', border:'#546E7A', accent:'#90A4AE', dim:'#2E4049', label:'EXCELLENT' },
+  };
+  const t = tiers[psaNum] || tiers[5];
+
+  // Canvas 2× retina  (logical 600×840)
+  const W = 600, H = 840;
   const canvas = document.createElement('canvas');
-  canvas.width = W; canvas.height = H;
+  canvas.width = W * 2; canvas.height = H * 2;
   const ctx = canvas.getContext('2d');
+  ctx.scale(2, 2);
 
-  // Fond slab bleu PSA
-  ctx.fillStyle = '#001F5B';
-  rrect(ctx, 0, 0, W, H, 22); ctx.fill();
+  // ── Background surface ──
+  const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+  bgGrad.addColorStop(0, '#E8E6E3');
+  bgGrad.addColorStop(1, '#D6D4D0');
+  ctx.fillStyle = bgGrad; ctx.fillRect(0, 0, W, H);
+  // Vignette
+  const vig = ctx.createRadialGradient(W/2, H/2, H*0.15, W/2, H/2, H*0.85);
+  vig.addColorStop(0, 'rgba(0,0,0,0)');
+  vig.addColorStop(1, 'rgba(0,0,0,0.22)');
+  ctx.fillStyle = vig; ctx.fillRect(0, 0, W, H);
 
-  // Bordure intérieure
-  ctx.strokeStyle = 'rgba(255,255,255,0.12)';
-  ctx.lineWidth = 1.5;
-  rrect(ctx, 8, 8, W-16, H-16, 16); ctx.stroke();
+  // ── Slab shadow ──
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.28)';
+  ctx.shadowBlur = 36;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 14;
+  ctx.fillStyle = '#C8CCD2';
+  rrect(ctx, 20, 18, 560, 804, 22); ctx.fill();
+  ctx.restore();
 
-  // Header rouge PokeGrade
-  ctx.fillStyle = '#CC0000';
-  ctx.fillRect(8, 8, W-16, 52);
-  ctx.fillStyle = '#FFF';
-  ctx.font = 'bold 18px -apple-system, BlinkMacSystemFont, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('PokeGrade', W/2, 40);
+  // ── Slab body — 4-layer plastic look ──
+  ctx.fillStyle = '#A8ADB5'; rrect(ctx, 20, 18, 560, 804, 22); ctx.fill();
+  ctx.fillStyle = '#CDD0D6'; rrect(ctx, 22, 20, 556, 800, 21); ctx.fill();
+  ctx.fillStyle = '#DEE1E6'; rrect(ctx, 24, 22, 552, 796, 20); ctx.fill();
+  ctx.fillStyle = '#EDF0F3'; rrect(ctx, 26, 24, 548, 792, 19); ctx.fill();
 
-  // Zone carte (image)
+  // Top edge shine
+  const shine = ctx.createLinearGradient(0, 18, 0, 50);
+  shine.addColorStop(0, 'rgba(255,255,255,0.72)');
+  shine.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = shine; rrect(ctx, 20, 18, 560, 42, 22); ctx.fill();
+  // Left edge shine
+  const shineL = ctx.createLinearGradient(20, 0, 46, 0);
+  shineL.addColorStop(0, 'rgba(255,255,255,0.38)');
+  shineL.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = shineL; rrect(ctx, 20, 18, 36, 804, 22); ctx.fill();
+
+  // ── Card window ──
+  const cwx = 38, cwy = 38, cww = 524, cwh = 456;
+  // Inset shadow
+  ctx.fillStyle = '#C0C3C8'; rrect(ctx, cwx-2, cwy-2, cww+4, cwh+4, 14); ctx.fill();
+  ctx.fillStyle = '#D8DBE0'; rrect(ctx, cwx-1, cwy-1, cww+2, cwh+2, 13); ctx.fill();
+  ctx.fillStyle = '#F9F9F8'; rrect(ctx, cwx, cwy, cww, cwh, 12); ctx.fill();
+
+  // ── Card image ──
+  const cpx = 52, cpy = 54, cpw = 496, cph = 428;
+  ctx.save();
+  rrect(ctx, cpx, cpy, cpw, cph, 8); ctx.clip();
   const imgEl = document.getElementById('res-img');
-  const cardX = 90, cardY = 76, cardW = 220, cardH = 308;
-  if (imgEl && imgEl.src && imgEl.src !== window.location.href) {
+  let cardDrawn = false;
+  if (imgEl && imgEl.src && imgEl.src.startsWith('data:')) {
     try {
       const img = new Image();
-      img.crossOrigin = 'anonymous';
       await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = imgEl.src; });
-      ctx.save();
-      rrect(ctx, cardX, cardY, cardW, cardH, 10); ctx.clip();
-      ctx.drawImage(img, cardX, cardY, cardW, cardH);
-      ctx.restore();
-    } catch(e) {
-      ctx.fillStyle = 'rgba(255,255,255,0.08)';
-      rrect(ctx, cardX, cardY, cardW, cardH, 10); ctx.fill();
-    }
-  } else {
-    ctx.fillStyle = 'rgba(255,255,255,0.08)';
-    rrect(ctx, cardX, cardY, cardW, cardH, 10); ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,0.25)';
-    ctx.font = '52px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('🃏', W/2, cardY + cardH/2 + 18);
+      const ir = img.width / img.height, cr = cpw / cph;
+      let sx = 0, sy = 0, sw = img.width, sh = img.height;
+      if (ir > cr) { sw = sh * cr; sx = (img.width - sw) / 2; }
+      else { sh = sw / cr; sy = (img.height - sh) / 2; }
+      ctx.drawImage(img, sx, sy, sw, sh, cpx, cpy, cpw, cph);
+      cardDrawn = true;
+    } catch(e) {}
+  }
+  if (!cardDrawn) {
+    ctx.fillStyle = '#DEDCDA'; ctx.fillRect(cpx, cpy, cpw, cph);
+    ctx.fillStyle = 'rgba(0,0,0,0.12)';
+    ctx.font = '80px Arial'; ctx.textAlign = 'center';
+    ctx.fillText('?', cpx + cpw/2, cpy + cph/2 + 28);
+  }
+  ctx.restore();
+  // Card window border
+  ctx.strokeStyle = 'rgba(0,0,0,0.08)'; ctx.lineWidth = 1;
+  rrect(ctx, cwx, cwy, cww, cwh, 12); ctx.stroke();
+
+  // ── Label ──
+  const lx = 38, ly = 506, lw = 524, lh = 304;
+  ctx.fillStyle = '#050C1A'; rrect(ctx, lx, ly, lw, lh, 12); ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 1;
+  rrect(ctx, lx, ly, lw, lh, 12); ctx.stroke();
+
+  // Holographic strip (top of label)
+  const holo = ctx.createLinearGradient(lx, 0, lx+lw, 0);
+  holo.addColorStop(0,    '#CC0000');
+  holo.addColorStop(0.14, '#FF5500');
+  holo.addColorStop(0.28, '#FFD700');
+  holo.addColorStop(0.43, '#00E676');
+  holo.addColorStop(0.57, '#00B0FF');
+  holo.addColorStop(0.71, '#AA00FF');
+  holo.addColorStop(0.86, '#FF4081');
+  holo.addColorStop(1,    '#CC0000');
+  ctx.fillStyle = holo; rrect(ctx, lx, ly, lw, 6, 12); ctx.fill();
+
+  // ── Grade box (right side) ──
+  const gbx = lx + lw - 126, gby = ly + 14, gbw = 112, gbh = lh - 28;
+  ctx.fillStyle = t.bg; rrect(ctx, gbx, gby, gbw, gbh, 8); ctx.fill();
+  ctx.strokeStyle = t.border; ctx.lineWidth = 1.5;
+  rrect(ctx, gbx, gby, gbw, gbh, 8); ctx.stroke();
+  // Inner glow
+  const glowG = ctx.createRadialGradient(gbx+gbw/2, gby+gbh/2, 10, gbx+gbw/2, gby+gbh/2, gbh*0.7);
+  glowG.addColorStop(0, t.border + '22');
+  glowG.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = glowG; rrect(ctx, gbx, gby, gbw, gbh, 8); ctx.fill();
+
+  // "PokeGrade" inside grade box
+  ctx.fillStyle = t.dim;
+  ctx.font = 'bold 9px Arial, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('PokeGrade', gbx + gbw/2, gby + 20);
+  // Separator
+  ctx.strokeStyle = t.border + '66'; ctx.lineWidth = 0.5;
+  ctx.beginPath(); ctx.moveTo(gbx+14, gby+26); ctx.lineTo(gbx+gbw-14, gby+26); ctx.stroke();
+  // Grade number
+  ctx.fillStyle = t.accent;
+  ctx.font = `bold ${psaNum === 10 ? 64 : 70}px Arial Black, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.fillText(psaNum.toString(), gbx + gbw/2, gby + gbh/2 + 24);
+  // Bottom separator
+  ctx.strokeStyle = t.border + '66'; ctx.lineWidth = 0.5;
+  ctx.beginPath(); ctx.moveTo(gbx+14, gby+gbh-46); ctx.lineTo(gbx+gbw-14, gby+gbh-46); ctx.stroke();
+  // Grade label
+  ctx.fillStyle = t.border;
+  ctx.font = 'bold 9px Arial, sans-serif';
+  ctx.fillText(t.label, gbx + gbw/2, gby + gbh - 30);
+  // Decimal score
+  ctx.fillStyle = 'rgba(255,255,255,0.28)';
+  ctx.font = '10px Arial, sans-serif';
+  ctx.fillText(score + ' / 10', gbx + gbw/2, gby + gbh - 14);
+
+  // ── Pokéball logo ──
+  const pbcx = lx + 28, pbcy = ly + 32, pbr = 12;
+  ctx.save();
+  ctx.beginPath(); ctx.arc(pbcx, pbcy, pbr, Math.PI, 0); ctx.lineTo(pbcx - pbr, pbcy); ctx.closePath();
+  ctx.fillStyle = '#CC0000'; ctx.fill();
+  ctx.beginPath(); ctx.arc(pbcx, pbcy, pbr, 0, Math.PI); ctx.lineTo(pbcx + pbr, pbcy); ctx.closePath();
+  ctx.fillStyle = '#FFFFFF'; ctx.fill();
+  ctx.strokeStyle = '#1A1A1A'; ctx.lineWidth = 1.8;
+  ctx.beginPath(); ctx.moveTo(pbcx - pbr, pbcy); ctx.lineTo(pbcx + pbr, pbcy); ctx.stroke();
+  ctx.beginPath(); ctx.arc(pbcx, pbcy, 4, 0, Math.PI*2); ctx.fillStyle = '#1A1A1A'; ctx.fill();
+  ctx.beginPath(); ctx.arc(pbcx, pbcy, 2.5, 0, Math.PI*2); ctx.fillStyle = '#FFFFFF'; ctx.fill();
+  ctx.restore();
+
+  // Brand text
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = 'bold 17px Arial, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('PokeGrade', lx + 48, ly + 27);
+  ctx.fillStyle = 'rgba(255,255,255,0.32)';
+  ctx.font = '9px Arial, sans-serif';
+  ctx.fillText('AI CARD GRADING  ·  pokegrade.it.com', lx + 48, ly + 41);
+
+  // Separator below brand
+  ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = 0.5;
+  ctx.beginPath(); ctx.moveTo(lx + 14, ly + 54); ctx.lineTo(gbx - 12, ly + 54); ctx.stroke();
+
+  // ── Card info ──
+  const ix = lx + 18, iy = ly + 68, maxW = gbx - lx - 30;
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = 'bold 19px Arial, sans-serif';
+  ctx.textAlign = 'left';
+  const cn = cardName.length > 20 ? cardName.slice(0, 18) + '…' : cardName;
+  ctx.fillText(cn.toUpperCase(), ix, iy);
+  if (detectedInfo && detectedInfo !== '—') {
+    ctx.fillStyle = 'rgba(255,255,255,0.40)';
+    ctx.font = '11px Arial, sans-serif';
+    const di = detectedInfo.length > 38 ? detectedInfo.slice(0, 36) + '…' : detectedInfo;
+    ctx.fillText(di, ix, iy + 20);
+  }
+  if (detectedRarity) {
+    ctx.fillStyle = t.accent;
+    ctx.font = 'bold 10px Arial, sans-serif';
+    ctx.fillText(detectedRarity.toUpperCase(), ix, iy + 40);
   }
 
-  // Bordure carte
-  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
-  ctx.lineWidth = 1;
-  rrect(ctx, cardX, cardY, cardW, cardH, 10); ctx.stroke();
+  // Cert number + watermark bottom
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 0.5;
+  ctx.beginPath(); ctx.moveTo(lx+14, ly+lh-36); ctx.lineTo(gbx-12, ly+lh-36); ctx.stroke();
+  const cert = 'PG-' + Math.random().toString(36).slice(2, 9).toUpperCase();
+  ctx.fillStyle = 'rgba(255,255,255,0.18)';
+  ctx.font = '9px Arial, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('CERT# ' + cert, ix, ly + lh - 18);
 
-  // Cercle note
-  const gradeCol = grade >= 9 ? '#15803D' : grade >= 7.5 ? '#f5c518' : grade >= 6 ? '#d97706' : '#e74c3c';
-  ctx.beginPath();
-  ctx.arc(W/2, 430, 48, 0, Math.PI*2);
-  ctx.fillStyle = '#FFF'; ctx.fill();
-  ctx.strokeStyle = gradeCol; ctx.lineWidth = 5; ctx.stroke();
+  // ── Bottom slab shadow ──
+  const botS = ctx.createLinearGradient(0, H - 50, 0, H);
+  botS.addColorStop(0, 'rgba(0,0,0,0)');
+  botS.addColorStop(1, 'rgba(0,0,0,0.15)');
+  ctx.fillStyle = botS; rrect(ctx, 20, H - 60, 560, 60, 22); ctx.fill();
 
-  ctx.fillStyle = gradeCol;
-  ctx.font = 'bold 40px -apple-system, BlinkMacSystemFont, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText(score, W/2, 444);
-
-  // Badge PSA
-  const psaShort = badge.split('—')[0].trim();
-  ctx.fillStyle = gradeCol;
-  ctx.font = 'bold 14px -apple-system, BlinkMacSystemFont, sans-serif';
-  ctx.fillText(psaShort, W/2, 498);
-
-  // Nom carte
-  ctx.fillStyle = 'rgba(255,255,255,0.75)';
-  ctx.font = '13px -apple-system, BlinkMacSystemFont, sans-serif';
-  const displayName = name.length > 32 ? name.slice(0, 30) + '…' : name;
-  ctx.fillText(displayName, W/2, 522);
-
-  // Watermark
-  ctx.fillStyle = 'rgba(255,255,255,0.25)';
-  ctx.font = '11px -apple-system, BlinkMacSystemFont, sans-serif';
-  ctx.fillText('pokegrade.it.com', W/2, 558);
-
-  // Share or download
+  // ── Export ──
   canvas.toBlob(async blob => {
-    const file = new File([blob], 'pokegrade.png', { type: 'image/png' });
+    const safeName = cardName.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+    const file = new File([blob], `pokegrade-${safeName}.png`, { type: 'image/png' });
     if (navigator.share && navigator.canShare?.({ files: [file] })) {
-      try { await navigator.share({ files: [file], title: 'PokeGrade', text: `${name} — ${score}/10 · ${badge}` }); return; }
-      catch(e) { /* fallback */ }
+      try {
+        await navigator.share({ files: [file], title: 'PokeGrade', text: `${cardName} — PSA ${psaNum} · ${t.label}` });
+        return;
+      } catch(e) {}
     }
-    // Fallback : téléchargement
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = 'pokegrade-' + name.replace(/\s+/g,'-').toLowerCase() + '.png';
+    a.href = url; a.download = `pokegrade-${safeName}.png`;
     document.body.appendChild(a); a.click();
     document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setTimeout(() => URL.revokeObjectURL(url), 1200);
   }, 'image/png');
 }
 
