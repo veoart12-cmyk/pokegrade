@@ -716,6 +716,52 @@ body {
   background: #FFF9E6; color: #B45309; margin-left: 8px;
 }
 
+/* ── Fake detection block ── */
+.fake-block {
+  background: var(--white);
+  border-radius: 16px;
+  margin: 10px 14px;
+  padding: 16px 18px;
+  display: none;
+  border-left: 4px solid var(--g200);
+}
+.fake-block.ok      { border-left-color: var(--green); }
+.fake-block.suspect { border-left-color: var(--amber); }
+.fake-block.danger  { border-left-color: var(--red); }
+.fake-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.fake-label  { font-size: 11px; font-weight: 700; color: var(--g500); text-transform: uppercase; letter-spacing: .07em; }
+.fake-verdict { font-size: 15px; font-weight: 800; }
+.fake-verdict.ok      { color: var(--green); }
+.fake-verdict.suspect { color: var(--amber); }
+.fake-verdict.danger  { color: var(--red); }
+.fake-conf { font-size: 12px; color: var(--g300); font-weight: 600; margin-top: 2px; }
+.fake-indicator {
+  font-size: 12px; color: var(--g500);
+  padding: 4px 0 4px 14px;
+  border-bottom: 1px solid var(--g50);
+  line-height: 1.4;
+  position: relative;
+}
+.fake-indicator::before { content: '→'; position: absolute; left: 0; color: var(--amber); }
+.fake-indicator:last-child { border-bottom: none; }
+
+/* ── Collection stats strip ── */
+.coll-stats {
+  display: flex; gap: 10px;
+  padding: 12px 16px;
+  overflow-x: auto; scrollbar-width: none;
+  background: var(--white);
+  border-bottom: 1px solid var(--g100);
+}
+.coll-stats::-webkit-scrollbar { display: none; }
+.coll-stat {
+  flex-shrink: 0; min-width: 80px;
+  background: var(--g50); border-radius: 14px;
+  padding: 10px 14px; text-align: center;
+}
+.coll-stat-n { font-size: 18px; font-weight: 900; color: var(--black); }
+.coll-stat-l { font-size: 11px; color: var(--g500); margin-top: 2px; }
+
 /* ── Screens with bottom nav need padding ── */
 #s-home       { padding-bottom: 72px; }
 #s-collection { padding-bottom: 72px; }
@@ -1000,6 +1046,16 @@ body {
     <span class="card-detected-rarity" id="detected-rarity"></span>
   </div>
 
+  <!-- Détection de contrefaçon -->
+  <div class="fake-block" id="fake-block">
+    <div class="fake-header">
+      <p class="fake-label">🔍 Authenticité</p>
+      <p class="fake-conf" id="fake-conf"></p>
+    </div>
+    <p class="fake-verdict" id="fake-verdict"></p>
+    <div id="fake-indicators"></div>
+  </div>
+
   <!-- Estimation de prix -->
   <div class="price-block" id="price-block">
     <p class="price-block-label">💰 Valeur estimée (marché PSA)</p>
@@ -1029,6 +1085,12 @@ body {
   <div class="coll-header">
     <p class="coll-title">Ma Collection</p>
     <p class="coll-sub" id="coll-sub">Chargement…</p>
+  </div>
+  <div class="coll-stats" id="coll-stats" style="display:none">
+    <div class="coll-stat"><div class="coll-stat-n" id="stat-count">—</div><div class="coll-stat-l">Cartes</div></div>
+    <div class="coll-stat"><div class="coll-stat-n" id="stat-avg">—</div><div class="coll-stat-l">Moy. PSA</div></div>
+    <div class="coll-stat"><div class="coll-stat-n" id="stat-best">—</div><div class="coll-stat-l">Meilleure</div></div>
+    <div class="coll-stat"><div class="coll-stat-n" id="stat-value">—</div><div class="coll-stat-l">Valeur est.</div></div>
   </div>
   <div class="coll-grid" id="coll-grid">
     <div class="coll-empty">
@@ -1415,9 +1477,29 @@ async function loadCollection() {
     const data = await res.json();
     const grades = data.grades || [];
 
-    sub.textContent = grades.length === 0 ? '0 carte gradée' : `${grades.length} carte${grades.length > 1 ? 's' : ''} gradée${grades.length > 1 ? 's' : ''}`;
+    const count = grades.length;
+    sub.textContent = count === 0 ? '0 carte gradée' : `${count} carte${count > 1 ? 's' : ''} gradée${count > 1 ? 's' : ''}`;
 
-    if (grades.length === 0) {
+    // Stats
+    if (count > 0) {
+      const statsEl = document.getElementById('coll-stats');
+      statsEl.style.display = 'flex';
+      const scores = grades.map(g => g.result?.global || 0).filter(s => s > 0);
+      const avg = scores.length ? (scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+      const best = scores.length ? Math.max(...scores) : 0;
+      const totalValue = grades.reduce((sum, g) => {
+        const p = g.result?.price;
+        return sum + (p && p.low > 0 ? Math.round((p.low + p.high) / 2) : 0);
+      }, 0);
+      document.getElementById('stat-count').textContent = count;
+      document.getElementById('stat-avg').textContent = avg > 0 ? avg.toFixed(1) : '—';
+      document.getElementById('stat-best').textContent = best > 0 ? best.toFixed(1) : '—';
+      document.getElementById('stat-value').textContent = totalValue > 0 ? totalValue + '€' : '—';
+    } else {
+      document.getElementById('coll-stats').style.display = 'none';
+    }
+
+    if (count === 0) {
       grid.innerHTML = `
         <div class="coll-empty">
           <div class="coll-empty-icon">📦</div>
@@ -1632,6 +1714,30 @@ function showResult(r) {
     document.getElementById('card-detected-block').style.display = 'none';
   }
 
+  // ── Détection de faux ──
+  const fd = r.fake_detection;
+  if (fd) {
+    const fblock = document.getElementById('fake-block');
+    const fverdict = document.getElementById('fake-verdict');
+    const fconf = document.getElementById('fake-conf');
+    const finds = document.getElementById('fake-indicators');
+    fblock.style.display = 'block';
+    fblock.className = 'fake-block';
+    const cls = fd.is_suspect ? (fd.confidence === 'élevée' ? 'danger' : 'suspect') : 'ok';
+    fblock.classList.add(cls);
+    fverdict.textContent = fd.verdict || (fd.is_suspect ? '⚠️ Indices suspects' : '✅ Authentique');
+    fverdict.className = 'fake-verdict ' + cls;
+    const confLabel = fd.confidence === 'élevée' ? 'Confiance élevée' : fd.confidence === 'moyenne' ? 'Confiance moyenne' : 'Confiance faible';
+    fconf.textContent = confLabel;
+    if (fd.indicators && fd.indicators.length > 0) {
+      finds.innerHTML = fd.indicators.map(ind => `<p class="fake-indicator">${ind}</p>`).join('');
+    } else {
+      finds.innerHTML = fd.is_suspect ? '' : '<p class="fake-indicator" style="color:var(--green)">Aucun indice de contrefaçon détecté</p>';
+    }
+  } else {
+    document.getElementById('fake-block').style.display = 'none';
+  }
+
   // ── Estimation de prix ──
   if (r.price && r.price.low > 0) {
     const priceBlock = document.getElementById('price-block');
@@ -1680,16 +1786,123 @@ function resetAndGo() {
   document.getElementById('sc-ring').style.strokeDashoffset = '239';
   document.getElementById('card-detected-block').style.display = 'none';
   document.getElementById('price-block').style.display = 'none';
+  document.getElementById('fake-block').style.display = 'none';
   go('s-home');
 }
 
-// ── Share ──────────────────────────────────────────────────────
-function shareResult() {
-  const name = document.getElementById('res-name').textContent;
+// ── Share — slab PSA canvas ────────────────────────────────────
+function rrect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+async function shareResult() {
+  const name  = document.getElementById('res-name').textContent;
   const score = document.getElementById('sc-num').textContent;
   const badge = document.getElementById('sc-badge').textContent;
-  if (navigator.share) { navigator.share({ title:'PokeGrade', text:`${name} — ${score}/10 · ${badge} via PokeGrade` }); }
-  else { navigator.clipboard?.writeText(`${name} — ${score}/10 · ${badge}`).then(() => alert('Copié dans le presse-papier !')); }
+  const grade = parseFloat(score) || 0;
+
+  const W = 400, H = 580;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // Fond slab bleu PSA
+  ctx.fillStyle = '#001F5B';
+  rrect(ctx, 0, 0, W, H, 22); ctx.fill();
+
+  // Bordure intérieure
+  ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+  ctx.lineWidth = 1.5;
+  rrect(ctx, 8, 8, W-16, H-16, 16); ctx.stroke();
+
+  // Header rouge PokeGrade
+  ctx.fillStyle = '#CC0000';
+  ctx.fillRect(8, 8, W-16, 52);
+  ctx.fillStyle = '#FFF';
+  ctx.font = 'bold 18px -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('PokeGrade', W/2, 40);
+
+  // Zone carte (image)
+  const imgEl = document.getElementById('res-img');
+  const cardX = 90, cardY = 76, cardW = 220, cardH = 308;
+  if (imgEl && imgEl.src && imgEl.src !== window.location.href) {
+    try {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = imgEl.src; });
+      ctx.save();
+      rrect(ctx, cardX, cardY, cardW, cardH, 10); ctx.clip();
+      ctx.drawImage(img, cardX, cardY, cardW, cardH);
+      ctx.restore();
+    } catch(e) {
+      ctx.fillStyle = 'rgba(255,255,255,0.08)';
+      rrect(ctx, cardX, cardY, cardW, cardH, 10); ctx.fill();
+    }
+  } else {
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    rrect(ctx, cardX, cardY, cardW, cardH, 10); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+    ctx.font = '52px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🃏', W/2, cardY + cardH/2 + 18);
+  }
+
+  // Bordure carte
+  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+  ctx.lineWidth = 1;
+  rrect(ctx, cardX, cardY, cardW, cardH, 10); ctx.stroke();
+
+  // Cercle note
+  const gradeCol = grade >= 9 ? '#15803D' : grade >= 7.5 ? '#f5c518' : grade >= 6 ? '#d97706' : '#e74c3c';
+  ctx.beginPath();
+  ctx.arc(W/2, 430, 48, 0, Math.PI*2);
+  ctx.fillStyle = '#FFF'; ctx.fill();
+  ctx.strokeStyle = gradeCol; ctx.lineWidth = 5; ctx.stroke();
+
+  ctx.fillStyle = gradeCol;
+  ctx.font = 'bold 40px -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(score, W/2, 444);
+
+  // Badge PSA
+  const psaShort = badge.split('—')[0].trim();
+  ctx.fillStyle = gradeCol;
+  ctx.font = 'bold 14px -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.fillText(psaShort, W/2, 498);
+
+  // Nom carte
+  ctx.fillStyle = 'rgba(255,255,255,0.75)';
+  ctx.font = '13px -apple-system, BlinkMacSystemFont, sans-serif';
+  const displayName = name.length > 32 ? name.slice(0, 30) + '…' : name;
+  ctx.fillText(displayName, W/2, 522);
+
+  // Watermark
+  ctx.fillStyle = 'rgba(255,255,255,0.25)';
+  ctx.font = '11px -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.fillText('pokegrade.it.com', W/2, 558);
+
+  // Share or download
+  canvas.toBlob(async blob => {
+    const file = new File([blob], 'pokegrade.png', { type: 'image/png' });
+    if (navigator.share && navigator.canShare?.({ files: [file] })) {
+      try { await navigator.share({ files: [file], title: 'PokeGrade', text: `${name} — ${score}/10 · ${badge}` }); return; }
+      catch(e) { /* fallback */ }
+    }
+    // Fallback : téléchargement
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'pokegrade-' + name.replace(/\s+/g,'-').toLowerCase() + '.png';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }, 'image/png');
 }
 
 // ── Auth ───────────────────────────────────────────────────────

@@ -86,6 +86,10 @@ Critères de grading :
 
 Pour l'estimation de prix, base-toi sur les prix réels du marché PSA (eBay, TCGPlayer) pour cette carte spécifique à ce grade. Donne une fourchette réaliste en euros.
 
+ÉTAPE 4 — DÉTECTION DE CONTREFAÇON : Analyse si la carte présente des signes de faux.
+Indices à vérifier : qualité d'impression (pixels visibles, couleurs ternes), texture du dos (motif Pokéball flou ou déformé), police de caractères (différente de l'officielle), hologramme (absent, mal positionné ou de mauvaise qualité), bords (trop épais, trop fins ou irréguliers), brillance anormale.
+Sois conservateur : ne marque is_suspect à true que si tu vois des indices clairs et multiples. En cas de doute, mets false.
+
 Réponds UNIQUEMENT avec ce JSON (rien d'autre, pas de markdown) :
 {
   "card": {
@@ -108,6 +112,12 @@ Réponds UNIQUEMENT avec ce JSON (rien d'autre, pas de markdown) :
     "high": 250,
     "currency": "EUR",
     "note": "Estimation basée sur les ventes récentes PSA 8 sur eBay"
+  },
+  "fake_detection": {
+    "is_suspect": false,
+    "verdict": "Authentique",
+    "confidence": "élevée",
+    "indicators": []
   }
 }
 
