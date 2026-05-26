@@ -1725,6 +1725,10 @@ async function startAnalysis() {
 
 // ── Results ────────────────────────────────────────────────────
 function showResult(r) {
+  if (!r || typeof r.global === 'undefined') {
+    alert('Résultat invalide — réessaie avec une meilleure photo.');
+    go('s-upload'); return;
+  }
   const g = r.global;
 
   // Nom : priorité à la détection auto, sinon ce que l'utilisateur a tapé
@@ -1770,26 +1774,31 @@ function showResult(r) {
 
   // ── Détection de faux ──
   const fd = r.fake_detection;
-  if (fd) {
-    const fblock = document.getElementById('fake-block');
-    const fverdict = document.getElementById('fake-verdict');
-    const fconf = document.getElementById('fake-conf');
-    const finds = document.getElementById('fake-indicators');
-    fblock.style.display = 'block';
-    fblock.className = 'fake-block';
-    const cls = fd.is_suspect ? (fd.confidence === 'élevée' ? 'danger' : 'suspect') : 'ok';
-    fblock.classList.add(cls);
-    fverdict.textContent = fd.verdict || (fd.is_suspect ? '⚠️ Indices suspects' : '✅ Authentique');
-    fverdict.className = 'fake-verdict ' + cls;
-    const confLabel = fd.confidence === 'élevée' ? 'Confiance élevée' : fd.confidence === 'moyenne' ? 'Confiance moyenne' : 'Confiance faible';
-    fconf.textContent = confLabel;
-    if (fd.indicators && fd.indicators.length > 0) {
-      finds.innerHTML = fd.indicators.map(ind => `<p class="fake-indicator">${ind}</p>`).join('');
+  const fblock = document.getElementById('fake-block');
+  if (fblock) {
+    if (fd) {
+      const fverdict = document.getElementById('fake-verdict');
+      const fconf    = document.getElementById('fake-conf');
+      const finds    = document.getElementById('fake-indicators');
+      fblock.style.display = 'block';
+      fblock.className = 'fake-block';
+      const cls = fd.is_suspect ? (fd.confidence === 'élevée' ? 'danger' : 'suspect') : 'ok';
+      fblock.classList.add(cls);
+      if (fverdict) {
+        fverdict.textContent = fd.verdict || (fd.is_suspect ? '⚠️ Indices suspects' : '✅ Authentique');
+        fverdict.className = 'fake-verdict ' + cls;
+      }
+      if (fconf) {
+        fconf.textContent = fd.confidence === 'élevée' ? 'Confiance élevée' : fd.confidence === 'moyenne' ? 'Confiance moyenne' : 'Confiance faible';
+      }
+      if (finds) {
+        finds.innerHTML = (fd.indicators && fd.indicators.length > 0)
+          ? fd.indicators.map(ind => `<p class="fake-indicator">${ind}</p>`).join('')
+          : (fd.is_suspect ? '' : '<p class="fake-indicator" style="color:var(--green)">Aucun indice de contrefaçon détecté</p>');
+      }
     } else {
-      finds.innerHTML = fd.is_suspect ? '' : '<p class="fake-indicator" style="color:var(--green)">Aucun indice de contrefaçon détecté</p>';
+      fblock.style.display = 'none';
     }
-  } else {
-    document.getElementById('fake-block').style.display = 'none';
   }
 
   // ── Estimation de prix ──
@@ -1804,6 +1813,7 @@ function showResult(r) {
   }
 
   function setCrit(id, crit, label) {
+    if (!crit || typeof crit.score === 'undefined') return;
     const c   = colFor(crit.score);
     const pct = Math.round(crit.score * 10);
     const cf  = confFor(crit.confidence);
