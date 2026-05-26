@@ -360,6 +360,9 @@ body {
   background: var(--g50); border-radius: 16px;
   margin: 10px 14px 0; padding: 14px 16px;
   display: none;
+  border-left: 4px solid var(--red);
+  border: 1px solid var(--g100);
+  border-left: 4px solid var(--red);
 }
 .card-detected-row { display: flex; align-items: center; justify-content: space-between; }
 .card-detected-label { font-size: 11px; font-weight: 700; color: var(--g500); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 8px; }
@@ -373,9 +376,11 @@ body {
 
 /* Price block */
 .price-block {
-  background: var(--white); border-radius: 20px;
-  margin: 10px 14px; padding: 18px 20px;
+  background: var(--white); border-radius: 16px;
+  margin: 10px 14px; padding: 16px 18px;
   display: none;
+  border: 1px solid var(--g100);
+  border-left: 4px solid var(--red);
 }
 .price-block-label { font-size: 11px; font-weight: 700; color: var(--g500); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 12px; }
 .price-range { display: flex; align-items: center; gap: 8px; }
@@ -388,10 +393,26 @@ body {
   background: var(--white);
   margin: 14px 14px 10px;
   border-radius: 20px;
-  padding: 24px 22px;
+  padding: 0 22px 24px;
   text-align: center;
+  overflow: hidden;
+  border: 1px solid var(--g100);
 }
-.sc-lbl { font-size: 11px; font-weight: 700; color: var(--g500); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 10px; }
+/* Bande rouge en haut du bloc score */
+.score-block::before {
+  content: '';
+  display: block;
+  height: 5px;
+  background: var(--red);
+  margin: 0 -22px 20px;
+  border-radius: 20px 20px 0 0;
+}
+.sc-lbl {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 800; color: var(--g500);
+  text-transform: uppercase; letter-spacing: .1em; margin-bottom: 10px;
+}
+.sc-lbl::before { content: ''; display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--red); }
 .sc-row { display: flex; align-items: baseline; justify-content: center; gap: 3px; margin-bottom: 18px; }
 .sc-n { font-size: 84px; font-weight: 900; line-height: 1; letter-spacing: -5px; }
 .sc-d { font-size: 30px; font-weight: 400; color: var(--g300); }
@@ -406,24 +427,57 @@ body {
 }
 .sc-eq { font-size: 13px; color: var(--g500); }
 
+/* ── Section header "Détail des critères" ── */
 .crit-head-row {
-  padding: 14px 18px 8px;
-  font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; gap: 8px;
+  padding: 18px 18px 10px;
+  font-size: 11px; font-weight: 800;
   color: var(--g500); text-transform: uppercase; letter-spacing: .1em;
 }
+.crit-head-row::before {
+  content: '';
+  display: inline-block;
+  width: 4px; height: 16px;
+  background: var(--red);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* ── Blocs critères ── */
 .crit {
   background: var(--white);
-  margin: 0 14px 8px;
+  margin: 0 14px 10px;
   border-radius: 16px;
-  padding: 16px;
+  padding: 16px 16px 14px 20px;
+  border-left: 4px solid var(--red);
+  border: 1px solid var(--g100);
+  border-left: 4px solid var(--red);
+  position: relative;
 }
-.crit-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-.crit-nm  { font-size: 15px; font-weight: 800; color: var(--black); }
-.crit-sc  { font-size: 16px; font-weight: 900; }
-.crit-ob  { font-size: 13px; color: var(--g500); line-height: 1.45; margin-bottom: 10px; }
-.crit-bar { height: 4px; background: var(--g100); border-radius: 99px; overflow: hidden; margin-bottom: 5px; }
+.crit-top {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; margin-bottom: 8px;
+}
+.crit-nm {
+  font-size: 11px; font-weight: 800;
+  color: var(--g500); text-transform: uppercase; letter-spacing: .07em;
+  padding-top: 4px;
+}
+.crit-sc  { font-size: 26px; font-weight: 900; line-height: 1; }
+.crit-sc-max { font-size: 13px; font-weight: 400; color: var(--g300); }
+.crit-ob  { font-size: 13px; color: var(--g700); line-height: 1.5; margin-bottom: 12px; }
+.crit-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+.crit-bar { flex: 1; height: 8px; background: var(--g100); border-radius: 99px; overflow: hidden; }
 .crit-f   { height: 100%; border-radius: 99px; transition: width 1.2s cubic-bezier(0.4,0,0.2,1); width: 0%; }
-.crit-cf  { font-size: 11px; color: var(--g300); font-weight: 600; }
+.crit-pct { font-size: 12px; font-weight: 800; min-width: 36px; text-align: right; }
+.crit-cf  { font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
+.crit-cf.high { color: var(--green); }
+.crit-cf.mid  { color: var(--amber); }
+.crit-cf.low  { color: var(--red); }
+.crit-cf-dot  { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.crit-cf.high .crit-cf-dot { background: var(--green); }
+.crit-cf.mid  .crit-cf-dot { background: var(--amber); }
+.crit-cf.low  .crit-cf-dot { background: var(--red); }
 
 .res-bottom { padding: 6px 14px 44px; }
 .btn-red-full {
@@ -1614,9 +1668,9 @@ function badgeFor(s) {
   return { bg:'#FFF5F5', c:'#B91C1C' };
 }
 function confFor(c) {
-  if (c === 'élevée')  return 'Confiance élevée';
-  if (c === 'moyenne') return 'Confiance moyenne';
-  return 'Confiance faible — reprends la photo (fond blanc, à plat)';
+  if (c === 'élevée')  return { cls: 'high', txt: 'Confiance élevée' };
+  if (c === 'moyenne') return { cls: 'mid',  txt: 'Confiance moyenne' };
+  return { cls: 'low', txt: 'Confiance faible — reprends la photo' };
 }
 
 // ── Steps animation ────────────────────────────────────────────
@@ -1750,17 +1804,22 @@ function showResult(r) {
   }
 
   function setCrit(id, crit, label) {
-    const c = colFor(crit.score);
+    const c   = colFor(crit.score);
+    const pct = Math.round(crit.score * 10);
+    const cf  = confFor(crit.confidence);
     document.getElementById(id).innerHTML = `
       <div class="crit-top">
         <span class="crit-nm">${label}</span>
-        <span class="crit-sc" style="color:${c}">${crit.score.toFixed(1)}</span>
+        <span class="crit-sc" style="color:${c}">${crit.score.toFixed(1)}<span class="crit-sc-max">/10</span></span>
       </div>
       <p class="crit-ob">${crit.observation}</p>
-      <div class="crit-bar"><div class="crit-f" id="${id}-f" style="background:${c}"></div></div>
-      <p class="crit-cf">${confFor(crit.confidence)}</p>
+      <div class="crit-bar-row">
+        <div class="crit-bar"><div class="crit-f" id="${id}-f" style="background:${c}"></div></div>
+        <span class="crit-pct" style="color:${c}">${pct}%</span>
+      </div>
+      <p class="crit-cf ${cf.cls}"><span class="crit-cf-dot"></span>${cf.txt}</p>
     `;
-    setTimeout(() => { document.getElementById(id+'-f').style.width = (crit.score*10)+'%'; }, 500);
+    setTimeout(() => { document.getElementById(id + '-f').style.width = pct + '%'; }, 500);
   }
 
   setCrit('crit-centering', r.centering, 'Centering');
