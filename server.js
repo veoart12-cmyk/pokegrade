@@ -120,7 +120,16 @@ Pour psa_label, utilise exactement :
 Le global est la moyenne des 4 scores, arrondie au demi-point.
 Si tu ne peux pas identifier la carte avec certitude, mets "Inconnue" pour name et 0 pour les prix.`;
 
-app.post("/api/grade", requireAuth, upload.single("image"), async (req, res) => {
+app.post("/api/grade", requireAuth, upload.fields([{ name: "front", maxCount: 1 }, { name: "back", maxCount: 1 }]), async (req, res) => {
+  const files = req.files || {};
+  const frontFile = files.front?.[0];
+  const backFile  = files.back?.[0];
+
+  const cleanup = () => {
+    if (frontFile && fs.existsSync(frontFile.path)) fs.unlinkSync(frontFile.path);
+    if (backFile  && fs.existsSync(backFile.path))  fs.unlinkSync(backFile.path);
+  };
+
   try {
     // Récupérer le profil
     let { data: profile } = await supabase
@@ -146,31 +155,30 @@ app.post("/api/grade", requireAuth, upload.single("image"), async (req, res) => 
 
     // Vérifier quota
     if (!profile.is_premium && profile.grades_this_month >= FREE_GRADES_PER_MONTH) {
-      if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+      cleanup();
       return res.status(402).json({ error: "Limite atteinte", upgrade: true });
     }
 
-    if (!req.file) return res.status(400).json({ error: "Aucune image reçue" });
+    if (!frontFile) { cleanup(); return res.status(400).json({ error: "Photo recto manquante" }); }
 
-    const imageData = fs.readFileSync(req.file.path);
-    const base64Image = imageData.toString("base64");
-    const mimeType = req.file.mimetype || "image/jpeg";
+    // Construire le contenu : recto obligatoire, verso optionnel
+    const imageContent = [
+      { type: "image", source: { type: "base64", media_type: frontFile.mimetype || "image/jpeg", data: fs.readFileSync(frontFile.path).toString("base64") } },
+    ];
+    if (backFile) {
+      imageContent.push({ type: "image", source: { type: "base64", media_type: backFile.mimetype || "image/jpeg", data: fs.readFileSync(backFile.path).toString("base64") } });
+    }
+    const prompt = backFile
+      ? "La première image est le RECTO de la carte, la deuxième est le VERSO. " + GRADING_PROMPT
+      : GRADING_PROMPT;
 
     const response = await anthropic.messages.create({
       model: "claude-opus-4-6",
       max_tokens: 1024,
-      messages: [
-        {
-          role: "user",
-          content: [
-            { type: "image", source: { type: "base64", media_type: mimeType, data: base64Image } },
-            { type: "text", text: GRADING_PROMPT },
-          ],
-        },
-      ],
+      messages: [{ role: "user", content: [...imageContent, { type: "text", text: prompt }] }],
     });
 
-    fs.unlinkSync(req.file.path);
+    cleanup();
 
     const text = response.content[0].text.trim();
     // Extraire le JSON même si Claude ajoute du texte autour

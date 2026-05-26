@@ -715,29 +715,59 @@ body {
     <span class="nav-skip"></span>
   </div>
 
+  <!-- RECTO -->
+  <div style="padding: 0 16px 6px">
+    <p style="font-size:11px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">① Recto <span style="color:var(--red)">*</span></p>
+  </div>
+
   <div class="upload-zone" id="upload-zone">
-    <input type="file" accept="image/*" capture="environment" onchange="handleFile(event)">
+    <input type="file" accept="image/*" capture="environment" onchange="handleFile(event,'front')">
     <div class="upload-ico">
       <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
         <path d="M13 4v16M5 12l8-8 8 8" stroke="#CC0000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M3 22h20" stroke="#CC0000" stroke-width="2" stroke-linecap="round"/>
       </svg>
     </div>
-    <p class="upload-t">Ajoute ta carte</p>
-    <p class="upload-s">Caméra ou galerie</p>
+    <p class="upload-t">Face avant</p>
+    <p class="upload-s">Obligatoire</p>
   </div>
 
   <div class="preview-zone" id="preview-zone">
     <img id="preview-img" src="" alt="">
     <label class="preview-change">
-      Changer la photo
-      <input type="file" accept="image/*" capture="environment" onchange="handleFile(event)">
+      Changer
+      <input type="file" accept="image/*" capture="environment" onchange="handleFile(event,'front')">
+    </label>
+  </div>
+
+  <!-- VERSO -->
+  <div style="padding: 10px 16px 6px">
+    <p style="font-size:11px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">② Verso <span style="color:var(--g300);font-weight:400;text-transform:none;letter-spacing:0">optionnel — améliore la précision</span></p>
+  </div>
+
+  <div class="upload-zone" id="upload-zone-back" style="padding:28px 20px">
+    <input type="file" accept="image/*" capture="environment" onchange="handleFile(event,'back')">
+    <div class="upload-ico">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+        <path d="M13 4v16M5 12l8-8 8 8" stroke="#CCC" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M3 22h20" stroke="#CCC" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <p class="upload-t" style="color:var(--g500)">Face arrière</p>
+    <p class="upload-s">Optionnel</p>
+  </div>
+
+  <div class="preview-zone" id="preview-zone-back">
+    <img id="preview-img-back" src="" alt="">
+    <label class="preview-change">
+      Changer
+      <input type="file" accept="image/*" capture="environment" onchange="handleFile(event,'back')">
     </label>
   </div>
 
   <div class="name-row">
     <p class="name-lbl">Nom de la carte</p>
-    <input class="name-inp" type="text" id="card-name" placeholder="Charizard, Pikachu…">
+    <input class="name-inp" type="text" id="card-name" placeholder="Détecté auto, ou tape ici…">
   </div>
 
   <button class="btn-block" id="btn-go" onclick="startAnalysis()" disabled style="opacity:.3">Analyser →</button>
@@ -1065,19 +1095,31 @@ function handleGradeBtn() {
 }
 
 // ── Upload ─────────────────────────────────────────────────────
-let uploadedFile = null;
-function handleFile(e) {
+let frontFile = null;
+let backFile  = null;
+
+function handleFile(e, side) {
   const f = e.target.files[0]; if (!f) return;
-  uploadedFile = f;
-  const r = new FileReader();
-  r.onload = ev => {
-    document.getElementById('preview-img').src = ev.target.result;
-    document.getElementById('preview-zone').style.display = 'block';
-    document.getElementById('upload-zone').style.display = 'none';
-    const b = document.getElementById('btn-go');
-    b.disabled = false; b.style.opacity = '1';
-  };
-  r.readAsDataURL(f);
+  const reader = new FileReader();
+
+  if (side === 'front') {
+    frontFile = f;
+    reader.onload = ev => {
+      document.getElementById('preview-img').src = ev.target.result;
+      document.getElementById('preview-zone').style.display = 'block';
+      document.getElementById('upload-zone').style.display = 'none';
+      const b = document.getElementById('btn-go');
+      b.disabled = false; b.style.opacity = '1';
+    };
+  } else {
+    backFile = f;
+    reader.onload = ev => {
+      document.getElementById('preview-img-back').src = ev.target.result;
+      document.getElementById('preview-zone-back').style.display = 'block';
+      document.getElementById('upload-zone-back').style.display = 'none';
+    };
+  }
+  reader.readAsDataURL(f);
 }
 
 // ── Helpers ────────────────────────────────────────────────────
@@ -1116,7 +1158,9 @@ async function startAnalysis() {
 
   go('s-analyzing'); animSteps();
   try {
-    const fd = new FormData(); fd.append('image', uploadedFile);
+    const fd = new FormData();
+    fd.append('front', frontFile);
+    if (backFile) fd.append('back', backFile);
     const res = await fetch('/api/grade', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + currentSession.access_token },
@@ -1162,10 +1206,10 @@ function showResult(r) {
     document.getElementById('card-name').value = detectedName;
   }
 
-  if (uploadedFile) {
+  if (frontFile) {
     const rd = new FileReader();
     rd.onload = ev => { const img = document.getElementById('res-img'); img.src = ev.target.result; img.style.display='block'; };
-    rd.readAsDataURL(uploadedFile);
+    rd.readAsDataURL(frontFile);
   }
 
   const col = colFor(g), badge = badgeFor(g);
@@ -1230,12 +1274,16 @@ function showResult(r) {
 
 // ── Reset ──────────────────────────────────────────────────────
 function resetAndGo() {
-  uploadedFile = null;
+  frontFile = null; backFile = null;
   document.getElementById('preview-zone').style.display = 'none';
   document.getElementById('upload-zone').style.display = 'block';
+  document.getElementById('preview-zone-back').style.display = 'none';
+  document.getElementById('upload-zone-back').style.display = 'block';
   document.getElementById('card-name').value = '';
   const b = document.getElementById('btn-go'); b.disabled=true; b.style.opacity='0.3';
   document.getElementById('sc-ring').style.strokeDashoffset = '239';
+  document.getElementById('card-detected-block').style.display = 'none';
+  document.getElementById('price-block').style.display = 'none';
   go('s-home');
 }
 
