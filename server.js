@@ -70,24 +70,43 @@ app.get("/api/grades", requireAuth, async (req, res) => {
 });
 
 // ── Grading ──────────────────────────────────────────────────────
-const GRADING_PROMPT = `Tu es un expert en grading de cartes Pokémon, formé aux standards PSA officiels. Analyse cette carte selon les 4 critères PSA.
+const GRADING_PROMPT = `Tu es un expert en grading et identification de cartes Pokémon, formé aux standards PSA officiels.
 
-Pour chaque critère, donne une note de 1 à 10 (avec des demi-points comme 7.5, 8.5, etc.) :
+ÉTAPE 1 — IDENTIFICATION : Identifie précisément la carte.
+ÉTAPE 2 — GRADING : Analyse selon les 4 critères PSA (notes de 1 à 10 avec demi-points).
+ÉTAPE 3 — ESTIMATION DE PRIX : Estime la valeur marchande selon le grade PSA obtenu.
 
-1. CENTERING : La carte est-elle bien centrée ? Mesure visuellement le ratio des bords gauche/droit et haut/bas. Un ratio 50/50 = 10, un ratio 60/40 = 8, un ratio 65/35 = 6.
-2. CORNERS : État des 4 coins. Coins parfaitement nets = 10, légère usure = 8, usure visible = 6, coins abîmés = 4.
-3. EDGES : État des 4 bords. Bords parfaits = 10, légères marques = 8, effilochage visible = 6, bords endommagés = 4.
-4. SURFACE : État de la surface recto/verso. Aucune rayure = 10, légères marques = 8, rayures visibles = 6, dommages importants = 4.
+Critères de grading :
+1. CENTERING : Ratio des bords. 50/50 = 10, 60/40 = 8, 65/35 = 6.
+2. CORNERS : Coins parfaits = 10, légère usure = 8, usure visible = 6, abîmés = 4.
+3. EDGES : Bords parfaits = 10, légères marques = 8, effilochage = 6, endommagés = 4.
+4. SURFACE : Aucune rayure = 10, légères marques = 8, rayures visibles = 6, dommages = 4.
 
-Réponds UNIQUEMENT avec ce JSON (rien d'autre) :
+Pour l'estimation de prix, base-toi sur les prix réels du marché PSA (eBay, TCGPlayer) pour cette carte spécifique à ce grade. Donne une fourchette réaliste en euros.
+
+Réponds UNIQUEMENT avec ce JSON (rien d'autre, pas de markdown) :
 {
+  "card": {
+    "name": "Charizard",
+    "set": "Base Set",
+    "number": "4/102",
+    "year": "1999",
+    "rarity": "Holographic Rare",
+    "language": "Anglais"
+  },
   "centering": { "score": 8.5, "observation": "...", "confidence": "élevée" },
   "corners":   { "score": 7.5, "observation": "...", "confidence": "moyenne" },
   "edges":     { "score": 8.0, "observation": "...", "confidence": "élevée" },
   "surface":   { "score": 9.0, "observation": "...", "confidence": "élevée" },
   "global":    8.4,
   "psa_label": "PSA 8 — Near Mint / Mint",
-  "psa_equiv": "Très bon état, légères marques d'usure non significatives."
+  "psa_equiv": "Très bon état, légères marques d'usure non significatives.",
+  "price": {
+    "low": 150,
+    "high": 250,
+    "currency": "EUR",
+    "note": "Estimation basée sur les ventes récentes PSA 8 sur eBay"
+  }
 }
 
 Pour psa_label, utilise exactement :
@@ -98,7 +117,8 @@ Pour psa_label, utilise exactement :
 - 5.5-6  → "PSA 6 — Excellent / Mint"
 - moins  → "PSA 5 — Excellent"
 
-Le global est la moyenne des 4 scores, arrondie au demi-point.`;
+Le global est la moyenne des 4 scores, arrondie au demi-point.
+Si tu ne peux pas identifier la carte avec certitude, mets "Inconnue" pour name et 0 pour les prix.`;
 
 app.post("/api/grade", requireAuth, upload.single("image"), async (req, res) => {
   try {
@@ -153,10 +173,20 @@ app.post("/api/grade", requireAuth, upload.single("image"), async (req, res) => 
     fs.unlinkSync(req.file.path);
 
     const text = response.content[0].text.trim();
+    // Extraire le JSON même si Claude ajoute du texte autour
     const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error("Réponse IA invalide");
+    if (!jsonMatch) {
+      console.error("Réponse brute:", text.slice(0, 300));
+      throw new Error("Réponse IA invalide — réessaie");
+    }
 
-    const result = JSON.parse(jsonMatch[0]);
+    let result;
+    try {
+      result = JSON.parse(jsonMatch[0]);
+    } catch (parseErr) {
+      console.error("JSON invalide:", jsonMatch[0].slice(0, 300));
+      throw new Error("Réponse IA mal formée — réessaie");
+    }
 
     // Sauvegarder + incrémenter
     const newCount = profile.grades_this_month + 1;
