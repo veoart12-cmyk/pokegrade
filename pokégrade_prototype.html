@@ -1899,7 +1899,7 @@ async function loadCollection() {
       const g = grades[i];
       await new Promise(r => setTimeout(r, 0)); // yield to browser
       if (!_slabCache[g.id]) {
-        _slabCache[g.id] = generateSlabCanvas(g);
+        _slabCache[g.id] = await generateSlabCanvas(g);
       }
       const thumb = document.getElementById('slab-th-' + i);
       if (thumb) thumb.innerHTML = `<img src="${_slabCache[g.id]}" alt="${g.result?.card?.name || 'Carte'}">`;
@@ -2678,10 +2678,6 @@ async function generateSlabCanvas(gradeData) {
             dx = cwx; dy = cwy + (cwh - dh) / 2;
           }
           ctx.drawImage(img, dx, dy, dw, dh);
-          // Subtle vignette overlay
-          const vig = ctx.createRadialGradient(cwx+cww/2,cwy+cwh/2,cwh*.2,cwx+cww/2,cwy+cwh/2,cwh*.75);
-          vig.addColorStop(0,'rgba(0,0,0,0)'); vig.addColorStop(1,'rgba(0,0,0,0.35)');
-          ctx.fillStyle=vig; ctx.fillRect(cwx,cwy,cww,cwh);
           resolve();
         };
         img.onerror = () => { drawPlaceholder(); resolve(); };

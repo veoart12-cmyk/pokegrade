@@ -37,6 +37,37 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const FREE_GRADES_PER_MONTH = 3;
 
+// ── Pokémon TCG API — image officielle ──────────────────────────
+const TCG_SET_MAP = {
+  'SV1': 'sv1', 'SV2': 'sv2', 'SV3': 'sv3', 'SV3a': 'sv3pt5',
+  'SV4': 'sv4', 'SV4a': 'sv4pt5', 'SV5': 'sv5', 'SV5K': 'sv5',
+  'SV6': 'sv6', 'SV7': 'sv7', 'SV8': 'sv8', 'SV8a': 'sv8pt5',
+  // Older sets
+  'Base Set': 'base1', 'Jungle': 'jungle', 'Fossil': 'fossil',
+  'XY': 'xy1', 'Sun & Moon': 'sm1', 'Sword & Shield': 'swsh1',
+};
+
+async function fetchOfficialCardImage(cardName, cardSet, cardNumber) {
+  if (!cardName || cardName === 'Inconnue') return null;
+  try {
+    const tcgSetId = TCG_SET_MAP[cardSet];
+    const numOnly = cardNumber ? cardNumber.split('/')[0].trim() : null;
+    let q = `name:"${cardName}"`;
+    if (tcgSetId) q += ` set.id:${tcgSetId}`;
+    if (numOnly) q += ` number:${numOnly}`;
+    const url = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(q)}&pageSize=1&select=images`;
+    const headers = {};
+    if (process.env.TCG_API_KEY) headers['X-Api-Key'] = process.env.TCG_API_KEY;
+    const resp = await fetch(url, { headers, signal: AbortSignal.timeout(5000) });
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    return data.data?.[0]?.images?.large || data.data?.[0]?.images?.small || null;
+  } catch (e) {
+    console.error('TCG API error:', e.message);
+    return null;
+  }
+}
+
 // ── Auth middleware ──────────────────────────────────────────────
 async function requireAuth(req, res, next) {
   const auth = req.headers.authorization;
@@ -249,25 +280,6 @@ app.post("/api/grade", requireAuth, upload.fields([{ name: "front", maxCount: 1 
       throw new Error("Réponse IA invalide — réessaie");
     }
 
-    // Upload de la photo recto dans Supabase Storage (avant cleanup)
-    let imageUrl = null;
-    try {
-      const imgBuffer = fs.readFileSync(frontFile.path);
-      const ext = (frontFile.mimetype || "").includes("png") ? "png" : "jpg";
-      const fileName = `${req.user.id}/${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage
-        .from("card-images")
-        .upload(fileName, imgBuffer, { contentType: frontFile.mimetype || "image/jpeg" });
-      if (!upErr) {
-        const { data: urlData } = supabase.storage.from("card-images").getPublicUrl(fileName);
-        imageUrl = urlData?.publicUrl || null;
-      } else {
-        console.error("Storage upload error:", upErr.message);
-      }
-    } catch (upEx) {
-      console.error("Storage exception:", upEx.message);
-    }
-
     cleanup();
 
     let result;
@@ -277,6 +289,15 @@ app.post("/api/grade", requireAuth, upload.fields([{ name: "front", maxCount: 1 
       console.error("JSON invalide:", jsonMatch[0].slice(0, 300));
       throw new Error("Réponse IA mal formée — réessaie");
     }
+
+    // Récupérer l'image officielle depuis l'API Pokémon TCG
+    const imageUrl = await fetchOfficialCardImage(
+      result.card?.name,
+      result.card?.set,
+      result.card?.number
+    );
+    if (imageUrl) console.log(`TCG image found: ${result.card?.name} → ${imageUrl}`);
+    else console.log(`No TCG image for: ${result.card?.name} / ${result.card?.set}`);
 
     // Sauvegarder + incrémenter
     const newCount = profile.grades_this_month + 1;
