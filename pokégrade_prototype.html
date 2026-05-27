@@ -696,14 +696,20 @@ body {
 }
 .coll-card:active { transform: scale(0.97); }
 .coll-card-img {
-  width: 100%; aspect-ratio: 3/4;
-  background: var(--g100); display: flex;
-  align-items: center; justify-content: center;
-  font-size: 32px; font-weight: 900;
+  width: 100%; aspect-ratio: 5/7;
+  background: var(--g100);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; position: relative;
 }
-.coll-card-body { padding: 10px 12px 12px; }
+.coll-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.2s; }
+.coll-card:active .coll-card-img img { transform: scale(1.03); }
+.slab-loading {
+  width: 24px; height: 24px; border-radius: 50%;
+  border: 2.5px solid var(--g200); border-top-color: var(--red);
+  animation: spin 0.9s linear infinite;
+}
+.coll-card-body { padding: 9px 12px 11px; }
 .coll-card-name { font-size: 13px; font-weight: 800; color: var(--black); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.coll-card-set  { font-size: 11px; color: var(--g500); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .coll-card-score {
   display: flex; align-items: center; justify-content: space-between;
   margin-top: 8px;
@@ -713,6 +719,31 @@ body {
   font-size: 10px; font-weight: 800; padding: 2px 8px;
   border-radius: 99px;
 }
+/* ── Slab modal ── */
+.slab-modal {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.92);
+  z-index: 9999;
+  display: none;
+  align-items: center; justify-content: center;
+  padding: 20px;
+  flex-direction: column;
+  gap: 16px;
+}
+.slab-modal.open { display: flex; }
+.slab-modal-img {
+  max-width: 100%; max-height: 82vh;
+  border-radius: 16px;
+  object-fit: contain;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+}
+.slab-modal-close {
+  color: rgba(255,255,255,0.6); font-size: 14px; font-weight: 700;
+  background: none; border: 1.5px solid rgba(255,255,255,0.2);
+  border-radius: 99px; padding: 8px 22px; cursor: pointer;
+  flex-shrink: 0;
+}
+
 .coll-empty {
   text-align: center; padding: 60px 32px;
   grid-column: 1 / -1;
@@ -1530,6 +1561,12 @@ body {
   </div>
 </div>
 
+<!-- SLAB MODAL -->
+<div class="slab-modal" id="slab-modal" onclick="handleModalClick(event)">
+  <img class="slab-modal-img" id="slab-modal-img" src="" alt="Slab">
+  <button class="slab-modal-close" onclick="closeSlabModal()">Fermer</button>
+</div>
+
 <!-- ROI CALCULATOR -->
 <div class="screen" id="s-roi">
   <div class="nav">
@@ -1834,21 +1871,21 @@ async function loadCollection() {
       return;
     }
 
-    grid.innerHTML = grades.map(g => {
+    // Render grid with loading spinners first
+    grid.innerHTML = grades.map((g, idx) => {
       const r = g.result || {};
       const score = r.global || 0;
       const col   = colFor(score);
       const badge = badgeFor(score);
       const name  = r.card?.name && r.card.name !== 'Inconnue' ? r.card.name : (r.psa_label ? r.psa_label.split('—')[0].trim() : 'Carte');
-      const set   = [r.card?.set, r.card?.number].filter(Boolean).join(' · ') || (r.card?.year || '');
       const psaShort = r.psa_label ? r.psa_label.split('—')[0].trim() : 'PSA ?';
-      const emoji = score >= 9 ? '💎' : score >= 7.5 ? '⭐' : score >= 6 ? '✅' : '📋';
       return `
-        <div class="coll-card">
-          <div class="coll-card-img">${emoji}</div>
+        <div class="coll-card" onclick="openSlabModal('${g.id}')">
+          <div class="coll-card-img" id="slab-th-${idx}">
+            <div class="slab-loading"></div>
+          </div>
           <div class="coll-card-body">
             <p class="coll-card-name">${name}</p>
-            <p class="coll-card-set">${set || '—'}</p>
             <div class="coll-card-score">
               <span class="coll-score-n" style="color:${col}">${score.toFixed(1)}</span>
               <span class="coll-psa-tag" style="background:${badge.bg};color:${badge.c}">${psaShort}</span>
@@ -1856,6 +1893,17 @@ async function loadCollection() {
           </div>
         </div>`;
     }).join('');
+
+    // Generate slab images progressively (yield between each to keep UI responsive)
+    for (let i = 0; i < grades.length; i++) {
+      const g = grades[i];
+      await new Promise(r => setTimeout(r, 0)); // yield to browser
+      if (!_slabCache[g.id]) {
+        _slabCache[g.id] = generateSlabCanvas(g);
+      }
+      const thumb = document.getElementById('slab-th-' + i);
+      if (thumb) thumb.innerHTML = `<img src="${_slabCache[g.id]}" alt="${g.result?.card?.name || 'Carte'}">`;
+    }
   } catch (err) {
     grid.innerHTML = '<div class="coll-empty"><p class="coll-empty-t">Erreur de chargement</p><p class="coll-empty-s">Vérifie ta connexion et réessaie</p></div>';
   }
@@ -2505,6 +2553,201 @@ async function loadAccount() {
   }).join('');
   // Refresh public profile UI with latest profile data
   updatePublicProfileUI();
+}
+
+// ── Slab canvas for collection ─────────────────────────────────
+const _slabCache = {}; // gradeId → dataUrl
+
+function generateSlabCanvas(gradeData) {
+  const r         = gradeData.result || {};
+  const score     = r.global || 0;
+  const cardName  = (r.card?.name && r.card.name !== 'Inconnue') ? r.card.name : 'Carte Pokémon';
+  const cardInfo  = [r.card?.set, r.card?.number].filter(Boolean).join(' · ');
+  const rarity    = r.card?.rarity || '';
+
+  const psaNum = score >= 9.5 ? 10 : score >= 8.5 ? 9 : score >= 7.5 ? 8 : score >= 6.5 ? 7 : score >= 5.5 ? 6 : 5;
+  const tiers = {
+    10: { bg:'#140E00', border:'#C9A227', accent:'#F5D97F', dim:'#8B6B14', label:'GEM-MINT' },
+     9: { bg:'#040E1E', border:'#1E88E5', accent:'#64B5F6', dim:'#0D4D88', label:'MINT'     },
+     8: { bg:'#03110A', border:'#2E7D32', accent:'#66BB6A', dim:'#155218', label:'NM-MT'    },
+     7: { bg:'#0E051C', border:'#7B1FA2', accent:'#CE93D8', dim:'#4A1169', label:'NEAR MINT'},
+     6: { bg:'#160600', border:'#BF360C', accent:'#FF8A65', dim:'#7A2208', label:'EX-MT'   },
+     5: { bg:'#0A0A0A', border:'#546E7A', accent:'#90A4AE', dim:'#2E4049', label:'EXCELLENT'},
+  };
+  const t = tiers[psaNum] || tiers[5];
+
+  const W = 600, H = 840;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // ── Background ──
+  const bgG = ctx.createLinearGradient(0,0,W,H);
+  bgG.addColorStop(0,'#E8E6E3'); bgG.addColorStop(1,'#D0CEC9');
+  ctx.fillStyle = bgG; ctx.fillRect(0,0,W,H);
+  const vig = ctx.createRadialGradient(W/2,H/2,H*.15,W/2,H/2,H*.85);
+  vig.addColorStop(0,'rgba(0,0,0,0)'); vig.addColorStop(1,'rgba(0,0,0,0.22)');
+  ctx.fillStyle = vig; ctx.fillRect(0,0,W,H);
+
+  // ── Slab shadow ──
+  ctx.save();
+  ctx.shadowColor='rgba(0,0,0,0.3)'; ctx.shadowBlur=28; ctx.shadowOffsetY=12;
+  ctx.fillStyle='#C8CCD2'; rrect(ctx,20,18,560,804,22); ctx.fill();
+  ctx.restore();
+
+  // ── Slab body 4 layers ──
+  ctx.fillStyle='#A8ADB5'; rrect(ctx,20,18,560,804,22); ctx.fill();
+  ctx.fillStyle='#CDD0D6'; rrect(ctx,22,20,556,800,21); ctx.fill();
+  ctx.fillStyle='#DEE1E6'; rrect(ctx,24,22,552,796,20); ctx.fill();
+  ctx.fillStyle='#EDF0F3'; rrect(ctx,26,24,548,792,19); ctx.fill();
+  const shine = ctx.createLinearGradient(0,18,0,50);
+  shine.addColorStop(0,'rgba(255,255,255,0.72)'); shine.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=shine; rrect(ctx,20,18,560,42,22); ctx.fill();
+
+  // ── Card window ──
+  const cwx=38, cwy=38, cww=524, cwh=456;
+  ctx.fillStyle='#C0C3C8'; rrect(ctx,cwx-2,cwy-2,cww+4,cwh+4,14); ctx.fill();
+  ctx.fillStyle='#D8DBE0'; rrect(ctx,cwx-1,cwy-1,cww+2,cwh+2,13); ctx.fill();
+
+  // ── Card art placeholder ──
+  ctx.save();
+  rrect(ctx,cwx,cwy,cww,cwh,12); ctx.clip();
+
+  // Tier gradient bg
+  const artG = ctx.createRadialGradient(cwx+cww/2,cwy+cwh/2,0,cwx+cww/2,cwy+cwh/2,cwh*.8);
+  artG.addColorStop(0, t.bg+'EE');
+  artG.addColorStop(0.6, t.bg+'BB');
+  artG.addColorStop(1, '#050505');
+  ctx.fillStyle=artG; ctx.fillRect(cwx,cwy,cww,cwh);
+
+  // Radial accent glow
+  const glow = ctx.createRadialGradient(cwx+cww/2,cwy+cwh/2,0,cwx+cww/2,cwy+cwh/2,cwh*.55);
+  glow.addColorStop(0, t.border+'44'); glow.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=glow; ctx.fillRect(cwx,cwy,cww,cwh);
+
+  // Big Pokéball watermark
+  const pbR=110, pbX=cwx+cww/2, pbY=cwy+cwh/2+10;
+  ctx.globalAlpha=0.13;
+  ctx.beginPath(); ctx.arc(pbX,pbY,pbR,Math.PI,0); ctx.lineTo(pbX-pbR,pbY); ctx.closePath();
+  ctx.fillStyle='#CC0000'; ctx.fill();
+  ctx.beginPath(); ctx.arc(pbX,pbY,pbR,0,Math.PI); ctx.lineTo(pbX+pbR,pbY); ctx.closePath();
+  ctx.fillStyle='#FFFFFF'; ctx.fill();
+  ctx.strokeStyle='#FFFFFF'; ctx.lineWidth=7;
+  ctx.beginPath(); ctx.moveTo(pbX-pbR,pbY); ctx.lineTo(pbX+pbR,pbY); ctx.stroke();
+  ctx.beginPath(); ctx.arc(pbX,pbY,26,0,Math.PI*2); ctx.fillStyle='#111'; ctx.fill();
+  ctx.beginPath(); ctx.arc(pbX,pbY,pbR,0,Math.PI*2); ctx.stroke();
+  ctx.globalAlpha=1;
+
+  // Card name centered
+  const fontSize = cardName.length > 16 ? 30 : 38;
+  ctx.font = `bold ${fontSize}px Arial Black, Arial, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 16;
+  ctx.fillStyle = t.accent;
+  const cn = cardName.length > 18 ? cardName.slice(0,16)+'…' : cardName;
+  ctx.fillText(cn.toUpperCase(), cwx+cww/2, cwy+cwh/2+16);
+
+  // Stars for high grades
+  if (psaNum >= 9) {
+    ctx.shadowBlur=0; ctx.font='18px serif'; ctx.globalAlpha=0.6;
+    const stars = psaNum === 10 ? ['⭐','⭐','⭐'] : ['⭐','⭐'];
+    const sw = stars.length * 26; let sx = cwx+cww/2 - sw/2;
+    stars.forEach(s => { ctx.fillText(s, sx, cwy+cwh/2+50); sx+=26; });
+    ctx.globalAlpha=1;
+  }
+  ctx.restore();
+
+  // Window border
+  ctx.strokeStyle='rgba(0,0,0,0.08)'; ctx.lineWidth=1;
+  rrect(ctx,cwx,cwy,cww,cwh,12); ctx.stroke();
+
+  // ── Label ──
+  const lx=38, ly=506, lw=524, lh=304;
+  ctx.fillStyle='#050C1A'; rrect(ctx,lx,ly,lw,lh,12); ctx.fill();
+
+  // Holo strip
+  const holo = ctx.createLinearGradient(lx,0,lx+lw,0);
+  ['#CC0000','#FF5500','#FFD700','#00E676','#00B0FF','#AA00FF','#FF4081','#CC0000']
+    .forEach((c,i,a) => holo.addColorStop(i/(a.length-1),c));
+  ctx.fillStyle=holo; rrect(ctx,lx,ly,lw,6,12); ctx.fill();
+
+  // Grade box
+  const gbx=lx+lw-126, gby=ly+14, gbw=112, gbh=lh-28;
+  ctx.fillStyle=t.bg; rrect(ctx,gbx,gby,gbw,gbh,8); ctx.fill();
+  ctx.strokeStyle=t.border; ctx.lineWidth=1.5; rrect(ctx,gbx,gby,gbw,gbh,8); ctx.stroke();
+  const glG=ctx.createRadialGradient(gbx+gbw/2,gby+gbh/2,10,gbx+gbw/2,gby+gbh/2,gbh*.7);
+  glG.addColorStop(0,t.border+'22'); glG.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=glG; rrect(ctx,gbx,gby,gbw,gbh,8); ctx.fill();
+  ctx.fillStyle=t.dim; ctx.font='bold 9px Arial'; ctx.textAlign='center';
+  ctx.fillText('PokeGrade',gbx+gbw/2,gby+20);
+  ctx.strokeStyle=t.border+'66'; ctx.lineWidth=.5;
+  ctx.beginPath(); ctx.moveTo(gbx+14,gby+26); ctx.lineTo(gbx+gbw-14,gby+26); ctx.stroke();
+  ctx.fillStyle=t.accent;
+  ctx.font=`bold ${psaNum===10?64:70}px Arial Black, Arial, sans-serif`;
+  ctx.fillText(String(psaNum),gbx+gbw/2,gby+gbh/2+24);
+  ctx.strokeStyle=t.border+'66'; ctx.lineWidth=.5;
+  ctx.beginPath(); ctx.moveTo(gbx+14,gby+gbh-46); ctx.lineTo(gbx+gbw-14,gby+gbh-46); ctx.stroke();
+  ctx.fillStyle=t.border; ctx.font='bold 9px Arial';
+  ctx.fillText(t.label,gbx+gbw/2,gby+gbh-30);
+  ctx.fillStyle='rgba(255,255,255,0.28)'; ctx.font='10px Arial';
+  ctx.fillText(score.toFixed(1)+' / 10',gbx+gbw/2,gby+gbh-14);
+
+  // Pokéball logo
+  const p2x=lx+28,p2y=ly+32,p2r=12;
+  ctx.save();
+  ctx.beginPath(); ctx.arc(p2x,p2y,p2r,Math.PI,0); ctx.lineTo(p2x-p2r,p2y); ctx.closePath();
+  ctx.fillStyle='#CC0000'; ctx.fill();
+  ctx.beginPath(); ctx.arc(p2x,p2y,p2r,0,Math.PI); ctx.lineTo(p2x+p2r,p2y); ctx.closePath();
+  ctx.fillStyle='#FFF'; ctx.fill();
+  ctx.strokeStyle='#1A1A1A'; ctx.lineWidth=1.8;
+  ctx.beginPath(); ctx.moveTo(p2x-p2r,p2y); ctx.lineTo(p2x+p2r,p2y); ctx.stroke();
+  ctx.beginPath(); ctx.arc(p2x,p2y,4,0,Math.PI*2); ctx.fillStyle='#1A1A1A'; ctx.fill();
+  ctx.beginPath(); ctx.arc(p2x,p2y,2.5,0,Math.PI*2); ctx.fillStyle='#FFF'; ctx.fill();
+  ctx.restore();
+
+  // Brand
+  ctx.fillStyle='#FFF'; ctx.font='bold 17px Arial'; ctx.textAlign='left';
+  ctx.fillText('PokeGrade',lx+48,ly+27);
+  ctx.fillStyle='rgba(255,255,255,0.32)'; ctx.font='9px Arial';
+  ctx.fillText('AI CARD GRADING  ·  pokegrade.it.com',lx+48,ly+41);
+  ctx.strokeStyle='rgba(255,255,255,0.07)'; ctx.lineWidth=.5;
+  ctx.beginPath(); ctx.moveTo(lx+14,ly+54); ctx.lineTo(gbx-12,ly+54); ctx.stroke();
+
+  // Card info
+  const ix=lx+18, iy=ly+68;
+  ctx.fillStyle='#FFF'; ctx.font='bold 19px Arial'; ctx.textAlign='left';
+  ctx.fillText((cardName.length>20?cardName.slice(0,18)+'…':cardName).toUpperCase(),ix,iy);
+  if (cardInfo) {
+    ctx.fillStyle='rgba(255,255,255,0.40)'; ctx.font='11px Arial';
+    ctx.fillText(cardInfo.length>38?cardInfo.slice(0,36)+'…':cardInfo,ix,iy+20);
+  }
+  if (rarity) {
+    ctx.fillStyle=t.accent; ctx.font='bold 10px Arial';
+    ctx.fillText(rarity.toUpperCase(),ix,iy+40);
+  }
+
+  // Cert
+  ctx.strokeStyle='rgba(255,255,255,0.05)'; ctx.lineWidth=.5;
+  ctx.beginPath(); ctx.moveTo(lx+14,ly+lh-36); ctx.lineTo(gbx-12,ly+lh-36); ctx.stroke();
+  const certId = gradeData.id ? gradeData.id.slice(-7).toUpperCase() : Math.random().toString(36).slice(2,9).toUpperCase();
+  ctx.fillStyle='rgba(255,255,255,0.18)'; ctx.font='9px Arial'; ctx.textAlign='left';
+  ctx.fillText('CERT# PG-'+certId,ix,ly+lh-18);
+
+  return canvas.toDataURL('image/jpeg', 0.88);
+}
+
+// ── Slab modal ─────────────────────────────────────────────────
+function openSlabModal(gradeId) {
+  const url = _slabCache[gradeId];
+  if (!url) return;
+  document.getElementById('slab-modal-img').src = url;
+  document.getElementById('slab-modal').classList.add('open');
+}
+function closeSlabModal() {
+  document.getElementById('slab-modal').classList.remove('open');
+}
+function handleModalClick(e) {
+  if (e.target === document.getElementById('slab-modal')) closeSlabModal();
 }
 
 // ── ROI Calculator ─────────────────────────────────────────────
