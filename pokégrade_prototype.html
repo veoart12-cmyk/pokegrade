@@ -772,6 +772,35 @@ body {
   font-size: 10px; font-weight: 800; padding: 2px 8px;
   border-radius: 99px;
 }
+/* ── Language modal ── */
+.lang-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200;
+}
+.lang-overlay.open { display: block; }
+.lang-sheet {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%) translateY(100%);
+  width: 100%; max-width: 390px;
+  background: var(--white); border-radius: 20px 20px 0 0;
+  padding: 12px 0 calc(24px + env(safe-area-inset-bottom,0));
+  z-index: 201; transition: transform .3s cubic-bezier(.32,1,.32,1);
+}
+.lang-sheet.open { transform: translateX(-50%) translateY(0); }
+.lang-handle {
+  width: 36px; height: 4px; background: var(--g200); border-radius: 2px;
+  margin: 0 auto 16px;
+}
+.lang-title { font-size: 15px; font-weight: 800; color: var(--black); text-align: center; margin: 0 0 10px; }
+.lang-list { display: flex; flex-direction: column; }
+.lang-opt {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 24px; background: none; border: none; cursor: pointer;
+  text-align: left; transition: background .15s;
+}
+.lang-opt:active { background: var(--g50); }
+.lang-flag  { font-size: 22px; flex-shrink: 0; }
+.lang-name  { font-size: 16px; font-weight: 600; color: var(--black); flex: 1; }
+.lang-check { font-size: 16px; font-weight: 800; color: var(--red); min-width: 16px; }
+
 /* ── Slab modal ── */
 .slab-modal {
   position: fixed; inset: 0;
@@ -1044,6 +1073,21 @@ body {
 <body>
 <div class="phone">
 
+<!-- LANGUAGE MODAL -->
+<div class="lang-overlay" id="lang-overlay" onclick="closeLangModal()"></div>
+<div class="lang-sheet" id="lang-sheet">
+  <div class="lang-handle"></div>
+  <p class="lang-title" data-i18n="lang.title">Langue</p>
+  <div class="lang-list">
+    <button class="lang-opt" onclick="setLang('fr')"><span class="lang-flag">🇫🇷</span><span class="lang-name">Français</span><span class="lang-check" id="lchk-fr">✓</span></button>
+    <button class="lang-opt" onclick="setLang('en')"><span class="lang-flag">🇬🇧</span><span class="lang-name">English</span><span class="lang-check" id="lchk-en"></span></button>
+    <button class="lang-opt" onclick="setLang('es')"><span class="lang-flag">🇪🇸</span><span class="lang-name">Español</span><span class="lang-check" id="lchk-es"></span></button>
+    <button class="lang-opt" onclick="setLang('it')"><span class="lang-flag">🇮🇹</span><span class="lang-name">Italiano</span><span class="lang-check" id="lchk-it"></span></button>
+    <button class="lang-opt" onclick="setLang('de')"><span class="lang-flag">🇩🇪</span><span class="lang-name">Deutsch</span><span class="lang-check" id="lchk-de"></span></button>
+    <button class="lang-opt" onclick="setLang('nl')"><span class="lang-flag">🇳🇱</span><span class="lang-name">Nederlands</span><span class="lang-check" id="lchk-nl"></span></button>
+  </div>
+</div>
+
 <!-- COOKIE BANNER -->
 <div id="cookie-banner">
   <p class="cookie-t">🍪 Cookies</p>
@@ -1069,6 +1113,7 @@ body {
       <span class="logo-name">PokeGrade</span>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
+      <button class="theme-btn" id="lang-btn" onclick="openLangModal()" aria-label="Langue" style="font-size:16px;line-height:1">🌐</button>
       <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" aria-label="Mode sombre">
         <svg id="theme-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
           <path d="M13.5 9.5A5.5 5.5 0 016.5 2.5a5.5 5.5 0 100 11 5.5 5.5 0 007-4z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
@@ -1084,8 +1129,8 @@ body {
   </div>
 
   <div class="home-copy">
-    <h1 class="home-h1">Grade tes<br>cartes par <em>IA</em>.</h1>
-    <p class="home-p">Note PSA en 10 secondes.<br>Sans envoyer ta carte.</p>
+    <h1 class="home-h1" data-i18n-html="home.h1">Grade tes<br>cartes par <em>IA</em>.</h1>
+    <p class="home-p" data-i18n-html="home.p">Note PSA en 10 secondes.<br>Sans envoyer ta carte.</p>
     <div class="grade-pill" id="home-pill" style="display:none">
       <div class="pill-dot"></div>
       <span id="home-pill-text"></span>
@@ -1107,14 +1152,14 @@ body {
   </div>
 
   <div class="stats-strip">
-    <div class="stat-item"><div class="stat-n">±0.5</div><div class="stat-l">Précision</div></div>
-    <div class="stat-item"><div class="stat-n">4</div><div class="stat-l">Critères PSA</div></div>
-    <div class="stat-item"><div class="stat-n">10s</div><div class="stat-l">Résultat</div></div>
+    <div class="stat-item"><div class="stat-n">±0.5</div><div class="stat-l" data-i18n="home.stat.precision">Précision</div></div>
+    <div class="stat-item"><div class="stat-n">4</div><div class="stat-l" data-i18n="home.stat.criteria">Critères PSA</div></div>
+    <div class="stat-item"><div class="stat-n">10s</div><div class="stat-l" data-i18n="home.stat.time">Résultat</div></div>
   </div>
 
   <div class="home-cta">
-    <button class="btn-red" onclick="handleGradeBtn()">Grader une carte →</button>
-    <button class="btn-outline" onclick="openROI('s-home')" style="margin-top:10px">📊 Calculateur ROI grading</button>
+    <button class="btn-red" onclick="handleGradeBtn()" data-i18n="home.cta">Grader une carte →</button>
+    <button class="btn-outline" onclick="openROI('s-home')" style="margin-top:10px" data-i18n="home.roi">📊 Calculateur ROI grading</button>
     <p class="home-note" id="home-note">3 grades gratuits · Sans carte bancaire</p>
   </div>
 </div>
@@ -1123,8 +1168,8 @@ body {
 <div class="screen" id="s-guide">
   <div class="nav">
     <span class="nav-back" onclick="go('s-home')">← Retour</span>
-    <span class="nav-title">Prépare ta photo</span>
-    <span class="nav-skip" onclick="go('s-upload')">Passer</span>
+    <span class="nav-title" data-i18n="guide.title">Prépare ta photo</span>
+    <span class="nav-skip" onclick="go('s-upload')" data-i18n="guide.skip">Passer</span>
   </div>
 
   <div class="guide-visual">
@@ -1168,14 +1213,14 @@ body {
     </div>
   </div>
 
-  <button class="btn-block" onclick="go('s-upload')">C'est parti →</button>
+  <button class="btn-block" onclick="go('s-upload')" data-i18n="guide.start">C'est parti →</button>
 </div>
 
 <!-- UPLOAD -->
 <div class="screen" id="s-upload">
   <div class="nav">
     <span class="nav-back" onclick="go('s-guide')">← Retour</span>
-    <span class="nav-title">Ta carte</span>
+    <span class="nav-title" data-i18n="upload.title">Ta carte</span>
     <span class="nav-skip"></span>
   </div>
 
@@ -1192,8 +1237,8 @@ body {
         <path d="M3 22h20" stroke="#CC0000" stroke-width="2" stroke-linecap="round"/>
       </svg>
     </div>
-    <p class="upload-t">Face avant</p>
-    <p class="upload-s">Obligatoire</p>
+    <p class="upload-t" data-i18n="upload.front.t">Face avant</p>
+    <p class="upload-s" data-i18n="upload.front.s">Obligatoire</p>
   </div>
 
   <div class="preview-zone" id="preview-zone">
@@ -1217,8 +1262,8 @@ body {
         <path d="M3 22h20" stroke="#CCC" stroke-width="2" stroke-linecap="round"/>
       </svg>
     </div>
-    <p class="upload-t" style="color:var(--g500)">Face arrière</p>
-    <p class="upload-s">Optionnel</p>
+    <p class="upload-t" style="color:var(--g500)" data-i18n="upload.back.t">Face arrière</p>
+    <p class="upload-s" data-i18n="upload.back.s">Optionnel</p>
   </div>
 
   <div class="preview-zone" id="preview-zone-back">
@@ -1230,11 +1275,11 @@ body {
   </div>
 
   <div class="name-row">
-    <p class="name-lbl">Nom de la carte</p>
-    <input class="name-inp" type="text" id="card-name" placeholder="Détecté auto, ou tape ici…">
+    <p class="name-lbl" data-i18n="upload.name.lbl">Nom de la carte</p>
+    <input class="name-inp" type="text" id="card-name" data-i18n-placeholder="upload.name.ph" placeholder="Détecté auto, ou tape ici…">
   </div>
 
-  <button class="btn-block" id="btn-go" onclick="startAnalysis()" disabled style="opacity:.3">Analyser →</button>
+  <button class="btn-block" id="btn-go" onclick="startAnalysis()" disabled style="opacity:.3" data-i18n="upload.btn">Analyser →</button>
 </div>
 
 <!-- ANALYZING -->
@@ -1252,14 +1297,14 @@ body {
       </svg>
     </div>
   </div>
-  <h2 class="an-h">Analyse en cours…</h2>
-  <p class="an-s">Standards PSA officiels</p>
+  <h2 class="an-h" data-i18n="analyzing.h">Analyse en cours…</h2>
+  <p class="an-s" data-i18n="analyzing.s">Standards PSA officiels</p>
   <div class="steps">
-    <div class="step active" id="st1"><div class="sdot"></div><span>Détection de la carte</span></div>
-    <div class="step"        id="st2"><div class="sdot"></div><span>Centering</span></div>
-    <div class="step"        id="st3"><div class="sdot"></div><span>Corners & Edges</span></div>
-    <div class="step"        id="st4"><div class="sdot"></div><span>Surface</span></div>
-    <div class="step"        id="st5"><div class="sdot"></div><span>Note finale</span></div>
+    <div class="step active" id="st1"><div class="sdot"></div><span data-i18n="step1">Détection de la carte</span></div>
+    <div class="step"        id="st2"><div class="sdot"></div><span data-i18n="step2">Centering</span></div>
+    <div class="step"        id="st3"><div class="sdot"></div><span data-i18n="step3">Corners & Edges</span></div>
+    <div class="step"        id="st4"><div class="sdot"></div><span data-i18n="step4">Surface</span></div>
+    <div class="step"        id="st5"><div class="sdot"></div><span data-i18n="step5">Note finale</span></div>
   </div>
 </div>
 
@@ -1267,8 +1312,8 @@ body {
 <div class="screen" id="s-result">
   <div class="res-bar">
     <div class="res-nav">
-      <span class="res-back" onclick="resetAndGo()">← Nouveau grade</span>
-      <span class="res-share" onclick="shareResult()">Partager</span>
+      <span class="res-back" onclick="resetAndGo()" data-i18n="result.back">← Nouveau grade</span>
+      <span class="res-share" onclick="shareResult()" data-i18n="result.share">Partager</span>
     </div>
     <div class="res-card-row">
       <div class="res-thumb"><img id="res-img" src="" alt=""></div>
@@ -1280,7 +1325,7 @@ body {
   </div>
 
   <div class="score-block">
-    <p class="sc-lbl">Note globale</p>
+    <p class="sc-lbl" data-i18n="result.score.lbl">Note globale</p>
     <div class="sc-row">
       <span class="sc-n" id="sc-num">—</span>
       <span class="sc-d">/10</span>
@@ -1301,7 +1346,7 @@ body {
 
   <!-- Carte détectée -->
   <div class="card-detected" id="card-detected-block">
-    <p class="card-detected-label">Carte identifiée</p>
+    <p class="card-detected-label" data-i18n="result.card.lbl">Carte identifiée</p>
     <p class="card-detected-name" id="detected-name">—</p>
     <p class="card-detected-info" id="detected-info">—</p>
     <span class="card-detected-rarity" id="detected-rarity"></span>
@@ -1319,7 +1364,7 @@ body {
 
   <!-- Estimation de prix -->
   <div class="price-block" id="price-block">
-    <p class="price-block-label">💰 Valeur estimée (marché PSA)</p>
+    <p class="price-block-label" data-i18n="result.price.lbl">💰 Valeur estimée (marché PSA)</p>
     <div class="price-range">
       <span class="price-low" id="price-low">—</span>
       <span class="price-sep">→</span>
@@ -1339,21 +1384,21 @@ body {
     <div class="save-banner-inner">
       <div class="save-banner-icon">📦</div>
       <div class="save-banner-text">
-        <p class="save-banner-title">Ajouter à ma collection ?</p>
-        <p class="save-banner-sub">Conserve ce résultat dans ton Pokédex personnel</p>
+        <p class="save-banner-title" data-i18n="save.title">Ajouter à ma collection ?</p>
+        <p class="save-banner-sub" data-i18n="save.sub">Conserve ce résultat dans ton Pokédex personnel</p>
       </div>
     </div>
     <div class="save-banner-btns">
-      <button class="save-btn-yes" id="save-btn-yes" onclick="saveToCollection()">Ajouter ✓</button>
-      <button class="save-btn-no"  onclick="skipSave()">Plus tard</button>
+      <button class="save-btn-yes" id="save-btn-yes" onclick="saveToCollection()" data-i18n="save.yes">Ajouter ✓</button>
+      <button class="save-btn-no"  onclick="skipSave()" data-i18n="save.later">Plus tard</button>
     </div>
   </div>
 
   <div class="res-bottom">
-    <button class="btn-red-full" onclick="goToGrading()">Envoyer au gradage physique →</button>
-    <button class="btn-outline"  onclick="openROI()" style="margin-bottom:10px">📊 Calculer le ROI de ce grade</button>
-    <button class="btn-outline"  onclick="resetAndGo()">Grader une autre carte</button>
-    <p class="disc">Estimation IA, non officielle. Pour une certification officielle, utilisez PSA, Aura Collect ou CCC.</p>
+    <button class="btn-red-full" onclick="goToGrading()" data-i18n="result.btn.grading">Envoyer au gradage physique →</button>
+    <button class="btn-outline"  onclick="openROI()" style="margin-bottom:10px" data-i18n="result.btn.roi">📊 Calculer le ROI de ce grade</button>
+    <button class="btn-outline"  onclick="resetAndGo()" data-i18n="result.btn.new">Grader une autre carte</button>
+    <p class="disc" data-i18n="result.disc">Estimation IA, non officielle. Pour une certification officielle, utilisez PSA, Aura Collect ou CCC.</p>
   </div>
 </div>
 
@@ -1361,16 +1406,16 @@ body {
 <div class="screen" id="s-collection">
   <div class="coll-header">
     <div style="display:flex;align-items:center;justify-content:space-between">
-      <p class="coll-title">Ma Collection</p>
+      <p class="coll-title" data-i18n="coll.title">Ma Collection</p>
       <button onclick="openROI('s-collection')" style="background:var(--g50);border:1px solid var(--g200);border-radius:99px;padding:6px 14px;font-size:12px;font-weight:700;color:var(--g700);cursor:pointer">📊 ROI</button>
     </div>
     <p class="coll-sub" id="coll-sub">Chargement…</p>
   </div>
   <div class="coll-stats" id="coll-stats" style="display:none">
-    <div class="coll-stat"><div class="coll-stat-n" id="stat-count">—</div><div class="coll-stat-l">Cartes</div></div>
-    <div class="coll-stat"><div class="coll-stat-n" id="stat-avg">—</div><div class="coll-stat-l">Moy. PSA</div></div>
-    <div class="coll-stat"><div class="coll-stat-n" id="stat-best">—</div><div class="coll-stat-l">Meilleure</div></div>
-    <div class="coll-stat"><div class="coll-stat-n" id="stat-value">—</div><div class="coll-stat-l">Valeur est.</div></div>
+    <div class="coll-stat"><div class="coll-stat-n" id="stat-count">—</div><div class="coll-stat-l" data-i18n="coll.stat.cards">Cartes</div></div>
+    <div class="coll-stat"><div class="coll-stat-n" id="stat-avg">—</div><div class="coll-stat-l" data-i18n="coll.stat.avg">Moy. PSA</div></div>
+    <div class="coll-stat"><div class="coll-stat-n" id="stat-best">—</div><div class="coll-stat-l" data-i18n="coll.stat.best">Meilleure</div></div>
+    <div class="coll-stat"><div class="coll-stat-n" id="stat-value">—</div><div class="coll-stat-l" data-i18n="coll.stat.value">Valeur est.</div></div>
   </div>
   <!-- Chart + meilleure carte -->
   <div id="coll-chart-section" style="display:none; padding: 0 14px 4px;">
@@ -1742,7 +1787,7 @@ body {
     <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
       <path d="M3 9.5L11 3l8 6.5V19a1 1 0 01-1 1H14v-5H8v5H4a1 1 0 01-1-1V9.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
     </svg>
-    <span>Accueil</span>
+    <span data-i18n="nav.home">Accueil</span>
   </button>
   <button class="nav-tab" id="tab-grade" onclick="handleGradeBtn()">
     <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
@@ -1751,26 +1796,228 @@ body {
       <circle cx="11" cy="11" r="2.5" fill="currentColor"/>
       <line x1="3.5" y1="11" x2="18.5" y2="11" stroke="currentColor" stroke-width="1.1" opacity=".5"/>
     </svg>
-    <span>Grader</span>
+    <span data-i18n="nav.grade">Grader</span>
   </button>
   <button class="nav-tab" id="tab-collection" onclick="switchTab('s-collection')">
     <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
       <rect x="3" y="5" width="10" height="14" rx="2" stroke="currentColor" stroke-width="1.6"/>
       <rect x="7" y="3" width="10" height="14" rx="2" stroke="currentColor" stroke-width="1.6"/>
     </svg>
-    <span>Collection</span>
+    <span data-i18n="nav.collection">Collection</span>
   </button>
   <button class="nav-tab" id="tab-grading" onclick="switchTab('s-grading')">
     <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
       <path d="M11 2l2.4 6.6H20l-5.4 4 2 6.4L11 15l-5.6 4 2-6.4L2 8.6h6.6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
     </svg>
-    <span>Gradage</span>
+    <span data-i18n="nav.grading">Gradage</span>
   </button>
 </nav>
 
 </div>
 
 <script>
+// ── Internationalisation ────────────────────────────────────────
+const TRANSLATIONS = {
+  fr: {
+    'nav.home':'Accueil','nav.grade':'Grader','nav.collection':'Collection','nav.grading':'Gradage',
+    'home.h1':'Grade tes<br>cartes par <em>IA</em>.','home.p':'Note PSA en 10 secondes.<br>Sans envoyer ta carte.',
+    'home.cta':'Grader une carte →','home.roi':'📊 Calculateur ROI grading',
+    'home.stat.precision':'Précision','home.stat.criteria':'Critères PSA','home.stat.time':'Résultat',
+    'guide.title':'Prépare ta photo','guide.skip':'Passer','guide.start':"C'est parti →",
+    'upload.title':'Ta carte','upload.front.t':'Face avant','upload.front.s':'Obligatoire',
+    'upload.back.t':'Face arrière','upload.back.s':'Optionnel','upload.change':'Changer',
+    'upload.name.lbl':'Nom de la carte','upload.name.ph':'Détecté auto, ou tape ici…','upload.btn':'Analyser →',
+    'analyzing.h':'Analyse en cours…','analyzing.s':'Standards PSA officiels',
+    'step1':'Détection de la carte','step2':'Centering','step3':'Corners & Edges','step4':'Surface','step5':'Note finale',
+    'result.back':'← Nouveau grade','result.share':'Partager','result.score.lbl':'Note globale',
+    'result.card.lbl':'Carte identifiée','result.price.lbl':'💰 Valeur estimée (marché PSA)',
+    'result.btn.grading':'Envoyer au gradage physique →','result.btn.roi':'📊 Calculer le ROI de ce grade',
+    'result.btn.new':'Grader une autre carte',
+    'result.disc':'Estimation IA, non officielle. Pour une certification officielle, utilisez PSA, Aura Collect ou CCC.',
+    'save.title':'Ajouter à ma collection ?','save.sub':'Conserve ce résultat dans ton Pokédex personnel',
+    'save.yes':'Ajouter ✓','save.later':'Plus tard','save.saving':'⏳ Enregistrement…',
+    'save.saved.t':'Ajoutée à ta collection !','save.saved.s':'Retrouve-la dans ton Pokédex','save.saved.btn':'Ajoutée ✓',
+    'coll.title':'Ma Collection','coll.stat.cards':'Cartes','coll.stat.avg':'Moy. PSA',
+    'coll.stat.best':'Meilleure','coll.stat.value':'Valeur est.',
+    'coll.best.lbl':'⭐ Meilleure carte','coll.chart.title':'Évolution de la valeur totale',
+    'lang.title':'Langue',
+  },
+  en: {
+    'nav.home':'Home','nav.grade':'Grade','nav.collection':'Collection','nav.grading':'Grading',
+    'home.h1':'Grade your<br>cards by <em>AI</em>.','home.p':'PSA score in 10 seconds.<br>Without sending your card.',
+    'home.cta':'Grade a card →','home.roi':'📊 Grading ROI Calculator',
+    'home.stat.precision':'Accuracy','home.stat.criteria':'PSA Criteria','home.stat.time':'Result',
+    'guide.title':'Prepare your photo','guide.skip':'Skip','guide.start':"Let's go →",
+    'upload.title':'Your card','upload.front.t':'Front face','upload.front.s':'Required',
+    'upload.back.t':'Back face','upload.back.s':'Optional','upload.change':'Change',
+    'upload.name.lbl':'Card name','upload.name.ph':'Auto-detected, or type here…','upload.btn':'Analyze →',
+    'analyzing.h':'Analyzing…','analyzing.s':'Official PSA standards',
+    'step1':'Card detection','step2':'Centering','step3':'Corners & Edges','step4':'Surface','step5':'Final score',
+    'result.back':'← New grade','result.share':'Share','result.score.lbl':'Overall score',
+    'result.card.lbl':'Identified card','result.price.lbl':'💰 Estimated value (PSA market)',
+    'result.btn.grading':'Send for physical grading →','result.btn.roi':'📊 Calculate grade ROI',
+    'result.btn.new':'Grade another card',
+    'result.disc':'AI estimate, not official. For official certification, use PSA, Aura Collect or CCC.',
+    'save.title':'Add to my collection?','save.sub':'Keep this result in your personal Pokédex',
+    'save.yes':'Add ✓','save.later':'Later','save.saving':'⏳ Saving…',
+    'save.saved.t':'Added to your collection!','save.saved.s':'Find it in your Pokédex','save.saved.btn':'Added ✓',
+    'coll.title':'My Collection','coll.stat.cards':'Cards','coll.stat.avg':'Avg. PSA',
+    'coll.stat.best':'Best','coll.stat.value':'Est. value',
+    'coll.best.lbl':'⭐ Best card','coll.chart.title':'Total value evolution',
+    'lang.title':'Language',
+  },
+  es: {
+    'nav.home':'Inicio','nav.grade':'Graduar','nav.collection':'Colección','nav.grading':'Gradeo',
+    'home.h1':'Gradúa tus<br>cartas con <em>IA</em>.','home.p':'Nota PSA en 10 segundos.<br>Sin enviar tu carta.',
+    'home.cta':'Graduar una carta →','home.roi':'📊 Calculadora ROI',
+    'home.stat.precision':'Precisión','home.stat.criteria':'Criterios PSA','home.stat.time':'Resultado',
+    'guide.title':'Prepara tu foto','guide.skip':'Saltar','guide.start':'¡Vamos →',
+    'upload.title':'Tu carta','upload.front.t':'Cara delantera','upload.front.s':'Obligatorio',
+    'upload.back.t':'Cara trasera','upload.back.s':'Opcional','upload.change':'Cambiar',
+    'upload.name.lbl':'Nombre de la carta','upload.name.ph':'Detectado auto, o escribe aquí…','upload.btn':'Analizar →',
+    'analyzing.h':'Analizando…','analyzing.s':'Estándares PSA oficiales',
+    'step1':'Detección de la carta','step2':'Centrado','step3':'Esquinas y Bordes','step4':'Superficie','step5':'Nota final',
+    'result.back':'← Nueva nota','result.share':'Compartir','result.score.lbl':'Nota global',
+    'result.card.lbl':'Carta identificada','result.price.lbl':'💰 Valor estimado (mercado PSA)',
+    'result.btn.grading':'Enviar a gradeo físico →','result.btn.roi':'📊 Calcular ROI',
+    'result.btn.new':'Graduar otra carta',
+    'result.disc':'Estimación IA, no oficial. Para certificación oficial, usa PSA, Aura Collect o CCC.',
+    'save.title':'¿Añadir a mi colección?','save.sub':'Guarda este resultado en tu Pokédex personal',
+    'save.yes':'Añadir ✓','save.later':'Más tarde','save.saving':'⏳ Guardando…',
+    'save.saved.t':'¡Añadida a tu colección!','save.saved.s':'Encuéntrala en tu Pokédex','save.saved.btn':'Añadida ✓',
+    'coll.title':'Mi Colección','coll.stat.cards':'Cartas','coll.stat.avg':'Prom. PSA',
+    'coll.stat.best':'Mejor','coll.stat.value':'Valor est.',
+    'coll.best.lbl':'⭐ Mejor carta','coll.chart.title':'Evolución del valor total',
+    'lang.title':'Idioma',
+  },
+  it: {
+    'nav.home':'Home','nav.grade':'Gradua','nav.collection':'Collezione','nav.grading':'Gradazione',
+    'home.h1':'Gradua le tue<br>carte con <em>IA</em>.','home.p':'Voto PSA in 10 secondi.<br>Senza inviare la carta.',
+    'home.cta':'Gradua una carta →','home.roi':'📊 Calcolatore ROI',
+    'home.stat.precision':'Precisione','home.stat.criteria':'Criteri PSA','home.stat.time':'Risultato',
+    'guide.title':'Prepara la foto','guide.skip':'Salta','guide.start':'Andiamo →',
+    'upload.title':'La tua carta','upload.front.t':'Faccia anteriore','upload.front.s':'Obbligatorio',
+    'upload.back.t':'Faccia posteriore','upload.back.s':'Opzionale','upload.change':'Cambia',
+    'upload.name.lbl':'Nome della carta','upload.name.ph':'Rilevato automaticamente, o scrivi qui…','upload.btn':'Analizza →',
+    'analyzing.h':'Analisi in corso…','analyzing.s':'Standard PSA ufficiali',
+    'step1':'Rilevamento carta','step2':'Centratura','step3':'Angoli e Bordi','step4':'Superficie','step5':'Voto finale',
+    'result.back':'← Nuovo voto','result.share':'Condividi','result.score.lbl':'Voto globale',
+    'result.card.lbl':'Carta identificata','result.price.lbl':'💰 Valore stimato (mercato PSA)',
+    'result.btn.grading':'Invia alla gradazione fisica →','result.btn.roi':'📊 Calcola ROI',
+    'result.btn.new':"Gradua un'altra carta",
+    'result.disc':'Stima IA, non ufficiale. Per certificazione ufficiale: PSA, Aura Collect o CCC.',
+    'save.title':'Aggiungere alla mia collezione?','save.sub':'Conserva questo risultato nel tuo Pokédex',
+    'save.yes':'Aggiungi ✓','save.later':'Più tardi','save.saving':'⏳ Salvataggio…',
+    'save.saved.t':'Aggiunta alla tua collezione!','save.saved.s':'Trovala nel tuo Pokédex','save.saved.btn':'Aggiunta ✓',
+    'coll.title':'La mia Collezione','coll.stat.cards':'Carte','coll.stat.avg':'Med. PSA',
+    'coll.stat.best':'Migliore','coll.stat.value':'Valore st.',
+    'coll.best.lbl':'⭐ Carta migliore','coll.chart.title':'Evoluzione del valore totale',
+    'lang.title':'Lingua',
+  },
+  de: {
+    'nav.home':'Start','nav.grade':'Graden','nav.collection':'Sammlung','nav.grading':'Grading',
+    'home.h1':'Grade deine<br>Karten per <em>KI</em>.','home.p':'PSA-Note in 10 Sekunden.<br>Ohne deine Karte zu senden.',
+    'home.cta':'Karte graden →','home.roi':'📊 Grading ROI Rechner',
+    'home.stat.precision':'Genauigkeit','home.stat.criteria':'PSA-Kriterien','home.stat.time':'Ergebnis',
+    'guide.title':'Foto vorbereiten','guide.skip':'Überspringen','guide.start':"Los geht's →",
+    'upload.title':'Deine Karte','upload.front.t':'Vorderseite','upload.front.s':'Erforderlich',
+    'upload.back.t':'Rückseite','upload.back.s':'Optional','upload.change':'Ändern',
+    'upload.name.lbl':'Kartenname','upload.name.ph':'Auto-erkannt, oder hier eingeben…','upload.btn':'Analysieren →',
+    'analyzing.h':'Analyse läuft…','analyzing.s':'Offizielle PSA-Standards',
+    'step1':'Kartenerkennung','step2':'Zentrierung','step3':'Ecken & Kanten','step4':'Oberfläche','step5':'Endnote',
+    'result.back':'← Neue Note','result.share':'Teilen','result.score.lbl':'Gesamtnote',
+    'result.card.lbl':'Identifizierte Karte','result.price.lbl':'💰 Geschätzter Wert (PSA-Markt)',
+    'result.btn.grading':'Zum physischen Grading senden →','result.btn.roi':'📊 ROI berechnen',
+    'result.btn.new':'Weitere Karte graden',
+    'result.disc':'KI-Schätzung, nicht offiziell. Für Zertifizierung: PSA, Aura Collect oder CCC.',
+    'save.title':'Zu meiner Sammlung hinzufügen?','save.sub':'Ergebnis in deinem Pokédex speichern',
+    'save.yes':'Hinzufügen ✓','save.later':'Später','save.saving':'⏳ Speichern…',
+    'save.saved.t':'Zu deiner Sammlung hinzugefügt!','save.saved.s':'Finde sie in deinem Pokédex','save.saved.btn':'Hinzugefügt ✓',
+    'coll.title':'Meine Sammlung','coll.stat.cards':'Karten','coll.stat.avg':'Ø PSA',
+    'coll.stat.best':'Beste','coll.stat.value':'Gesch. Wert',
+    'coll.best.lbl':'⭐ Beste Karte','coll.chart.title':'Entwicklung des Gesamtwerts',
+    'lang.title':'Sprache',
+  },
+  nl: {
+    'nav.home':'Home','nav.grade':'Graderen','nav.collection':'Collectie','nav.grading':'Gradering',
+    'home.h1':'Gradeer je<br>kaarten met <em>AI</em>.','home.p':'PSA-score in 10 seconden.<br>Zonder je kaart te sturen.',
+    'home.cta':'Gradeer een kaart →','home.roi':'📊 Grading ROI Calculator',
+    'home.stat.precision':'Nauwkeurigheid','home.stat.criteria':'PSA-Criteria','home.stat.time':'Resultaat',
+    'guide.title':'Foto voorbereiden','guide.skip':'Overslaan','guide.start':'Laten we gaan →',
+    'upload.title':'Jouw kaart','upload.front.t':'Voorzijde','upload.front.s':'Verplicht',
+    'upload.back.t':'Achterzijde','upload.back.s':'Optioneel','upload.change':'Wijzigen',
+    'upload.name.lbl':'Kaartnaam','upload.name.ph':'Auto-gedetecteerd, of typ hier…','upload.btn':'Analyseren →',
+    'analyzing.h':'Analyse bezig…','analyzing.s':'Officiële PSA-normen',
+    'step1':'Kaartdetectie','step2':'Centrering','step3':'Hoeken & Randen','step4':'Oppervlak','step5':'Eindscore',
+    'result.back':'← Nieuwe beoordeling','result.share':'Delen','result.score.lbl':'Totaalscore',
+    'result.card.lbl':'Geïdentificeerde kaart','result.price.lbl':'💰 Geschatte waarde (PSA-markt)',
+    'result.btn.grading':'Sturen naar fysieke gradering →','result.btn.roi':'📊 Bereken ROI',
+    'result.btn.new':'Nog een kaart graderen',
+    'result.disc':'AI-schatting, niet officieel. Voor certificering: PSA, Aura Collect of CCC.',
+    'save.title':'Toevoegen aan mijn collectie?','save.sub':'Bewaar dit resultaat in je Pokédex',
+    'save.yes':'Toevoegen ✓','save.later':'Later','save.saving':'⏳ Opslaan…',
+    'save.saved.t':'Toegevoegd aan je collectie!','save.saved.s':'Vind het in je Pokédex','save.saved.btn':'Toegevoegd ✓',
+    'coll.title':'Mijn Collectie','coll.stat.cards':'Kaarten','coll.stat.avg':'Gem. PSA',
+    'coll.stat.best':'Beste','coll.stat.value':'Gesch. waarde',
+    'coll.best.lbl':'⭐ Beste kaart','coll.chart.title':'Evolutie van de totale waarde',
+    'lang.title':'Taal',
+  },
+};
+
+let currentLang = 'fr';
+
+function t(key) {
+  return (TRANSLATIONS[currentLang] || TRANSLATIONS.fr)[key] || TRANSLATIONS.fr[key] || key;
+}
+
+function applyTranslations() {
+  const T = TRANSLATIONS[currentLang] || TRANSLATIONS.fr;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.getAttribute('data-i18n');
+    if (T[k] !== undefined) el.textContent = T[k];
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    const k = el.getAttribute('data-i18n-html');
+    if (T[k] !== undefined) el.innerHTML = T[k];
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const k = el.getAttribute('data-i18n-placeholder');
+    if (T[k] !== undefined) el.placeholder = T[k];
+  });
+  // Cocher la langue active
+  ['fr','en','es','it','de','nl'].forEach(l => {
+    const el = document.getElementById('lchk-' + l);
+    if (el) el.textContent = l === currentLang ? '✓' : '';
+  });
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('pg_lang', lang);
+  applyTranslations();
+  closeLangModal();
+}
+
+function initLang() {
+  const saved = localStorage.getItem('pg_lang');
+  const browser = navigator.language?.slice(0,2);
+  const supported = ['fr','en','es','it','de','nl'];
+  currentLang = supported.includes(saved) ? saved
+    : supported.includes(browser) ? browser : 'fr';
+  applyTranslations();
+}
+
+function openLangModal() {
+  document.getElementById('lang-overlay').classList.add('open');
+  document.getElementById('lang-sheet').classList.add('open');
+}
+function closeLangModal() {
+  document.getElementById('lang-overlay').classList.remove('open');
+  document.getElementById('lang-sheet').classList.remove('open');
+}
+
+initLang();
+
 // ── Dark mode ──────────────────────────────────────────────────
 const SUN_ICON = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
   <circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.4"/>
@@ -2266,7 +2513,7 @@ async function saveToCollection() {
   if (!currentSession || !lastResult) return;
   const btn = document.getElementById('save-btn-yes');
   btn.disabled = true;
-  btn.textContent = '⏳ Enregistrement…';
+  btn.textContent = t('save.saving');
   try {
     const res = await fetch('/api/grade/save', {
       method: 'POST',
@@ -2280,9 +2527,9 @@ async function saveToCollection() {
     const banner = document.getElementById('save-banner');
     banner.classList.add('saved');
     banner.querySelector('.save-banner-icon').textContent = '✅';
-    banner.querySelector('.save-banner-title').textContent = 'Ajoutée à ta collection !';
-    banner.querySelector('.save-banner-sub').textContent   = 'Retrouve-la dans ton Pokédex';
-    btn.textContent = 'Ajoutée ✓';
+    banner.querySelector('.save-banner-title').textContent = t('save.saved.t');
+    banner.querySelector('.save-banner-sub').textContent   = t('save.saved.s');
+    btn.textContent = t('save.saved.btn');
     document.querySelector('.save-btn-no').style.display = 'none';
   } catch(e) {
     btn.disabled = false;
@@ -2302,10 +2549,10 @@ function showResult(r) {
   const banner = document.getElementById('save-banner');
   banner.classList.remove('hidden','saved');
   banner.querySelector('.save-banner-icon').textContent = '📦';
-  banner.querySelector('.save-banner-title').textContent = 'Ajouter à ma collection ?';
-  banner.querySelector('.save-banner-sub').textContent   = 'Conserve ce résultat dans ton Pokédex personnel';
+  banner.querySelector('.save-banner-title').textContent = t('save.title');
+  banner.querySelector('.save-banner-sub').textContent   = t('save.sub');
   const yes = document.getElementById('save-btn-yes');
-  yes.disabled = false; yes.textContent = 'Ajouter ✓';
+  yes.disabled = false; yes.textContent = t('save.yes');
   const no = banner.querySelector('.save-btn-no');
   if (no) no.style.display = '';
   if (!r || typeof r.global === 'undefined') {
