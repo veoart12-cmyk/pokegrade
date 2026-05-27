@@ -1952,11 +1952,28 @@ function renderValueChart(grades) {
   });
 
   const keys = Object.keys(monthMap).sort();
-  // Points cumulatifs
-  let cum = 0;
-  const points = keys.map(k => { cum += monthMap[k]; return { key: k, val: cum }; });
 
-  // Si un seul point → dupliquer pour afficher une ligne
+  // Remplir TOUS les mois entre le premier et aujourd'hui (y compris les mois sans carte)
+  const firstKey = keys[0];
+  const now      = new Date();
+  const lastKey  = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+  const allKeys = [];
+  let cursor = new Date(firstKey + '-01');
+  const endDate = new Date(lastKey + '-01');
+  while (cursor <= endDate) {
+    allKeys.push(`${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}`);
+    cursor.setMonth(cursor.getMonth() + 1);
+  }
+
+  // Points cumulatifs sur tous les mois (plateau si pas de carte ce mois)
+  let cum = 0;
+  const points = allKeys.map(k => {
+    cum += monthMap[k] || 0;
+    return { key: k, val: cum };
+  });
+
+  // Si un seul point → ajouter un point à 0 le mois précédent
   if (points.length === 1) {
     const prev = new Date(points[0].key + '-01');
     prev.setMonth(prev.getMonth() - 1);
