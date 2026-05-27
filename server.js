@@ -76,55 +76,17 @@ app.get("/api/grades", requireAuth, async (req, res) => {
 // ── Grading ──────────────────────────────────────────────────────
 const GRADING_PROMPT = `Tu es un expert en grading et identification de cartes Pokémon, formé aux standards PSA officiels.
 
-ÉTAPE 1 — IDENTIFICATION DU SET PAR TRIANGULATION VISUELLE :
+ÉTAPE 1 — IDENTIFICATION DE LA CARTE :
 
-Pour identifier le set, croise PLUSIEURS indices visuels simultanément. Un seul indice peut suffire s'il est très clair ; sinon croise-en au moins deux avant de conclure.
+Lis directement le texte imprimé sur la carte :
+- Nom de la carte : utilise TOUJOURS le nom officiel anglais (ex : "Charizard" et non "Dracaufeu", "Gengar" et non "Ectoplasma", "Pikachu" reste "Pikachu"). C'est OBLIGATOIRE même si la carte est en français, espagnol, allemand, etc.
+- Set : lis le nom du set tel qu'il est imprimé sur la carte (ex: "Scarlet & Violet", "Base Set", "Obsidian Flames"). Si non lisible, mets "Unknown".
+- Numéro : lis le numéro de la carte imprimé en bas (ex: "006/165").
+- Année : lis l'année du copyright imprimée en bas de la carte.
+- Rareté : identifie le symbole de rareté (Common, Uncommon, Rare, Holo Rare, Ultra Rare, etc.).
+- Langue : identifie la langue de la carte (Français, Anglais, Espagnol, etc.).
 
-INDICE A — MARQUE DE RÉGULATION (lettre dans un petit losange, imprimée en bas de la carte) :
-  F → parmi : SV1, SV2
-  G → parmi : SV3, SV3a, SV4, SV4a
-  H → parmi : SV5, SV5K, SV6, SV7, SV8, SV8a
-
-INDICE B — SYMBOLE DU SET (icône juste à gauche du numéro, coin bas droit) :
-  SV1  : couronne simple, fine
-  SV2  : spirale / tourbillon d'évolution
-  SV3  : flamme sombre ou cristal obsidien
-  SV3a : cadre doré rétro (les cartes affichent le numéro Pokédex classique 001–151)
-  SV4  : faille / rift en deux parties
-  SV4a : étoile shiny scintillante
-  SV5  : sablier ou symbole de force temporelle
-  SV5K : masque stylisé
-  SV6  : couronne arc-en-ciel / chromatique
-  SV7  : couronne stellaire (étoiles + cercle)
-  SV8  : éclair / surge électrique
-  SV8a : tourbillon Paldéen
-
-INDICE C — ANNÉE DE COPYRIGHT (texte en bas de la carte) :
-  2023 → SV1, SV2, SV3, SV3a
-  2024 → SV4, SV4a, SV5, SV5K, SV6, SV7, SV8, SV8a
-
-INDICE D — THÈME VISUEL DOMINANT (ambiance générale de la carte) :
-  SV3a : design nostalgique, numéro Pokédex des 151 originals affiché sur la carte
-  SV4a : fond très saturé, Pokémon en version shiny (couleurs inhabituelles)
-  SV7  : ambiance cosmique/stellaire, fond étoilé, Terapagos, type Teracristal
-  SV8  : ambiance électrique, éclairs dorés, Pikachu/Raichu mis en avant
-  SV8a : tons Paldéens, version shiny des Pokémon de Paldea
-
-INDICE E — ART DE LA CARTE (style graphique, couleurs dominantes, décor de fond) :
-  SV1  : fonds naturels lumineux, paysages de Paldea (plaines, villes), palette fraîche et variée, style propre et moderne
-  SV2  : fonds dynamiques liés aux évolutions, compositions centrées sur la transformation, tons chauds et froids alternés
-  SV3  : fonds sombres, volcans, lave, cristaux noirs, teintes rouges/orange/noir très prononcées, atmosphère lourde
-  SV3a : style rétro japonais, fonds pastel doux, coins arrondis dorés, illustrations proches des sets Base Set / Jungle, numéro Pokédex en bas à gauche
-  SV4  : fonds avec distorsions temporelles, ruines paradoxales, ambiance science-fiction et fantasy mêlées, teintes violettes et bleues profondes
-  SV4a : Pokémon aux couleurs shiny (colorations inhabituelles, souvent plus pâles ou dorés), fonds très contrastés noirs ou brillants, reflets métalliques
-  SV5  : fonds déserts, dunes, ambiance brûlante ou glaciale, couleurs terreuses chaudes (ocre, sable) ou glacées (bleu arctique)
-  SV5K : masques et costumes, fonds festifs ou mystérieux, ambiance carnaval/déguisement, couleurs vives et décoratives
-  SV6  : fonds lumineux et irisés, couronnes arc-en-ciel, cristaux multicolores, palette très variée et brillante
-  SV7  : fonds cosmiques profonds (noir étoilé, nébuleuses), Pokémon entourés d'étoiles ou de lumières stellaires, Terapagos sous ses formes, teintes bleues nuit et dorées
-  SV8  : fonds électriques (éclairs, orages dorés), lumière jaune/dorée intense, Pikachu et Raichu très présents, énergie cinétique, compositions dynamiques
-  SV8a : fonds typiques des régions de Paldea, Pokémon en version shiny avec colorations alternatives, tons doux mais saturés
-
-Règle : si deux indices ou plus pointent vers le même set → c'est ce set. Si les indices se contredisent ou si tu n'es pas certain → set = "Inconnu".
+IMPORTANT : Ne devine jamais le set visuellement — lis uniquement ce qui est écrit sur la carte. Si le texte n'est pas lisible, mets "Unknown".
 
 ÉTAPE 2 — GRADING : Analyse selon les 4 critères PSA (notes de 1 à 10 avec demi-points).
 ÉTAPE 3 — ESTIMATION DE PRIX : Estime la valeur marchande selon le grade PSA obtenu.
@@ -183,37 +145,108 @@ Pour psa_label, utilise exactement :
 Le global est la moyenne des 4 scores, arrondie au demi-point.
 Si tu ne peux pas identifier la carte avec certitude, mets "Inconnue" pour name et 0 pour les prix.`;
 
+// ── Traduction noms FR→EN (cas les plus courants) ───────────────
+const FR_TO_EN = {
+  'dracaufeu': 'charizard', 'salamèche': 'charmander', 'reptincel': 'charmeleon',
+  'bulbizarre': 'bulbasaur', 'herbizarre': 'ivysaur', 'florizarre': 'venusaur',
+  'carapuce': 'squirtle', 'carabaffe': 'wartortle', 'tortank': 'blastoise',
+  'pikachu': 'pikachu', 'raichu': 'raichu', 'ronflex': 'snorlax',
+  'mewtwo': 'mewtwo', 'mew': 'mew', 'evoli': 'eevee',
+  'ectoplasma': 'gengar', 'spectrum': 'haunter', 'fantominus': 'gastly',
+  'lokhlass': 'lapras', 'noctali': 'umbreon', 'mentali': 'espeon',
+  'pyroli': 'flareon', 'aquali': 'vaporeon', 'voltali': 'jolteon',
+  'sylveon': 'sylveon', 'phyllali': 'leafeon', 'givrali': 'glaceon',
+  'dracolosse': 'dragonite', 'dragonair': 'dragonair', 'minidraco': 'dratini',
+  'leviator': 'gyarados', 'magicarpe': 'magikarp', 'artikodin': 'articuno',
+  'électhor': 'zapdos', 'sulfura': 'moltres', 'lugia': 'lugia', 'ho-oh': 'ho-oh',
+  'rayquaza': 'rayquaza', 'lucario': 'lucario', 'gardevoir': 'gardevoir',
+  'metagross': 'metagross', 'absol': 'absol', 'darkrai': 'darkrai',
+  'cresselia': 'cresselia', 'giratina': 'giratina', 'zoroark': 'zoroark',
+  'reshiram': 'reshiram', 'zekrom': 'zekrom', 'kyurem': 'kyurem',
+  'grenousse': 'greninja', 'méga-dracaufeu': 'mega charizard',
+  'talonflame': 'talonflame', 'tyranitar': 'tyranitar',
+};
+
+function normalizeCardName(name) {
+  if (!name) return name;
+  // Retire les suffixes de type " ex", " EX", " V", " VMAX", " VSTAR", " GX"
+  // pour avoir le nom de base du Pokémon
+  const base = name.toLowerCase()
+    .replace(/\s+(ex|gx|v|vmax|vstar|mega|m\b)$/i, '')
+    .trim();
+  return FR_TO_EN[base] || base;
+}
+
 // ── Prix réel via Pokemon TCG API (Cardmarket EUR) ───────────────
 async function fetchRealPrice(cardName, setName, psaScore) {
   try {
-    // Cherche la carte par nom exact, puis par nom partiel si rien trouvé
+    // Normalise le nom : traduit FR→EN si nécessaire, retire suffixes
+    const baseName = normalizeCardName(cardName);
+    // Reconstruit le nom avec le suffixe d'origine (ex, VMAX, etc.)
+    const suffix = cardName.match(/\s+(ex|EX|GX|V|VMAX|VSTAR|MEGA)$/i)?.[1] || '';
+    const englishName = suffix
+      ? `${baseName.charAt(0).toUpperCase() + baseName.slice(1)} ${suffix}`
+      : (FR_TO_EN[cardName.toLowerCase()] || cardName);
+
+    console.log(`[Price] Recherche "${cardName}" → normalisé "${englishName}"`);
+
+    // Stratégies de recherche par ordre de précision décroissante
+    const firstWord = baseName.split(' ')[0];
     const queries = [
-      `name:"${cardName}"`,
-      `name:${cardName.split(' ')[0]}`,
-    ];
+      `name:"${englishName}"`,           // Nom anglais exact
+      `name:"${cardName}"`,              // Nom original (fonctionne si déjà EN)
+      `name:${englishName}`,             // Nom anglais sans guillemets
+      `name:${firstWord}`,               // Premier mot seulement
+    ].filter((q, i, arr) => arr.indexOf(q) === i); // Déduplication
 
     let card = null;
     for (const q of queries) {
-      const url = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(q)}&pageSize=20&select=name,set,cardmarket,tcgplayer,rarity`;
+      const url = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(q)}&pageSize=30&select=name,set,cardmarket,tcgplayer,rarity`;
       const headers = {};
       if (process.env.POKEMON_TCG_KEY) headers['X-Api-Key'] = process.env.POKEMON_TCG_KEY;
-      const resp = await fetch(url, { headers, signal: AbortSignal.timeout(5000) });
-      if (!resp.ok) continue;
-      const data = await resp.json();
-      if (!data.data?.length) continue;
+      try {
+        const resp = await fetch(url, { headers, signal: AbortSignal.timeout(6000) });
+        if (!resp.ok) continue;
+        const data = await resp.json();
+        if (!data.data?.length) continue;
 
-      // Essayer de matcher le set si l'IA en a trouvé un
-      let best = data.data[0];
-      if (setName && setName !== 'Inconnu' && setName !== 'Unknown') {
-        const sLow = setName.toLowerCase();
-        const match = data.data.find(c =>
-          c.set?.name?.toLowerCase().includes(sLow) ||
-          sLow.includes((c.set?.name || '').toLowerCase())
-        );
-        if (match) best = match;
+        // Trouver la meilleure correspondance
+        let candidates = data.data;
+
+        // Filtrer par set si disponible et fiable
+        if (setName && setName !== 'Inconnu' && setName !== 'Unknown' && setName !== 'Inconnue') {
+          const sLow = setName.toLowerCase().replace(/[^a-z0-9\s]/g, '');
+          const setMatch = candidates.filter(c => {
+            const cSet = (c.set?.name || '').toLowerCase().replace(/[^a-z0-9\s]/g, '');
+            return cSet.includes(sLow) || sLow.includes(cSet);
+          });
+          if (setMatch.length > 0) candidates = setMatch;
+        }
+
+        // Préférer les cartes avec prix Cardmarket disponibles
+        const withCmPrice = candidates.filter(c => {
+          const cm = c.cardmarket?.prices;
+          return cm && (cm.avg30 || cm.trendPrice || cm.avg7 || cm.averageSellPrice);
+        });
+        if (withCmPrice.length > 0) candidates = withCmPrice;
+
+        // Préférer les cartes avec le bon suffixe (ex, VMAX, etc.)
+        if (suffix) {
+          const suffixMatch = candidates.filter(c =>
+            c.name?.toLowerCase().includes(suffix.toLowerCase())
+          );
+          if (suffixMatch.length > 0) candidates = suffixMatch;
+        }
+
+        card = candidates[0];
+        if (card) {
+          console.log(`[Price] Trouvé via "${q}": ${card.name} (${card.set?.name})`);
+          break;
+        }
+      } catch (fetchErr) {
+        console.error(`[Price] Erreur requête "${q}":`, fetchErr.message);
+        continue;
       }
-      card = best;
-      break;
     }
 
     if (!card) return null;
