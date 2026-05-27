@@ -825,6 +825,16 @@ body {
   border-radius: 99px; padding: 8px 22px; cursor: pointer;
   flex-shrink: 0;
 }
+.slab-modal-actions {
+  display: flex; gap: 12px; align-items: center;
+}
+.slab-modal-delete {
+  color: #ff5c5c; font-size: 14px; font-weight: 700;
+  background: none; border: 1.5px solid rgba(255,92,92,0.35);
+  border-radius: 99px; padding: 8px 22px; cursor: pointer;
+  flex-shrink: 0; transition: background 0.15s, border-color 0.15s;
+}
+.slab-modal-delete:active { background: rgba(255,92,92,0.12); border-color: #ff5c5c; }
 
 .coll-empty {
   text-align: center; padding: 60px 32px;
@@ -1691,7 +1701,10 @@ body {
 <!-- SLAB MODAL -->
 <div class="slab-modal" id="slab-modal" onclick="handleModalClick(event)">
   <img class="slab-modal-img" id="slab-modal-img" src="" alt="Slab">
-  <button class="slab-modal-close" onclick="closeSlabModal()">Fermer</button>
+  <div class="slab-modal-actions">
+    <button class="slab-modal-delete" onclick="deleteGrade()">🗑 Supprimer</button>
+    <button class="slab-modal-close" onclick="closeSlabModal()">Fermer</button>
+  </div>
 </div>
 
 <!-- ROI CALCULATOR -->
@@ -3279,17 +3292,49 @@ async function generateSlabCanvas(gradeData) {
 }
 
 // ── Slab modal ─────────────────────────────────────────────────
+let _currentSlabId = null;
+
 function openSlabModal(gradeId) {
   const url = _slabCache[gradeId];
   if (!url) return;
+  _currentSlabId = gradeId;
   document.getElementById('slab-modal-img').src = url;
   document.getElementById('slab-modal').classList.add('open');
 }
 function closeSlabModal() {
   document.getElementById('slab-modal').classList.remove('open');
+  _currentSlabId = null;
 }
 function handleModalClick(e) {
   if (e.target === document.getElementById('slab-modal')) closeSlabModal();
+}
+
+async function deleteGrade() {
+  if (!_currentSlabId || !currentSession) return;
+  if (!confirm('Supprimer cette carte de ta collection ? Cette action est irréversible.')) return;
+
+  const btn = document.querySelector('.slab-modal-delete');
+  btn.textContent = '⏳ Suppression…';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/grade/' + _currentSlabId, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + currentSession.access_token }
+    });
+    if (!res.ok) throw new Error('Erreur serveur');
+
+    // Vider le cache slab pour cette carte
+    delete _slabCache[_currentSlabId];
+
+    closeSlabModal();
+    // Recharger la collection
+    await loadCollection();
+  } catch (err) {
+    alert('Impossible de supprimer la carte — réessaie.');
+    btn.textContent = '🗑 Supprimer';
+    btn.disabled = false;
+  }
 }
 
 // ── ROI Calculator ─────────────────────────────────────────────

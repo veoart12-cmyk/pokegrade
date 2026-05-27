@@ -316,6 +316,52 @@ app.post("/api/grade/save", requireAuth, async (req, res) => {
   }
 });
 
+// ── Suppression d'une carte de la collection ─────────────────────
+app.delete("/api/grade/:id", requireAuth, async (req, res) => {
+  const { id } = req.params;
+  try {
+    // Vérifier que la carte appartient bien à l'utilisateur, et récupérer l'image_url
+    const { data: grade, error: fetchErr } = await supabase
+      .from("grades")
+      .select("id, user_id, image_url")
+      .eq("id", id)
+      .eq("user_id", req.user.id)
+      .single();
+
+    if (fetchErr || !grade) {
+      return res.status(404).json({ error: "Carte introuvable ou accès refusé" });
+    }
+
+    // Supprimer l'image dans Supabase Storage si elle existe
+    if (grade.image_url) {
+      try {
+        // L'URL publique ressemble à : .../storage/v1/object/public/card-images/USER_ID/FILENAME
+        const match = grade.image_url.match(/card-images\/(.+)$/);
+        if (match) {
+          await supabase.storage.from("card-images").remove([match[1]]);
+        }
+      } catch (imgErr) {
+        console.error("Erreur suppression image Storage:", imgErr.message);
+        // Non bloquant — on continue la suppression DB
+      }
+    }
+
+    // Supprimer la ligne dans grades
+    const { error: delErr } = await supabase
+      .from("grades")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", req.user.id);
+
+    if (delErr) throw delErr;
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Erreur suppression grade:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── Set profile (username / public toggle) ───────────────────────
 app.post("/api/set-profile", requireAuth, async (req, res) => {
   const { username, is_collection_public } = req.body;
