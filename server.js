@@ -279,14 +279,15 @@ app.post("/api/grade", requireAuth, upload.fields([{ name: "front", maxCount: 1 
       throw new Error("Réponse IA mal formée — réessaie");
     }
 
-    // Sauvegarder + incrémenter
+    // Incrémenter le quota (le grade est consommé même sans sauvegarde)
     const newCount = profile.grades_this_month + 1;
     await supabase.from("profiles").update({ grades_this_month: newCount }).eq("id", req.user.id);
-    await supabase.from("grades").insert({ user_id: req.user.id, result, image_url: imageUrl });
+    // NOTE : on ne sauvegarde PAS dans grades ici — l'utilisateur choisit via /api/grade/save
 
     res.json({
       success: true,
       result,
+      image_url: imageUrl,
       grades_used: newCount,
       grades_remaining: profile.is_premium ? "∞" : Math.max(0, FREE_GRADES_PER_MONTH - newCount),
       is_premium: profile.is_premium,
@@ -294,6 +295,23 @@ app.post("/api/grade", requireAuth, upload.fields([{ name: "front", maxCount: 1 
   } catch (err) {
     console.error("Erreur analyse:", err.message);
     if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Sauvegarde optionnelle dans la collection ────────────────────
+app.post("/api/grade/save", requireAuth, async (req, res) => {
+  const { result, image_url } = req.body;
+  if (!result) return res.status(400).json({ error: "Résultat manquant" });
+  try {
+    await supabase.from("grades").insert({
+      user_id: req.user.id,
+      result,
+      image_url: image_url || null,
+    });
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Erreur save:", err.message);
     res.status(500).json({ error: err.message });
   }
 });

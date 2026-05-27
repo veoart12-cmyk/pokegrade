@@ -479,6 +479,36 @@ body {
 .crit-cf.mid  .crit-cf-dot { background: var(--amber); }
 .crit-cf.low  .crit-cf-dot { background: var(--red); }
 
+/* ── Save banner ── */
+.save-banner {
+  margin: 0 14px 14px;
+  background: var(--g50);
+  border: 1.5px solid var(--g200);
+  border-radius: 18px;
+  padding: 16px 16px 14px;
+  transition: opacity .3s, transform .3s;
+}
+.save-banner.hidden { display: none; }
+.save-banner.saved  { border-color: var(--green); background: var(--green-bg); }
+.save-banner-inner  { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.save-banner-icon   { font-size: 28px; flex-shrink: 0; }
+.save-banner-title  { font-size: 15px; font-weight: 700; color: var(--g900); margin: 0 0 2px; }
+.save-banner-sub    { font-size: 12px; color: var(--g500); margin: 0; }
+.save-banner-btns   { display: flex; gap: 10px; }
+.save-btn-yes {
+  flex: 1; padding: 13px;
+  background: var(--red); color: #fff;
+  border: none; border-radius: 12px;
+  font-size: 15px; font-weight: 700; cursor: pointer;
+}
+.save-btn-yes:disabled { background: var(--green); }
+.save-btn-no {
+  flex: 1; padding: 13px;
+  background: transparent; color: var(--g500);
+  border: 1.5px solid var(--g200); border-radius: 12px;
+  font-size: 15px; font-weight: 600; cursor: pointer;
+}
+
 .res-bottom { padding: 6px 14px 44px; }
 .btn-red-full {
   width: 100%; padding: 18px;
@@ -1281,6 +1311,21 @@ body {
   <div id="crit-edges"     class="crit"></div>
   <div id="crit-surface"   class="crit"></div>
 
+  <!-- Bandeau ajout collection -->
+  <div class="save-banner" id="save-banner">
+    <div class="save-banner-inner">
+      <div class="save-banner-icon">📦</div>
+      <div class="save-banner-text">
+        <p class="save-banner-title">Ajouter à ma collection ?</p>
+        <p class="save-banner-sub">Conserve ce résultat dans ton Pokédex personnel</p>
+      </div>
+    </div>
+    <div class="save-banner-btns">
+      <button class="save-btn-yes" id="save-btn-yes" onclick="saveToCollection()">Ajouter ✓</button>
+      <button class="save-btn-no"  onclick="skipSave()">Plus tard</button>
+    </div>
+  </div>
+
   <div class="res-bottom">
     <button class="btn-red-full" onclick="goToGrading()">Envoyer au gradage physique →</button>
     <button class="btn-outline"  onclick="openROI()" style="margin-bottom:10px">📊 Calculer le ROI de ce grade</button>
@@ -2033,6 +2078,7 @@ async function startAnalysis() {
 
     clearInterval(stepTimer);
     ['st1','st2','st3','st4','st5'].forEach(id => document.getElementById(id).className = 'step done');
+    lastImageUrl = data.image_url || null;
     setTimeout(() => showResult(data.result), 600);
   } catch(err) {
     clearInterval(stepTimer);
@@ -2042,9 +2088,53 @@ async function startAnalysis() {
   }
 }
 
+// ── Save to collection ─────────────────────────────────────────
+async function saveToCollection() {
+  if (!currentSession || !lastResult) return;
+  const btn = document.getElementById('save-btn-yes');
+  btn.disabled = true;
+  btn.textContent = '⏳ Enregistrement…';
+  try {
+    const res = await fetch('/api/grade/save', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + currentSession.access_token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ result: lastResult, image_url: lastImageUrl })
+    });
+    if (!res.ok) throw new Error('Erreur serveur');
+    const banner = document.getElementById('save-banner');
+    banner.classList.add('saved');
+    banner.querySelector('.save-banner-icon').textContent = '✅';
+    banner.querySelector('.save-banner-title').textContent = 'Ajoutée à ta collection !';
+    banner.querySelector('.save-banner-sub').textContent   = 'Retrouve-la dans ton Pokédex';
+    btn.textContent = 'Ajoutée ✓';
+    document.querySelector('.save-btn-no').style.display = 'none';
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = 'Ajouter ✓';
+    alert('Erreur : ' + e.message);
+  }
+}
+
+function skipSave() {
+  document.getElementById('save-banner').classList.add('hidden');
+}
+
 // ── Results ────────────────────────────────────────────────────
 function showResult(r) {
   lastResult = r; // store for ROI calculator
+  // Reset le bandeau de sauvegarde
+  const banner = document.getElementById('save-banner');
+  banner.classList.remove('hidden','saved');
+  banner.querySelector('.save-banner-icon').textContent = '📦';
+  banner.querySelector('.save-banner-title').textContent = 'Ajouter à ma collection ?';
+  banner.querySelector('.save-banner-sub').textContent   = 'Conserve ce résultat dans ton Pokédex personnel';
+  const yes = document.getElementById('save-btn-yes');
+  yes.disabled = false; yes.textContent = 'Ajouter ✓';
+  const no = banner.querySelector('.save-btn-no');
+  if (no) no.style.display = '';
   if (!r || typeof r.global === 'undefined') {
     alert('Résultat invalide — réessaie avec une meilleure photo.');
     go('s-upload'); return;
@@ -2784,7 +2874,8 @@ function handleModalClick(e) {
 
 // ── ROI Calculator ─────────────────────────────────────────────
 let roiServiceCost = 25;
-let lastResult = null; // set in showResult()
+let lastResult   = null; // set in showResult()
+let lastImageUrl = null; // image_url reçue du serveur après grading
 
 function openROI(fromScreen) {
   // Update back button destination
