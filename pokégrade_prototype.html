@@ -1177,7 +1177,7 @@ body {
 <!-- GUIDE -->
 <div class="screen" id="s-guide">
   <div class="nav">
-    <span class="nav-back" onclick="go('s-home')">← Retour</span>
+    <span class="nav-back" onclick="go('s-home')" data-i18n="nav.back">← Retour</span>
     <span class="nav-title" data-i18n="guide.title">Prépare ta photo</span>
     <span class="nav-skip" onclick="go('s-upload')" data-i18n="guide.skip">Passer</span>
   </div>
@@ -1189,36 +1189,36 @@ body {
       <div class="card-bg-ph"></div>
       <div class="scan"></div>
     </div>
-    <p class="guide-hint">Centre ta carte dans le cadre</p>
+    <p class="guide-hint" data-i18n="guide.hint">Centre ta carte dans le cadre</p>
   </div>
 
   <div class="rules">
     <div class="rule">
       <div class="rule-n">1</div>
       <div>
-        <p class="rule-t">Fond blanc</p>
-        <p class="rule-s"><span class="ck">Bien</span> Table, feuille A4 &nbsp;<span class="cx">Non</span> Tissu, couette</p>
+        <p class="rule-t" data-i18n="guide.r1.t">Fond blanc</p>
+        <p class="rule-s" data-i18n-html="guide.r1.s"><span class="ck">Bien</span> Table, feuille A4 &nbsp;<span class="cx">Non</span> Tissu, couette</p>
       </div>
     </div>
     <div class="rule">
       <div class="rule-n">2</div>
       <div>
-        <p class="rule-t">Lumière naturelle</p>
-        <p class="rule-s"><span class="ck">Bien</span> Fenêtre &nbsp;<span class="cx">Non</span> Flash direct</p>
+        <p class="rule-t" data-i18n="guide.r2.t">Lumière naturelle</p>
+        <p class="rule-s" data-i18n-html="guide.r2.s"><span class="ck">Bien</span> Fenêtre &nbsp;<span class="cx">Non</span> Flash direct</p>
       </div>
     </div>
     <div class="rule">
       <div class="rule-n">3</div>
       <div>
-        <p class="rule-t">Carte à plat</p>
-        <p class="rule-s"><span class="cx">Non</span> Tenir en main — perd en précision</p>
+        <p class="rule-t" data-i18n="guide.r3.t">Carte à plat</p>
+        <p class="rule-s" data-i18n-html="guide.r3.s"><span class="cx">Non</span> Tenir en main — perd en précision</p>
       </div>
     </div>
     <div class="rule">
       <div class="rule-n">4</div>
       <div>
-        <p class="rule-t">Recto + verso</p>
-        <p class="rule-s">Les deux faces pour un grade complet</p>
+        <p class="rule-t" data-i18n="guide.r4.t">Recto + verso</p>
+        <p class="rule-s" data-i18n="guide.r4.s">Les deux faces pour un grade complet</p>
       </div>
     </div>
   </div>
@@ -1229,14 +1229,14 @@ body {
 <!-- UPLOAD -->
 <div class="screen" id="s-upload">
   <div class="nav">
-    <span class="nav-back" onclick="go('s-guide')">← Retour</span>
+    <span class="nav-back" onclick="go('s-guide')" data-i18n="nav.back">← Retour</span>
     <span class="nav-title" data-i18n="upload.title">Ta carte</span>
     <span class="nav-skip"></span>
   </div>
 
   <!-- RECTO -->
   <div style="padding: 0 16px 6px">
-    <p style="font-size:11px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">① Recto <span style="color:var(--red)">*</span></p>
+    <p style="font-size:11px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px"><span data-i18n="upload.recto">① Recto</span> <span style="color:var(--red)">*</span></p>
   </div>
 
   <div class="upload-zone" id="upload-zone">
@@ -1254,14 +1254,14 @@ body {
   <div class="preview-zone" id="preview-zone">
     <img id="preview-img" src="" alt="">
     <label class="preview-change">
-      Changer
+      <span data-i18n="upload.change">Changer</span>
       <input type="file" accept="image/*" onchange="handleFile(event,'front')">
     </label>
   </div>
 
   <!-- VERSO -->
   <div style="padding: 10px 16px 6px">
-    <p style="font-size:11px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">② Verso <span style="color:var(--g300);font-weight:400;text-transform:none;letter-spacing:0">optionnel — améliore la précision</span></p>
+    <p style="font-size:11px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px"><span data-i18n="upload.verso">② Verso</span> <span style="color:var(--g300);font-weight:400;text-transform:none;letter-spacing:0" data-i18n="upload.verso.opt">optionnel — améliore la précision</span></p>
   </div>
 
   <div class="upload-zone" id="upload-zone-back" style="padding:28px 20px">
@@ -1279,7 +1279,7 @@ body {
   <div class="preview-zone" id="preview-zone-back">
     <img id="preview-img-back" src="" alt="">
     <label class="preview-change">
-      Changer
+      <span data-i18n="upload.change">Changer</span>
       <input type="file" accept="image/*" onchange="handleFile(event,'back')">
     </label>
   </div>
@@ -1329,7 +1329,7 @@ body {
       <div class="res-thumb"><img id="res-img" src="" alt=""></div>
       <div>
         <p class="res-cn" id="res-name">Carte Pokémon</p>
-        <p class="res-cs">Analyse IA · Standards PSA</p>
+        <p class="res-cs" data-i18n="result.sub">Analyse IA · Standards PSA</p>
       </div>
     </div>
   </div>
@@ -1365,7 +1365,7 @@ body {
   <!-- Détection de contrefaçon -->
   <div class="fake-block" id="fake-block">
     <div class="fake-header">
-      <p class="fake-label">🔍 Authenticité</p>
+      <p class="fake-label" data-i18n="result.fake.lbl">🔍 Authenticité</p>
       <p class="fake-conf" id="fake-conf"></p>
     </div>
     <p class="fake-verdict" id="fake-verdict"></p>
@@ -1383,7 +1383,7 @@ body {
     <p class="price-note" id="price-note">—</p>
   </div>
 
-  <p class="crit-head-row">Détail des critères</p>
+  <p class="crit-head-row" data-i18n="result.criteria">Détail des critères</p>
   <div id="crit-centering" class="crit"></div>
   <div id="crit-corners"   class="crit"></div>
   <div id="crit-edges"     class="crit"></div>
@@ -1431,12 +1431,12 @@ body {
   <div id="coll-chart-section" style="display:none; padding: 0 14px 4px;">
     <!-- Meilleure carte -->
     <div class="coll-best-wrap" id="coll-best-wrap">
-      <p class="coll-best-label">⭐ Meilleure carte</p>
+      <p class="coll-best-label" data-i18n="coll.best.lbl">⭐ Meilleure carte</p>
       <div class="coll-best-card" id="coll-best-card"></div>
     </div>
     <!-- Line chart -->
     <div class="coll-chart-box">
-      <p class="coll-chart-title">Évolution de la valeur totale</p>
+      <p class="coll-chart-title" data-i18n="coll.chart.title">Évolution de la valeur totale</p>
       <svg id="coll-chart" viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;overflow:visible"></svg>
     </div>
   </div>
@@ -1444,8 +1444,8 @@ body {
   <div class="coll-grid" id="coll-grid">
     <div class="coll-empty">
       <div class="coll-empty-icon">📦</div>
-      <p class="coll-empty-t">Aucune carte encore</p>
-      <p class="coll-empty-s">Grade ta première carte pour la voir apparaître ici</p>
+      <p class="coll-empty-t" data-i18n="coll.empty.t">Aucune carte encore</p>
+      <p class="coll-empty-s" data-i18n="coll.empty.s">Grade ta première carte pour la voir apparaître ici</p>
     </div>
   </div>
 </div>
@@ -1453,8 +1453,8 @@ body {
 <!-- GRADAGE PHYSIQUE -->
 <div class="screen" id="s-grading">
   <div class="grading-header">
-    <p class="grading-title">Gradage Physique</p>
-    <p class="grading-sub">Envoie ta carte aux meilleurs experts pour une certification officielle.</p>
+    <p class="grading-title" data-i18n="grading.title">Gradage Physique</p>
+    <p class="grading-sub" data-i18n="grading.sub">Envoie ta carte aux meilleurs experts pour une certification officielle.</p>
   </div>
   <div class="grading-list">
 
@@ -1463,16 +1463,16 @@ body {
       <div class="grading-service-header">
         <div class="service-logo" style="background:#003087;color:white;font-size:14px;font-weight:900">PSA</div>
         <div>
-          <p class="service-name">PSA <span class="service-recommended">⭐ Référence mondiale</span></p>
-          <p class="service-country">🇺🇸 États-Unis — Professional Sports Authenticator</p>
+          <p class="service-name">PSA <span class="service-recommended" data-i18n="grading.psa.badge">⭐ Référence mondiale</span></p>
+          <p class="service-country" data-i18n="grading.psa.country">🇺🇸 États-Unis — Professional Sports Authenticator</p>
         </div>
       </div>
       <div class="grading-service-body">
-        <div class="service-row"><span class="service-row-l">Tarif de base</span><span class="service-row-r">~25€ / carte</span></div>
-        <div class="service-row"><span class="service-row-l">Délai standard</span><span class="service-row-r">60–120 jours</span></div>
-        <div class="service-row"><span class="service-row-l">Délai express</span><span class="service-row-r">10–30 jours (150€+)</span></div>
-        <div class="service-row"><span class="service-row-l">Valeur ajoutée</span><span class="service-row-r">+100% sur valeur de revente</span></div>
-        <a class="service-btn red" href="https://www.psacard.com/services/tradingcardgrading" target="_blank">Soumettre sur PSA →</a>
+        <div class="service-row"><span class="service-row-l" data-i18n="grading.row.price">Tarif de base</span><span class="service-row-r">~25€ / carte</span></div>
+        <div class="service-row"><span class="service-row-l" data-i18n="grading.row.delay">Délai standard</span><span class="service-row-r">60–120 jours</span></div>
+        <div class="service-row"><span class="service-row-l" data-i18n="grading.row.express">Délai express</span><span class="service-row-r">10–30 jours (150€+)</span></div>
+        <div class="service-row"><span class="service-row-l" data-i18n="grading.row.added">Valeur ajoutée</span><span class="service-row-r">+100% sur valeur de revente</span></div>
+        <a class="service-btn red" href="https://www.psacard.com/services/tradingcardgrading" target="_blank" data-i18n="grading.psa.submit">Soumettre sur PSA →</a>
       </div>
     </div>
 
@@ -1481,16 +1481,16 @@ body {
       <div class="grading-service-header">
         <div class="service-logo" style="background:#1a1a2e;font-size:18px">✨</div>
         <div>
-          <p class="service-name">CollectAura <span class="service-recommended">🇫🇷 Français</span></p>
-          <p class="service-country">🇫🇷 France — Gradage européen de référence</p>
+          <p class="service-name">CollectAura <span class="service-recommended" data-i18n="grading.aura.badge">🇫🇷 Français</span></p>
+          <p class="service-country" data-i18n="grading.aura.country">🇫🇷 France — Gradage européen de référence</p>
         </div>
       </div>
       <div class="grading-service-body">
-        <div class="service-row"><span class="service-row-l">Tarif de base</span><span class="service-row-r">~15€ / carte</span></div>
-        <div class="service-row"><span class="service-row-l">Délai standard</span><span class="service-row-r">30–60 jours</span></div>
-        <div class="service-row"><span class="service-row-l">Délai express</span><span class="service-row-r">7–14 jours</span></div>
-        <div class="service-row"><span class="service-row-l">Avantage</span><span class="service-row-r">Pas de douane, livraison FR</span></div>
-        <a class="service-btn" href="https://www.collectaura.com" target="_blank">Soumettre sur CollectAura →</a>
+        <div class="service-row"><span class="service-row-l" data-i18n="grading.row.price">Tarif de base</span><span class="service-row-r">~15€ / carte</span></div>
+        <div class="service-row"><span class="service-row-l" data-i18n="grading.row.delay">Délai standard</span><span class="service-row-r">30–60 jours</span></div>
+        <div class="service-row"><span class="service-row-l" data-i18n="grading.row.express">Délai express</span><span class="service-row-r">7–14 jours</span></div>
+        <div class="service-row"><span class="service-row-l" data-i18n="grading.row.advantage">Avantage</span><span class="service-row-r">Pas de douane, livraison FR</span></div>
+        <a class="service-btn" href="https://www.collectaura.com" target="_blank" data-i18n="grading.aura.submit">Soumettre sur CollectAura →</a>
       </div>
     </div>
 
@@ -1500,14 +1500,14 @@ body {
         <div class="service-logo" style="background:#2d6a4f;color:white;font-size:13px;font-weight:900">CCC</div>
         <div>
           <p class="service-name">CCC Grading</p>
-          <p class="service-country">🇪🇺 Europe — Certified Card Collector</p>
+          <p class="service-country" data-i18n="grading.ccc.country">🇪🇺 Europe — Certified Card Collector</p>
         </div>
       </div>
       <div class="grading-service-body">
-        <div class="service-row"><span class="service-row-l">Tarif de base</span><span class="service-row-r">~12€ / carte</span></div>
-        <div class="service-row"><span class="service-row-l">Délai standard</span><span class="service-row-r">30–45 jours</span></div>
-        <div class="service-row"><span class="service-row-l">Avantage</span><span class="service-row-r">Prix compétitif, EU</span></div>
-        <a class="service-btn" href="https://www.cccgrading.com" target="_blank">Soumettre sur CCC →</a>
+        <div class="service-row"><span class="service-row-l" data-i18n="grading.row.price">Tarif de base</span><span class="service-row-r">~12€ / carte</span></div>
+        <div class="service-row"><span class="service-row-l" data-i18n="grading.row.delay">Délai standard</span><span class="service-row-r">30–45 jours</span></div>
+        <div class="service-row"><span class="service-row-l" data-i18n="grading.row.advantage">Avantage</span><span class="service-row-r">Prix compétitif, EU</span></div>
+        <a class="service-btn" href="https://www.cccgrading.com" target="_blank" data-i18n="grading.ccc.submit">Soumettre sur CCC →</a>
       </div>
     </div>
 
@@ -1517,18 +1517,18 @@ body {
         <div class="service-logo" style="background:#c8a800;color:white;font-size:13px;font-weight:900">BGS</div>
         <div>
           <p class="service-name">Beckett Grading (BGS)</p>
-          <p class="service-country">🇺🇸 États-Unis — Beckett Grading Services</p>
+          <p class="service-country" data-i18n="grading.bgs.country">🇺🇸 États-Unis — Beckett Grading Services</p>
         </div>
       </div>
       <div class="grading-service-body">
-        <div class="service-row"><span class="service-row-l">Tarif de base</span><span class="service-row-r">~22€ / carte</span></div>
-        <div class="service-row"><span class="service-row-l">Délai standard</span><span class="service-row-r">60–90 jours</span></div>
-        <div class="service-row"><span class="service-row-l">Spécialité</span><span class="service-row-r">Sous-grades détaillés</span></div>
-        <a class="service-btn" href="https://www.beckett.com/grading" target="_blank">Soumettre sur Beckett →</a>
+        <div class="service-row"><span class="service-row-l" data-i18n="grading.row.price">Tarif de base</span><span class="service-row-r">~22€ / carte</span></div>
+        <div class="service-row"><span class="service-row-l" data-i18n="grading.row.delay">Délai standard</span><span class="service-row-r">60–90 jours</span></div>
+        <div class="service-row"><span class="service-row-l" data-i18n="grading.row.specialty">Spécialité</span><span class="service-row-r">Sous-grades détaillés</span></div>
+        <a class="service-btn" href="https://www.beckett.com/grading" target="_blank" data-i18n="grading.bgs.submit">Soumettre sur Beckett →</a>
       </div>
     </div>
 
-    <p style="font-size:11px;color:var(--g500);text-align:center;padding:8px 0 20px;line-height:1.6">Les tarifs et délais sont indicatifs et peuvent varier.<br>Vérifie les prix actuels sur chaque site.</p>
+    <p style="font-size:11px;color:var(--g500);text-align:center;padding:8px 0 20px;line-height:1.6" data-i18n-html="grading.disclaimer">Les tarifs et délais sont indicatifs et peuvent varier.<br>Vérifie les prix actuels sur chaque site.</p>
   </div>
 </div>
 
@@ -1545,24 +1545,24 @@ body {
       </div>
       <span class="logo-name">PokeGrade</span>
     </div>
-    <h1 class="auth-h1">Connexion</h1>
-    <p class="auth-sub">3 grades gratuits par mois.</p>
+    <h1 class="auth-h1" data-i18n="login.title">Connexion</h1>
+    <p class="auth-sub" data-i18n="login.sub">3 grades gratuits par mois.</p>
 
     <div class="auth-error" id="login-error"></div>
 
     <div class="auth-field">
-      <label class="auth-lbl">Email</label>
+      <label class="auth-lbl" data-i18n="auth.email">Email</label>
       <input class="auth-inp" type="email" id="login-email" placeholder="toi@email.com" autocomplete="email">
     </div>
     <div class="auth-field">
-      <label class="auth-lbl">Mot de passe</label>
+      <label class="auth-lbl" data-i18n="auth.password">Mot de passe</label>
       <input class="auth-inp" type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
     </div>
 
-    <button class="auth-submit" id="login-btn" onclick="doLogin()">Se connecter</button>
+    <button class="auth-submit" id="login-btn" onclick="doLogin()" data-i18n="login.btn">Se connecter</button>
 
-    <p class="auth-switch">Pas encore de compte ? <a onclick="go('s-signup')">Créer un compte</a></p>
-    <p class="auth-switch" style="margin-top:10px"><a onclick="go('s-home')" style="color:var(--g500)">← Retour</a></p>
+    <p class="auth-switch" data-i18n-html="login.switch">Pas encore de compte ? <a onclick="go('s-signup')">Créer un compte</a></p>
+    <p class="auth-switch" style="margin-top:10px"><a onclick="go('s-home')" style="color:var(--g500)" data-i18n="nav.back">← Retour</a></p>
   </div>
 </div>
 
@@ -1579,63 +1579,63 @@ body {
       </div>
       <span class="logo-name">PokeGrade</span>
     </div>
-    <h1 class="auth-h1">Créer un compte</h1>
-    <p class="auth-sub">Gratuit. 3 grades offerts ce mois.</p>
+    <h1 class="auth-h1" data-i18n="signup.title">Créer un compte</h1>
+    <p class="auth-sub" data-i18n="signup.sub">Gratuit. 3 grades offerts ce mois.</p>
 
     <div class="auth-error" id="signup-error"></div>
 
     <div class="auth-field">
-      <label class="auth-lbl">Email</label>
+      <label class="auth-lbl" data-i18n="auth.email">Email</label>
       <input class="auth-inp" type="email" id="signup-email" placeholder="toi@email.com" autocomplete="email">
     </div>
     <div class="auth-field">
-      <label class="auth-lbl">Mot de passe</label>
+      <label class="auth-lbl" data-i18n="auth.password">Mot de passe</label>
       <input class="auth-inp" type="password" id="signup-pass" placeholder="••••••••" autocomplete="new-password">
     </div>
 
-    <button class="auth-submit" id="signup-btn" onclick="doSignup()">Créer mon compte</button>
+    <button class="auth-submit" id="signup-btn" onclick="doSignup()" data-i18n="signup.btn">Créer mon compte</button>
 
-    <p class="auth-switch">Déjà un compte ? <a onclick="go('s-login')">Se connecter</a></p>
-    <p class="auth-switch" style="margin-top:10px"><a onclick="go('s-home')" style="color:var(--g500)">← Retour</a></p>
+    <p class="auth-switch" data-i18n-html="signup.switch">Déjà un compte ? <a onclick="go('s-login')">Se connecter</a></p>
+    <p class="auth-switch" style="margin-top:10px"><a onclick="go('s-home')" style="color:var(--g500)" data-i18n="nav.back">← Retour</a></p>
   </div>
 </div>
 
 <!-- PAYWALL -->
 <div class="screen" id="s-paywall">
   <div class="paywall-icon">🏆</div>
-  <h2 class="paywall-h1">Limite atteinte</h2>
-  <p class="paywall-sub">Tu as utilisé tes 3 grades gratuits ce mois.<br>Passe en Premium pour continuer.</p>
+  <h2 class="paywall-h1" data-i18n="paywall.title">Limite atteinte</h2>
+  <p class="paywall-sub" data-i18n-html="paywall.sub">Tu as utilisé tes 3 grades gratuits ce mois.<br>Passe en Premium pour continuer.</p>
 
   <div class="paywall-perks">
     <div class="perk">
       <span class="perk-icon">♾️</span>
-      <div><p class="perk-t">Grades illimités</p><p class="perk-s">Autant de cartes que tu veux</p></div>
+      <div><p class="perk-t" data-i18n="paywall.p1.t">Grades illimités</p><p class="perk-s" data-i18n="paywall.p1.s">Autant de cartes que tu veux</p></div>
     </div>
     <div class="perk">
       <span class="perk-icon">📊</span>
-      <div><p class="perk-t">Historique complet</p><p class="perk-s">Toutes tes cartes sauvegardées</p></div>
+      <div><p class="perk-t" data-i18n="paywall.p2.t">Historique complet</p><p class="perk-s" data-i18n="paywall.p2.s">Toutes tes cartes sauvegardées</p></div>
     </div>
     <div class="perk">
       <span class="perk-icon">⚡</span>
-      <div><p class="perk-t">Priorité de traitement</p><p class="perk-s">Résultats encore plus rapides</p></div>
+      <div><p class="perk-t" data-i18n="paywall.p3.t">Priorité de traitement</p><p class="perk-s" data-i18n="paywall.p3.s">Résultats encore plus rapides</p></div>
     </div>
   </div>
 
   <div class="price-row">
     <span class="price-main">4,99€</span>
-    <span class="price-per"> / mois</span>
+    <span class="price-per" data-i18n="paywall.per"> / mois</span>
   </div>
 
-  <button class="paywall-cta" onclick="goToPremium()">Passer en Premium →</button>
-  <button class="paywall-skip" onclick="go('s-home')">Pas maintenant</button>
+  <button class="paywall-cta" onclick="goToPremium()" data-i18n="paywall.cta">Passer en Premium →</button>
+  <button class="paywall-skip" onclick="go('s-home')" data-i18n="paywall.skip">Pas maintenant</button>
 </div>
 
 <!-- ACCOUNT -->
 <div class="screen" id="s-account">
   <div class="acc-header">
     <div class="acc-nav">
-      <span class="acc-back" onclick="go('s-home')">← Retour</span>
-      <span class="acc-title">Mon compte</span>
+      <span class="acc-back" onclick="go('s-home')" data-i18n="nav.back">← Retour</span>
+      <span class="acc-title" data-i18n="acc.title">Mon compte</span>
     </div>
     <div class="acc-avatar" id="acc-avatar">?</div>
     <p class="acc-email" id="acc-email-display">—</p>
@@ -1645,47 +1645,47 @@ body {
   <div class="acc-section">
     <div class="acc-card">
       <div class="acc-row">
-        <span class="acc-row-l">Grades ce mois</span>
+        <span class="acc-row-l" data-i18n="acc.row.used">Grades ce mois</span>
         <span class="acc-row-r" id="acc-grades-used">—</span>
       </div>
       <div class="acc-row">
-        <span class="acc-row-l">Restants</span>
+        <span class="acc-row-l" data-i18n="acc.row.left">Restants</span>
         <span class="acc-row-r" id="acc-grades-left">—</span>
       </div>
       <div class="acc-row">
-        <span class="acc-row-l">Plan</span>
+        <span class="acc-row-l" data-i18n="acc.row.plan">Plan</span>
         <span class="acc-row-r" id="acc-plan-text">—</span>
       </div>
     </div>
 
     <div id="upgrade-card" style="display:none">
-      <button class="btn-red-full" onclick="goToPremium()" style="margin-bottom:10px">Passer en Premium — 4,99€/mois →</button>
+      <button class="btn-red-full" onclick="goToPremium()" style="margin-bottom:10px" data-i18n="acc.upgrade">Passer en Premium — 4,99€/mois →</button>
     </div>
 
-    <p class="acc-section-title">Profil public</p>
+    <p class="acc-section-title" data-i18n="acc.public.title">Profil public</p>
     <div class="username-row">
       <span class="username-at">@</span>
-      <input class="username-inp" type="text" id="acc-username" placeholder="ton-pseudo" maxlength="20" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9_]/g,'')">
-      <button class="username-save" onclick="saveUsername()">Sauver</button>
+      <input class="username-inp" type="text" id="acc-username" data-i18n-placeholder="acc.username.ph" placeholder="ton-pseudo" maxlength="20" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9_]/g,'')">
+      <button class="username-save" onclick="saveUsername()" data-i18n="common.save">Sauver</button>
     </div>
     <div class="toggle-row">
       <div>
-        <p class="toggle-label">Collection publique</p>
-        <p class="toggle-sub">Partage ta collection par lien</p>
+        <p class="toggle-label" data-i18n="acc.toggle.public">Collection publique</p>
+        <p class="toggle-sub" data-i18n="acc.toggle.public.sub">Partage ta collection par lien</p>
       </div>
       <button class="toggle-switch" id="toggle-public" onclick="togglePublicCollection()"></button>
     </div>
     <div class="share-link-box" id="share-link-box">
       <span class="share-link-url" id="share-link-url"></span>
-      <button class="share-link-copy" onclick="copyProfileLink()">Copier</button>
+      <button class="share-link-copy" onclick="copyProfileLink()" data-i18n="common.copy">Copier</button>
     </div>
 
-    <p class="acc-section-title">Historique</p>
+    <p class="acc-section-title" data-i18n="acc.history">Historique</p>
     <div class="acc-card" id="history-list">
-      <div class="acc-row"><span style="color:var(--g500);font-size:13px">Chargement…</span></div>
+      <div class="acc-row"><span style="color:var(--g500);font-size:13px" data-i18n="common.loading">Chargement…</span></div>
     </div>
 
-    <button class="acc-logout" onclick="doLogout()">Se déconnecter</button>
+    <button class="acc-logout" onclick="doLogout()" data-i18n="acc.logout">Se déconnecter</button>
 
     <div class="legal-links">
       <a href="/legal.html#mentions">Mentions légales</a>
@@ -1702,23 +1702,23 @@ body {
 <div class="slab-modal" id="slab-modal" onclick="handleModalClick(event)">
   <img class="slab-modal-img" id="slab-modal-img" src="" alt="Slab">
   <div class="slab-modal-actions">
-    <button class="slab-modal-delete" onclick="deleteGrade()">🗑 Supprimer</button>
-    <button class="slab-modal-close" onclick="closeSlabModal()">Fermer</button>
+    <button class="slab-modal-delete" onclick="deleteGrade()" data-i18n="modal.delete">🗑 Supprimer</button>
+    <button class="slab-modal-close" onclick="closeSlabModal()" data-i18n="modal.close">Fermer</button>
   </div>
 </div>
 
 <!-- ROI CALCULATOR -->
 <div class="screen" id="s-roi">
   <div class="nav">
-    <span class="nav-back" id="roi-back" onclick="go('s-result')">← Retour</span>
-    <span class="nav-title">Calculateur ROI</span>
+    <span class="nav-back" id="roi-back" onclick="go('s-result')" data-i18n="nav.back">← Retour</span>
+    <span class="nav-title" data-i18n="roi.title">Calculateur ROI</span>
     <span></span>
   </div>
   <div style="padding:0 16px 100px">
-    <p class="roi-section-label">Ton investissement</p>
+    <p class="roi-section-label" data-i18n="roi.s1">Ton investissement</p>
 
     <div class="roi-field">
-      <label class="roi-lbl">Prix d'achat de la carte</label>
+      <label class="roi-lbl" data-i18n="roi.buy.lbl">Prix d'achat de la carte</label>
       <div class="roi-input-wrap">
         <input class="roi-inp" type="number" id="roi-buy" placeholder="0" min="0" inputmode="decimal" oninput="calcROI()">
         <span class="roi-unit">€</span>
@@ -1726,7 +1726,7 @@ body {
     </div>
 
     <div class="roi-field">
-      <label class="roi-lbl">Service de gradage</label>
+      <label class="roi-lbl" data-i18n="roi.service.lbl">Service de gradage</label>
       <div class="roi-services">
         <div class="roi-service-opt selected" onclick="selectService(this, 25)">PSA<span class="roi-svc-price">~25€</span></div>
         <div class="roi-service-opt" onclick="selectService(this, 15)">CollectAura<span class="roi-svc-price">~15€</span></div>
@@ -1736,17 +1736,17 @@ body {
     </div>
 
     <div class="roi-field">
-      <label class="roi-lbl">Frais d'envoi + assurance</label>
+      <label class="roi-lbl" data-i18n="roi.ship.lbl">Frais d'envoi + assurance</label>
       <div class="roi-input-wrap">
         <input class="roi-inp" type="number" id="roi-shipping" placeholder="15" value="15" min="0" inputmode="decimal" oninput="calcROI()">
         <span class="roi-unit">€</span>
       </div>
     </div>
 
-    <p class="roi-section-label" style="margin-top:22px">Valeur après grade</p>
+    <p class="roi-section-label" style="margin-top:22px" data-i18n="roi.s2">Valeur après grade</p>
 
     <div class="roi-field">
-      <label class="roi-lbl">Estimation marché (pré-remplie auto)</label>
+      <label class="roi-lbl" data-i18n="roi.value.lbl">Estimation marché (pré-remplie auto)</label>
       <div class="roi-input-wrap">
         <input class="roi-inp" type="number" id="roi-value" placeholder="0" min="0" inputmode="decimal" oninput="calcROI()">
         <span class="roi-unit">€</span>
@@ -1755,15 +1755,15 @@ body {
 
     <div class="roi-result">
       <div class="roi-result-row">
-        <span class="roi-result-l">Coût total</span>
+        <span class="roi-result-l" data-i18n="roi.total">Coût total</span>
         <span class="roi-result-r" id="roi-total-cost">—</span>
       </div>
       <div class="roi-result-row">
-        <span class="roi-result-l">Valeur estimée</span>
+        <span class="roi-result-l" data-i18n="roi.estvalue">Valeur estimée</span>
         <span class="roi-result-r" id="roi-est-value">—</span>
       </div>
       <div class="roi-result-row profit-row">
-        <span class="roi-result-l">Profit / Perte</span>
+        <span class="roi-result-l" data-i18n="roi.profit">Profit / Perte</span>
         <span class="roi-result-r" id="roi-profit">—</span>
       </div>
       <div class="roi-big-pct" id="roi-pct" style="color:var(--black)">—</div>
@@ -1781,17 +1781,17 @@ body {
     <p class="pub-sub"  id="pub-sub">Chargement…</p>
   </div>
   <div class="coll-stats" id="pub-stats" style="display:none">
-    <div class="coll-stat"><div class="coll-stat-n" id="pub-stat-count">—</div><div class="coll-stat-l">Cartes</div></div>
-    <div class="coll-stat"><div class="coll-stat-n" id="pub-stat-avg">—</div><div class="coll-stat-l">Moy. PSA</div></div>
-    <div class="coll-stat"><div class="coll-stat-n" id="pub-stat-best">—</div><div class="coll-stat-l">Meilleure</div></div>
+    <div class="coll-stat"><div class="coll-stat-n" id="pub-stat-count">—</div><div class="coll-stat-l" data-i18n="coll.stat.cards">Cartes</div></div>
+    <div class="coll-stat"><div class="coll-stat-n" id="pub-stat-avg">—</div><div class="coll-stat-l" data-i18n="coll.stat.avg">Moy. PSA</div></div>
+    <div class="coll-stat"><div class="coll-stat-n" id="pub-stat-best">—</div><div class="coll-stat-l" data-i18n="coll.stat.best">Meilleure</div></div>
   </div>
   <div class="coll-grid" id="pub-grid">
     <div class="coll-empty">
       <div class="coll-empty-icon">⏳</div>
-      <p class="coll-empty-t">Chargement…</p>
+      <p class="coll-empty-t" data-i18n="common.loading">Chargement…</p>
     </div>
   </div>
-  <a class="pub-cta" href="https://pokegrade.it.com">Grader mes cartes sur PokeGrade →</a>
+  <a class="pub-cta" href="https://pokegrade.it.com" data-i18n="pub.cta">Grader mes cartes sur PokeGrade →</a>
 </div>
 
 <!-- BOTTOM NAV -->
@@ -1854,6 +1854,53 @@ const TRANSLATIONS = {
     'coll.stat.best':'Meilleure','coll.stat.value':'Valeur est.',
     'coll.best.lbl':'⭐ Meilleure carte','coll.chart.title':'Évolution de la valeur totale',
     'lang.title':'Langue',
+    'nav.back':'← Retour',
+    'common.loading':'Chargement…','common.close':'Fermer','common.delete':'🗑 Supprimer','common.save':'Sauver','common.copy':'Copier',
+    'guide.hint':'Centre ta carte dans le cadre',
+    'guide.r1.t':'Fond blanc','guide.r1.s':'<span class="ck">Bien</span> Table, feuille A4 &nbsp;<span class="cx">Non</span> Tissu, couette',
+    'guide.r2.t':'Lumière naturelle','guide.r2.s':'<span class="ck">Bien</span> Fenêtre &nbsp;<span class="cx">Non</span> Flash direct',
+    'guide.r3.t':'Carte à plat','guide.r3.s':'<span class="cx">Non</span> Tenir en main — perd en précision',
+    'guide.r4.t':'Recto + verso','guide.r4.s':'Les deux faces pour un grade complet',
+    'upload.recto':'① Recto','upload.verso':'② Verso','upload.verso.opt':'optionnel — améliore la précision','upload.change':'Changer',
+    'result.sub':'Analyse IA · Standards PSA','result.criteria':'Détail des critères','result.fake.lbl':'🔍 Authenticité',
+    'coll.empty.t':'Aucune carte encore','coll.empty.s':'Grade ta première carte pour la voir apparaître ici',
+    'coll.sub.count':'{n} carte(s) gradée(s)',
+    'grading.title':'Gradage Physique','grading.sub':'Envoie ta carte aux meilleurs experts pour une certification officielle.',
+    'grading.psa.badge':'⭐ Référence mondiale','grading.aura.badge':'🇫🇷 Français',
+    'grading.row.price':'Tarif de base','grading.row.delay':'Délai standard','grading.row.express':'Délai express',
+    'grading.row.added':'Valeur ajoutée','grading.row.advantage':'Avantage','grading.row.specialty':'Spécialité',
+    'grading.psa.country':'🇺🇸 États-Unis — Professional Sports Authenticator',
+    'grading.psa.submit':'Soumettre sur PSA →',
+    'grading.aura.country':'🇫🇷 France — Gradage européen de référence',
+    'grading.aura.submit':'Soumettre sur CollectAura →',
+    'grading.ccc.country':'🇪🇺 Europe — Certified Card Collector',
+    'grading.ccc.submit':'Soumettre sur CCC →',
+    'grading.bgs.country':'🇺🇸 États-Unis — Beckett Grading Services',
+    'grading.bgs.submit':'Soumettre sur Beckett →',
+    'grading.disclaimer':'Les tarifs et délais sont indicatifs et peuvent varier.<br>Vérifie les prix actuels sur chaque site.',
+    'login.title':'Connexion','login.sub':'3 grades gratuits par mois.','login.btn':'Se connecter',
+    'login.loading':'Connexion…','login.error':'Email ou mot de passe incorrect.',
+    'login.switch':'Pas encore de compte ? <a onclick="go(\'s-signup\')">Créer un compte</a>',
+    'signup.title':'Créer un compte','signup.sub':'Gratuit. 3 grades offerts ce mois.','signup.btn':'Créer mon compte',
+    'signup.loading':'Création…','signup.error.short':'Mot de passe trop court (6 caractères min).','signup.created':'Compte créé ! Connecte-toi maintenant.',
+    'signup.switch':'Déjà un compte ? <a onclick="go(\'s-login\')">Se connecter</a>',
+    'auth.email':'Email','auth.password':'Mot de passe',
+    'paywall.title':'Limite atteinte','paywall.sub':'Tu as utilisé tes 3 grades gratuits ce mois.<br>Passe en Premium pour continuer.',
+    'paywall.p1.t':'Grades illimités','paywall.p1.s':'Autant de cartes que tu veux',
+    'paywall.p2.t':'Historique complet','paywall.p2.s':'Toutes tes cartes sauvegardées',
+    'paywall.p3.t':'Priorité de traitement','paywall.p3.s':'Résultats encore plus rapides',
+    'paywall.per':' / mois','paywall.cta':'Passer en Premium →','paywall.skip':'Pas maintenant',
+    'acc.title':'Mon compte','acc.row.used':'Grades ce mois','acc.row.left':'Restants','acc.row.plan':'Plan',
+    'acc.upgrade':'Passer en Premium — 4,99€/mois →','acc.public.title':'Profil public',
+    'acc.username.ph':'ton-pseudo','acc.toggle.public':'Collection publique','acc.toggle.public.sub':'Partage ta collection par lien',
+    'acc.history':'Historique','acc.history.empty':'Aucun grade pour le moment','acc.logout':'Se déconnecter',
+    'modal.delete':'🗑 Supprimer','modal.close':'Fermer','modal.confirm.delete':'Supprimer cette carte de ta collection ? Cette action est irréversible.',
+    'roi.title':'Calculateur ROI','roi.s1':'Ton investissement','roi.buy.lbl':'Prix d\'achat de la carte',
+    'roi.service.lbl':'Service de gradage','roi.ship.lbl':'Frais d\'envoi + assurance',
+    'roi.s2':'Valeur après grade','roi.value.lbl':'Estimation marché (pré-remplie auto)',
+    'roi.total':'Coût total','roi.estvalue':'Valeur estimée','roi.profit':'Profit / Perte',
+    'pub.cta':'Grader mes cartes sur PokeGrade →',
+    'pill.premium':'Premium — grades illimités','pill.free':'{n} grade(s) gratuit(s) restant(s)',
   },
   en: {
     'nav.home':'Home','nav.grade':'Grade','nav.collection':'Collection','nav.grading':'Grading',
@@ -1878,6 +1925,53 @@ const TRANSLATIONS = {
     'coll.stat.best':'Best','coll.stat.value':'Est. value',
     'coll.best.lbl':'⭐ Best card','coll.chart.title':'Total value evolution',
     'lang.title':'Language',
+    'nav.back':'← Back',
+    'common.loading':'Loading…','common.close':'Close','common.delete':'🗑 Delete','common.save':'Save','common.copy':'Copy',
+    'guide.hint':'Center your card in the frame',
+    'guide.r1.t':'White background','guide.r1.s':'<span class="ck">Good</span> Table, A4 sheet &nbsp;<span class="cx">No</span> Fabric, duvet',
+    'guide.r2.t':'Natural light','guide.r2.s':'<span class="ck">Good</span> Window &nbsp;<span class="cx">No</span> Direct flash',
+    'guide.r3.t':'Card flat','guide.r3.s':'<span class="cx">No</span> Hold in hand — loses precision',
+    'guide.r4.t':'Front + back','guide.r4.s':'Both sides for a complete grade',
+    'upload.recto':'① Front','upload.verso':'② Back','upload.verso.opt':'optional — improves accuracy','upload.change':'Change',
+    'result.sub':'AI Analysis · PSA Standards','result.criteria':'Criteria breakdown','result.fake.lbl':'🔍 Authenticity',
+    'coll.empty.t':'No cards yet','coll.empty.s':'Grade your first card to see it appear here',
+    'coll.sub.count':'{n} graded card(s)',
+    'grading.title':'Physical Grading','grading.sub':'Send your card to the best experts for official certification.',
+    'grading.psa.badge':'⭐ World reference','grading.aura.badge':'🇫🇷 French',
+    'grading.row.price':'Base price','grading.row.delay':'Standard delay','grading.row.express':'Express delay',
+    'grading.row.added':'Added value','grading.row.advantage':'Advantage','grading.row.specialty':'Specialty',
+    'grading.psa.country':'🇺🇸 USA — Professional Sports Authenticator',
+    'grading.psa.submit':'Submit on PSA →',
+    'grading.aura.country':'🇫🇷 France — European grading reference',
+    'grading.aura.submit':'Submit on CollectAura →',
+    'grading.ccc.country':'🇪🇺 Europe — Certified Card Collector',
+    'grading.ccc.submit':'Submit on CCC →',
+    'grading.bgs.country':'🇺🇸 USA — Beckett Grading Services',
+    'grading.bgs.submit':'Submit on Beckett →',
+    'grading.disclaimer':'Prices and times are indicative and may vary.<br>Check current prices on each site.',
+    'login.title':'Sign in','login.sub':'3 free grades per month.','login.btn':'Sign in',
+    'login.loading':'Signing in…','login.error':'Incorrect email or password.',
+    'login.switch':'No account yet? <a onclick="go(\'s-signup\')">Create an account</a>',
+    'signup.title':'Create an account','signup.sub':'Free. 3 grades offered this month.','signup.btn':'Create my account',
+    'signup.loading':'Creating…','signup.error.short':'Password too short (6 characters min).','signup.created':'Account created! Sign in now.',
+    'signup.switch':'Already have an account? <a onclick="go(\'s-login\')">Sign in</a>',
+    'auth.email':'Email','auth.password':'Password',
+    'paywall.title':'Limit reached','paywall.sub':'You\'ve used your 3 free grades this month.<br>Go Premium to continue.',
+    'paywall.p1.t':'Unlimited grades','paywall.p1.s':'As many cards as you want',
+    'paywall.p2.t':'Full history','paywall.p2.s':'All your cards saved',
+    'paywall.p3.t':'Processing priority','paywall.p3.s':'Even faster results',
+    'paywall.per':' / month','paywall.cta':'Go Premium →','paywall.skip':'Not now',
+    'acc.title':'My account','acc.row.used':'Grades this month','acc.row.left':'Remaining','acc.row.plan':'Plan',
+    'acc.upgrade':'Go Premium — €4.99/month →','acc.public.title':'Public profile',
+    'acc.username.ph':'your-username','acc.toggle.public':'Public collection','acc.toggle.public.sub':'Share your collection by link',
+    'acc.history':'History','acc.history.empty':'No grades yet','acc.logout':'Log out',
+    'modal.delete':'🗑 Delete','modal.close':'Close','modal.confirm.delete':'Remove this card from your collection? This action is irreversible.',
+    'roi.title':'ROI Calculator','roi.s1':'Your investment','roi.buy.lbl':'Card purchase price',
+    'roi.service.lbl':'Grading service','roi.ship.lbl':'Shipping + insurance',
+    'roi.s2':'Value after grading','roi.value.lbl':'Market estimate (auto-filled)',
+    'roi.total':'Total cost','roi.estvalue':'Estimated value','roi.profit':'Profit / Loss',
+    'pub.cta':'Grade my cards on PokeGrade →',
+    'pill.premium':'Premium — unlimited grades','pill.free':'{n} free grade(s) left',
   },
   es: {
     'nav.home':'Inicio','nav.grade':'Graduar','nav.collection':'Colección','nav.grading':'Gradeo',
@@ -1902,6 +1996,53 @@ const TRANSLATIONS = {
     'coll.stat.best':'Mejor','coll.stat.value':'Valor est.',
     'coll.best.lbl':'⭐ Mejor carta','coll.chart.title':'Evolución del valor total',
     'lang.title':'Idioma',
+    'nav.back':'← Volver',
+    'common.loading':'Cargando…','common.close':'Cerrar','common.delete':'🗑 Eliminar','common.save':'Guardar','common.copy':'Copiar',
+    'guide.hint':'Centra tu carta en el marco',
+    'guide.r1.t':'Fondo blanco','guide.r1.s':'<span class="ck">Bien</span> Mesa, hoja A4 &nbsp;<span class="cx">No</span> Tela, edredón',
+    'guide.r2.t':'Luz natural','guide.r2.s':'<span class="ck">Bien</span> Ventana &nbsp;<span class="cx">No</span> Flash directo',
+    'guide.r3.t':'Carta plana','guide.r3.s':'<span class="cx">No</span> Sujetar en mano — pierde precisión',
+    'guide.r4.t':'Anverso + reverso','guide.r4.s':'Ambas caras para una nota completa',
+    'upload.recto':'① Anverso','upload.verso':'② Reverso','upload.verso.opt':'opcional — mejora la precisión','upload.change':'Cambiar',
+    'result.sub':'Análisis IA · Estándares PSA','result.criteria':'Detalle de criterios','result.fake.lbl':'🔍 Autenticidad',
+    'coll.empty.t':'Ninguna carta aún','coll.empty.s':'Gradúa tu primera carta para verla aparecer aquí',
+    'coll.sub.count':'{n} carta(s) graduada(s)',
+    'grading.title':'Gradeo Físico','grading.sub':'Envía tu carta a los mejores expertos para una certificación oficial.',
+    'grading.psa.badge':'⭐ Referencia mundial','grading.aura.badge':'🇫🇷 Francés',
+    'grading.row.price':'Precio base','grading.row.delay':'Plazo estándar','grading.row.express':'Plazo exprés',
+    'grading.row.added':'Valor añadido','grading.row.advantage':'Ventaja','grading.row.specialty':'Especialidad',
+    'grading.psa.country':'🇺🇸 EE.UU. — Professional Sports Authenticator',
+    'grading.psa.submit':'Enviar a PSA →',
+    'grading.aura.country':'🇫🇷 Francia — Referencia europea de gradeo',
+    'grading.aura.submit':'Enviar a CollectAura →',
+    'grading.ccc.country':'🇪🇺 Europa — Certified Card Collector',
+    'grading.ccc.submit':'Enviar a CCC →',
+    'grading.bgs.country':'🇺🇸 EE.UU. — Beckett Grading Services',
+    'grading.bgs.submit':'Enviar a Beckett →',
+    'grading.disclaimer':'Los precios y plazos son indicativos y pueden variar.<br>Consulta los precios actuales en cada sitio.',
+    'login.title':'Iniciar sesión','login.sub':'3 calificaciones gratuitas al mes.','login.btn':'Iniciar sesión',
+    'login.loading':'Iniciando…','login.error':'Email o contraseña incorrectos.',
+    'login.switch':'¿Sin cuenta? <a onclick="go(\'s-signup\')">Crear cuenta</a>',
+    'signup.title':'Crear una cuenta','signup.sub':'Gratis. 3 calificaciones este mes.','signup.btn':'Crear mi cuenta',
+    'signup.loading':'Creando…','signup.error.short':'Contraseña demasiado corta (mín. 6 caracteres).','signup.created':'¡Cuenta creada! Inicia sesión ahora.',
+    'signup.switch':'¿Ya tienes cuenta? <a onclick="go(\'s-login\')">Iniciar sesión</a>',
+    'auth.email':'Email','auth.password':'Contraseña',
+    'paywall.title':'Límite alcanzado','paywall.sub':'Has usado tus 3 calificaciones gratuitas este mes.<br>Pasa a Premium para continuar.',
+    'paywall.p1.t':'Calificaciones ilimitadas','paywall.p1.s':'Tantas cartas como quieras',
+    'paywall.p2.t':'Historial completo','paywall.p2.s':'Todas tus cartas guardadas',
+    'paywall.p3.t':'Prioridad de procesamiento','paywall.p3.s':'Resultados aún más rápidos',
+    'paywall.per':' / mes','paywall.cta':'Pasar a Premium →','paywall.skip':'Ahora no',
+    'acc.title':'Mi cuenta','acc.row.used':'Calificaciones este mes','acc.row.left':'Restantes','acc.row.plan':'Plan',
+    'acc.upgrade':'Pasar a Premium — 4,99€/mes →','acc.public.title':'Perfil público',
+    'acc.username.ph':'tu-usuario','acc.toggle.public':'Colección pública','acc.toggle.public.sub':'Comparte tu colección por enlace',
+    'acc.history':'Historial','acc.history.empty':'Ninguna calificación aún','acc.logout':'Cerrar sesión',
+    'modal.delete':'🗑 Eliminar','modal.close':'Cerrar','modal.confirm.delete':'¿Eliminar esta carta de tu colección? Esta acción es irreversible.',
+    'roi.title':'Calculadora ROI','roi.s1':'Tu inversión','roi.buy.lbl':'Precio de compra de la carta',
+    'roi.service.lbl':'Servicio de gradeo','roi.ship.lbl':'Gastos de envío + seguro',
+    'roi.s2':'Valor después del gradeo','roi.value.lbl':'Estimación de mercado (prellenada)',
+    'roi.total':'Coste total','roi.estvalue':'Valor estimado','roi.profit':'Beneficio / Pérdida',
+    'pub.cta':'Graduar mis cartas en PokeGrade →',
+    'pill.premium':'Premium — calificaciones ilimitadas','pill.free':'{n} calificación(es) gratuita(s) restante(s)',
   },
   it: {
     'nav.home':'Home','nav.grade':'Gradua','nav.collection':'Collezione','nav.grading':'Gradazione',
@@ -1926,6 +2067,53 @@ const TRANSLATIONS = {
     'coll.stat.best':'Migliore','coll.stat.value':'Valore st.',
     'coll.best.lbl':'⭐ Carta migliore','coll.chart.title':'Evoluzione del valore totale',
     'lang.title':'Lingua',
+    'nav.back':'← Indietro',
+    'common.loading':'Caricamento…','common.close':'Chiudi','common.delete':'🗑 Elimina','common.save':'Salva','common.copy':'Copia',
+    'guide.hint':'Centra la carta nel riquadro',
+    'guide.r1.t':'Sfondo bianco','guide.r1.s':'<span class="ck">Bene</span> Tavolo, foglio A4 &nbsp;<span class="cx">No</span> Tessuto, piumino',
+    'guide.r2.t':'Luce naturale','guide.r2.s':'<span class="ck">Bene</span> Finestra &nbsp;<span class="cx">No</span> Flash diretto',
+    'guide.r3.t':'Carta piatta','guide.r3.s':'<span class="cx">No</span> Tenere in mano — perde precisione',
+    'guide.r4.t':'Fronte + retro','guide.r4.s':'Entrambe le facce per un voto completo',
+    'upload.recto':'① Fronte','upload.verso':'② Retro','upload.verso.opt':'opzionale — migliora la precisione','upload.change':'Cambia',
+    'result.sub':'Analisi IA · Standard PSA','result.criteria':'Dettaglio dei criteri','result.fake.lbl':'🔍 Autenticità',
+    'coll.empty.t':'Nessuna carta ancora','coll.empty.s':'Gradua la tua prima carta per vederla apparire qui',
+    'coll.sub.count':'{n} carta/e graduata/e',
+    'grading.title':'Gradazione Fisica','grading.sub':'Invia la tua carta ai migliori esperti per una certificazione ufficiale.',
+    'grading.psa.badge':'⭐ Riferimento mondiale','grading.aura.badge':'🇫🇷 Francese',
+    'grading.row.price':'Prezzo base','grading.row.delay':'Tempo standard','grading.row.express':'Tempo express',
+    'grading.row.added':'Valore aggiunto','grading.row.advantage':'Vantaggio','grading.row.specialty':'Specialità',
+    'grading.psa.country':'🇺🇸 USA — Professional Sports Authenticator',
+    'grading.psa.submit':'Invia su PSA →',
+    'grading.aura.country':'🇫🇷 Francia — Riferimento europeo per gradazione',
+    'grading.aura.submit':'Invia su CollectAura →',
+    'grading.ccc.country':'🇪🇺 Europa — Certified Card Collector',
+    'grading.ccc.submit':'Invia su CCC →',
+    'grading.bgs.country':'🇺🇸 USA — Beckett Grading Services',
+    'grading.bgs.submit':'Invia su Beckett →',
+    'grading.disclaimer':'I prezzi e i tempi sono indicativi e possono variare.<br>Controlla i prezzi attuali su ogni sito.',
+    'login.title':'Accedi','login.sub':'3 voti gratuiti al mese.','login.btn':'Accedi',
+    'login.loading':'Accesso…','login.error':'Email o password errati.',
+    'login.switch':'Non hai un account? <a onclick="go(\'s-signup\')">Crea un account</a>',
+    'signup.title':'Crea un account','signup.sub':'Gratuito. 3 voti offerti questo mese.','signup.btn':'Crea il mio account',
+    'signup.loading':'Creazione…','signup.error.short':'Password troppo corta (min. 6 caratteri).','signup.created':'Account creato! Accedi ora.',
+    'signup.switch':'Hai già un account? <a onclick="go(\'s-login\')">Accedi</a>',
+    'auth.email':'Email','auth.password':'Password',
+    'paywall.title':'Limite raggiunto','paywall.sub':'Hai usato i tuoi 3 voti gratuiti questo mese.<br>Passa a Premium per continuare.',
+    'paywall.p1.t':'Voti illimitati','paywall.p1.s':'Tutte le carte che vuoi',
+    'paywall.p2.t':'Storico completo','paywall.p2.s':'Tutte le tue carte salvate',
+    'paywall.p3.t':'Priorità di elaborazione','paywall.p3.s':'Risultati ancora più veloci',
+    'paywall.per':' / mese','paywall.cta':'Passa a Premium →','paywall.skip':'Non ora',
+    'acc.title':'Il mio account','acc.row.used':'Voti questo mese','acc.row.left':'Rimanenti','acc.row.plan':'Piano',
+    'acc.upgrade':'Passa a Premium — 4,99€/mese →','acc.public.title':'Profilo pubblico',
+    'acc.username.ph':'tuo-nickname','acc.toggle.public':'Collezione pubblica','acc.toggle.public.sub':'Condividi la tua collezione tramite link',
+    'acc.history':'Storico','acc.history.empty':'Nessun voto per ora','acc.logout':'Disconnetti',
+    'modal.delete':'🗑 Elimina','modal.close':'Chiudi','modal.confirm.delete':'Rimuovere questa carta dalla collezione? Azione irreversibile.',
+    'roi.title':'Calcolatore ROI','roi.s1':'Il tuo investimento','roi.buy.lbl':'Prezzo d\'acquisto della carta',
+    'roi.service.lbl':'Servizio di gradazione','roi.ship.lbl':'Spese di spedizione + assicurazione',
+    'roi.s2':'Valore dopo la gradazione','roi.value.lbl':'Stima di mercato (precompilata)',
+    'roi.total':'Costo totale','roi.estvalue':'Valore stimato','roi.profit':'Profitto / Perdita',
+    'pub.cta':'Gradua le mie carte su PokeGrade →',
+    'pill.premium':'Premium — voti illimitati','pill.free':'{n} voto/i gratuito/i rimanente/i',
   },
   de: {
     'nav.home':'Start','nav.grade':'Graden','nav.collection':'Sammlung','nav.grading':'Grading',
@@ -1950,6 +2138,53 @@ const TRANSLATIONS = {
     'coll.stat.best':'Beste','coll.stat.value':'Gesch. Wert',
     'coll.best.lbl':'⭐ Beste Karte','coll.chart.title':'Entwicklung des Gesamtwerts',
     'lang.title':'Sprache',
+    'nav.back':'← Zurück',
+    'common.loading':'Laden…','common.close':'Schließen','common.delete':'🗑 Löschen','common.save':'Speichern','common.copy':'Kopieren',
+    'guide.hint':'Karte im Rahmen zentrieren',
+    'guide.r1.t':'Weißer Hintergrund','guide.r1.s':'<span class="ck">Gut</span> Tisch, A4-Blatt &nbsp;<span class="cx">Nein</span> Stoff, Bettdecke',
+    'guide.r2.t':'Natürliches Licht','guide.r2.s':'<span class="ck">Gut</span> Fenster &nbsp;<span class="cx">Nein</span> Direktblitz',
+    'guide.r3.t':'Karte flach','guide.r3.s':'<span class="cx">Nein</span> In der Hand halten — verliert Präzision',
+    'guide.r4.t':'Vorder- + Rückseite','guide.r4.s':'Beide Seiten für eine vollständige Bewertung',
+    'upload.recto':'① Vorderseite','upload.verso':'② Rückseite','upload.verso.opt':'optional — verbessert die Genauigkeit','upload.change':'Ändern',
+    'result.sub':'KI-Analyse · PSA-Standards','result.criteria':'Kriteriendetails','result.fake.lbl':'🔍 Echtheit',
+    'coll.empty.t':'Noch keine Karten','coll.empty.s':'Grade deine erste Karte, um sie hier zu sehen',
+    'coll.sub.count':'{n} bewertete Karte(n)',
+    'grading.title':'Physisches Grading','grading.sub':'Schicke deine Karte an die besten Experten für eine offizielle Zertifizierung.',
+    'grading.psa.badge':'⭐ Weltweite Referenz','grading.aura.badge':'🇫🇷 Französisch',
+    'grading.row.price':'Grundpreis','grading.row.delay':'Standarddauer','grading.row.express':'Expressdauer',
+    'grading.row.added':'Mehrwert','grading.row.advantage':'Vorteil','grading.row.specialty':'Spezialität',
+    'grading.psa.country':'🇺🇸 USA — Professional Sports Authenticator',
+    'grading.psa.submit':'Bei PSA einreichen →',
+    'grading.aura.country':'🇫🇷 Frankreich — Europäische Grading-Referenz',
+    'grading.aura.submit':'Bei CollectAura einreichen →',
+    'grading.ccc.country':'🇪🇺 Europa — Certified Card Collector',
+    'grading.ccc.submit':'Bei CCC einreichen →',
+    'grading.bgs.country':'🇺🇸 USA — Beckett Grading Services',
+    'grading.bgs.submit':'Bei Beckett einreichen →',
+    'grading.disclaimer':'Preise und Fristen sind Richtwerte und können variieren.<br>Aktuelle Preise auf jeder Website prüfen.',
+    'login.title':'Anmelden','login.sub':'3 kostenlose Grades pro Monat.','login.btn':'Anmelden',
+    'login.loading':'Anmelden…','login.error':'E-Mail oder Passwort falsch.',
+    'login.switch':'Noch kein Konto? <a onclick="go(\'s-signup\')">Konto erstellen</a>',
+    'signup.title':'Konto erstellen','signup.sub':'Kostenlos. 3 Grades diesen Monat.','signup.btn':'Mein Konto erstellen',
+    'signup.loading':'Erstellen…','signup.error.short':'Passwort zu kurz (mind. 6 Zeichen).','signup.created':'Konto erstellt! Jetzt anmelden.',
+    'signup.switch':'Schon ein Konto? <a onclick="go(\'s-login\')">Anmelden</a>',
+    'auth.email':'E-Mail','auth.password':'Passwort',
+    'paywall.title':'Limit erreicht','paywall.sub':'Du hast deine 3 kostenlosen Grades diesen Monat genutzt.<br>Wechsle zu Premium, um fortzufahren.',
+    'paywall.p1.t':'Unbegrenzte Grades','paywall.p1.s':'So viele Karten wie du willst',
+    'paywall.p2.t':'Vollständiger Verlauf','paywall.p2.s':'Alle deine Karten gespeichert',
+    'paywall.p3.t':'Verarbeitungspriorität','paywall.p3.s':'Noch schnellere Ergebnisse',
+    'paywall.per':' / Monat','paywall.cta':'Zu Premium wechseln →','paywall.skip':'Nicht jetzt',
+    'acc.title':'Mein Konto','acc.row.used':'Grades diesen Monat','acc.row.left':'Verbleibend','acc.row.plan':'Plan',
+    'acc.upgrade':'Zu Premium — 4,99€/Monat →','acc.public.title':'Öffentliches Profil',
+    'acc.username.ph':'dein-username','acc.toggle.public':'Öffentliche Sammlung','acc.toggle.public.sub':'Sammlung per Link teilen',
+    'acc.history':'Verlauf','acc.history.empty':'Noch keine Bewertungen','acc.logout':'Abmelden',
+    'modal.delete':'🗑 Löschen','modal.close':'Schließen','modal.confirm.delete':'Diese Karte aus deiner Sammlung löschen? Nicht rückgängig zu machen.',
+    'roi.title':'ROI-Rechner','roi.s1':'Deine Investition','roi.buy.lbl':'Kartenkaufpreis',
+    'roi.service.lbl':'Grading-Dienst','roi.ship.lbl':'Versandkosten + Versicherung',
+    'roi.s2':'Wert nach dem Grading','roi.value.lbl':'Marktschätzung (automatisch)',
+    'roi.total':'Gesamtkosten','roi.estvalue':'Geschätzter Wert','roi.profit':'Gewinn / Verlust',
+    'pub.cta':'Meine Karten auf PokeGrade graden →',
+    'pill.premium':'Premium — unbegrenzte Grades','pill.free':'{n} kostenloser/e Grade verbleibend',
   },
   nl: {
     'nav.home':'Home','nav.grade':'Graderen','nav.collection':'Collectie','nav.grading':'Gradering',
@@ -1974,6 +2209,53 @@ const TRANSLATIONS = {
     'coll.stat.best':'Beste','coll.stat.value':'Gesch. waarde',
     'coll.best.lbl':'⭐ Beste kaart','coll.chart.title':'Evolutie van de totale waarde',
     'lang.title':'Taal',
+    'nav.back':'← Terug',
+    'common.loading':'Laden…','common.close':'Sluiten','common.delete':'🗑 Verwijderen','common.save':'Opslaan','common.copy':'Kopiëren',
+    'guide.hint':'Centreer je kaart in het kader',
+    'guide.r1.t':'Witte achtergrond','guide.r1.s':'<span class="ck">Goed</span> Tafel, A4-vel &nbsp;<span class="cx">Nee</span> Stof, dekbed',
+    'guide.r2.t':'Natuurlijk licht','guide.r2.s':'<span class="ck">Goed</span> Raam &nbsp;<span class="cx">Nee</span> Directe flits',
+    'guide.r3.t':'Kaart plat','guide.r3.s':'<span class="cx">Nee</span> Vasthouden — verliest nauwkeurigheid',
+    'guide.r4.t':'Voor- + achterkant','guide.r4.s':'Beide kanten voor een volledig cijfer',
+    'upload.recto':'① Voorzijde','upload.verso':'② Achterzijde','upload.verso.opt':'optioneel — verbetert de nauwkeurigheid','upload.change':'Wijzigen',
+    'result.sub':'AI-analyse · PSA-normen','result.criteria':'Criteria details','result.fake.lbl':'🔍 Echtheid',
+    'coll.empty.t':'Nog geen kaarten','coll.empty.s':'Gradeer je eerste kaart om hem hier te zien',
+    'coll.sub.count':'{n} beoordeelde kaart(en)',
+    'grading.title':'Fysieke Gradering','grading.sub':'Stuur je kaart naar de beste experts voor een officiële certificering.',
+    'grading.psa.badge':'⭐ Wereldreferentie','grading.aura.badge':'🇫🇷 Frans',
+    'grading.row.price':'Basisprijs','grading.row.delay':'Standaard termijn','grading.row.express':'Express termijn',
+    'grading.row.added':'Meerwaarde','grading.row.advantage':'Voordeel','grading.row.specialty':'Specialiteit',
+    'grading.psa.country':'🇺🇸 VS — Professional Sports Authenticator',
+    'grading.psa.submit':'Indienen bij PSA →',
+    'grading.aura.country':'🇫🇷 Frankrijk — Europese grading referentie',
+    'grading.aura.submit':'Indienen bij CollectAura →',
+    'grading.ccc.country':'🇪🇺 Europa — Certified Card Collector',
+    'grading.ccc.submit':'Indienen bij CCC →',
+    'grading.bgs.country':'🇺🇸 VS — Beckett Grading Services',
+    'grading.bgs.submit':'Indienen bij Beckett →',
+    'grading.disclaimer':'Prijzen en termijnen zijn indicatief en kunnen variëren.<br>Controleer de actuele prijzen op elke site.',
+    'login.title':'Inloggen','login.sub':'3 gratis beoordelingen per maand.','login.btn':'Inloggen',
+    'login.loading':'Inloggen…','login.error':'Onjuist e-mailadres of wachtwoord.',
+    'login.switch':'Nog geen account? <a onclick="go(\'s-signup\')">Account aanmaken</a>',
+    'signup.title':'Account aanmaken','signup.sub':'Gratis. 3 beoordelingen deze maand.','signup.btn':'Mijn account aanmaken',
+    'signup.loading':'Aanmaken…','signup.error.short':'Wachtwoord te kort (min. 6 tekens).','signup.created':'Account aangemaakt! Log nu in.',
+    'signup.switch':'Al een account? <a onclick="go(\'s-login\')">Inloggen</a>',
+    'auth.email':'E-mail','auth.password':'Wachtwoord',
+    'paywall.title':'Limiet bereikt','paywall.sub':'Je hebt je 3 gratis beoordelingen deze maand gebruikt.<br>Ga naar Premium om door te gaan.',
+    'paywall.p1.t':'Onbeperkte beoordelingen','paywall.p1.s':'Zoveel kaarten als je wilt',
+    'paywall.p2.t':'Volledige geschiedenis','paywall.p2.s':'Al je kaarten opgeslagen',
+    'paywall.p3.t':'Verwerkingsprioriteit','paywall.p3.s':'Nog snellere resultaten',
+    'paywall.per':' / maand','paywall.cta':'Ga naar Premium →','paywall.skip':'Niet nu',
+    'acc.title':'Mijn account','acc.row.used':'Beoordelingen deze maand','acc.row.left':'Resterend','acc.row.plan':'Abonnement',
+    'acc.upgrade':'Ga naar Premium — €4,99/maand →','acc.public.title':'Openbaar profiel',
+    'acc.username.ph':'jouw-gebruikersnaam','acc.toggle.public':'Openbare collectie','acc.toggle.public.sub':'Deel je collectie via link',
+    'acc.history':'Geschiedenis','acc.history.empty':'Nog geen beoordelingen','acc.logout':'Uitloggen',
+    'modal.delete':'🗑 Verwijderen','modal.close':'Sluiten','modal.confirm.delete':'Deze kaart uit je collectie verwijderen? Onomkeerbare actie.',
+    'roi.title':'ROI Calculator','roi.s1':'Jouw investering','roi.buy.lbl':'Aankoopprijs kaart',
+    'roi.service.lbl':'Grading service','roi.ship.lbl':'Verzending + verzekering',
+    'roi.s2':'Waarde na gradering','roi.value.lbl':'Marktschatting (automatisch ingevuld)',
+    'roi.total':'Totale kosten','roi.estvalue':'Geschatte waarde','roi.profit':'Winst / Verlies',
+    'pub.cta':'Mijn kaarten graderen op PokeGrade →',
+    'pill.premium':'Premium — onbeperkte beoordelingen','pill.free':'{n} gratis beoordeling(en) resterend',
   },
 };
 
@@ -2305,7 +2587,7 @@ async function loadCollection() {
   if (!currentSession) return;
   const grid = document.getElementById('coll-grid');
   const sub  = document.getElementById('coll-sub');
-  grid.innerHTML = '<div class="coll-empty"><div class="coll-empty-icon">⏳</div><p class="coll-empty-t">Chargement…</p></div>';
+  grid.innerHTML = `<div class="coll-empty"><div class="coll-empty-icon">⏳</div><p class="coll-empty-t">${t('common.loading')}</p></div>`;
 
   try {
     const res = await fetch('/api/grades', {
@@ -2315,7 +2597,7 @@ async function loadCollection() {
     const grades = data.grades || [];
 
     const count = grades.length;
-    sub.textContent = count === 0 ? '0 carte gradée' : `${count} carte${count > 1 ? 's' : ''} gradée${count > 1 ? 's' : ''}`;
+    sub.textContent = t('coll.sub.count').replace('{n}', count);
 
     // Stats
     if (count > 0) {
@@ -2340,8 +2622,8 @@ async function loadCollection() {
       grid.innerHTML = `
         <div class="coll-empty">
           <div class="coll-empty-icon">📦</div>
-          <p class="coll-empty-t">Aucune carte encore</p>
-          <p class="coll-empty-s">Grade ta première carte pour la voir apparaître ici</p>
+          <p class="coll-empty-t">${t('coll.empty.t')}</p>
+          <p class="coll-empty-s">${t('coll.empty.s')}</p>
         </div>`;
       document.getElementById('coll-chart-section').style.display = 'none';
       return;
@@ -2395,11 +2677,11 @@ function updateHomePill() {
   pill.style.display = 'inline-flex';
   pill.className = 'grade-pill';
   if (currentProfile.is_premium) {
-    txt.textContent = 'Premium — grades illimités';
+    txt.textContent = t('pill.premium');
   } else {
     const used = currentProfile.grades_this_month || 0;
     const left = Math.max(0, 3 - used);
-    txt.textContent = `${left} grade${left > 1 ? 's' : ''} gratuit${left > 1 ? 's' : ''} restant${left > 1 ? 's' : ''}`;
+    txt.textContent = t('pill.free').replace('{n}', left);
     if (left === 0) pill.classList.add('danger');
     else if (left === 1) pill.classList.add('warning');
   }
@@ -2959,13 +3241,13 @@ async function doLogin() {
   const errEl = document.getElementById('login-error');
   const btn   = document.getElementById('login-btn');
   errEl.style.display = 'none';
-  btn.disabled = true; btn.textContent = 'Connexion…';
+  btn.disabled = true; btn.textContent = t('login.loading');
 
   const { error } = await sb.auth.signInWithPassword({ email, password: pass });
-  btn.disabled = false; btn.textContent = 'Se connecter';
+  btn.disabled = false; btn.textContent = t('login.btn');
 
   if (error) {
-    errEl.textContent = 'Email ou mot de passe incorrect.';
+    errEl.textContent = t('login.error');
     errEl.style.display = 'block';
   } else {
     go('s-home');
@@ -2980,16 +3262,16 @@ async function doSignup() {
   errEl.style.display = 'none';
 
   if (pass.length < 6) {
-    errEl.textContent = 'Mot de passe trop court (6 caractères min).';
+    errEl.textContent = t('signup.error.short');
     errEl.style.display = 'block'; return;
   }
 
-  btn.disabled = true; btn.textContent = 'Création…';
+  btn.disabled = true; btn.textContent = t('signup.loading');
 
   const { data: signUpData, error: signUpError } = await sb.auth.signUp({ email, password: pass });
 
   if (signUpError) {
-    btn.disabled = false; btn.textContent = 'Créer mon compte';
+    btn.disabled = false; btn.textContent = t('signup.btn');
     errEl.textContent = signUpError.message;
     errEl.style.display = 'block';
     return;
@@ -2997,17 +3279,17 @@ async function doSignup() {
 
   // Si la session est directement disponible (confirmation email désactivée)
   if (signUpData.session) {
-    btn.disabled = false; btn.textContent = 'Créer mon compte';
+    btn.disabled = false; btn.textContent = t('signup.btn');
     go('s-home');
     return;
   }
 
   // Sinon connecter directement
   const { error: loginError } = await sb.auth.signInWithPassword({ email, password: pass });
-  btn.disabled = false; btn.textContent = 'Créer mon compte';
+  btn.disabled = false; btn.textContent = t('signup.btn');
 
   if (loginError) {
-    errEl.textContent = 'Compte créé ! Connecte-toi maintenant.';
+    errEl.textContent = t('signup.created');
     errEl.style.display = 'block';
     setTimeout(() => go('s-login'), 1500);
   } else {
@@ -3055,7 +3337,7 @@ async function loadAccount() {
   const list = document.getElementById('history-list');
 
   if (!hData.grades || hData.grades.length === 0) {
-    list.innerHTML = '<div class="acc-row"><span style="color:var(--g500);font-size:13px">Aucun grade pour le moment</span></div>';
+    list.innerHTML = `<div class="acc-row"><span style="color:var(--g500);font-size:13px">${t('acc.history.empty')}</span></div>`;
     return;
   }
 
@@ -3311,7 +3593,7 @@ function handleModalClick(e) {
 
 async function deleteGrade() {
   if (!_currentSlabId || !currentSession) return;
-  if (!confirm('Supprimer cette carte de ta collection ? Cette action est irréversible.')) return;
+  if (!confirm(t('modal.confirm.delete'))) return;
 
   const btn = document.querySelector('.slab-modal-delete');
   btn.textContent = '⏳ Suppression…';
@@ -3500,7 +3782,7 @@ async function loadPublicProfile(userId) {
   const grid    = document.getElementById('pub-grid');
   const statsEl = document.getElementById('pub-stats');
 
-  grid.innerHTML = '<div class="coll-empty"><div class="coll-empty-icon">⏳</div><p class="coll-empty-t">Chargement…</p></div>';
+  grid.innerHTML = `<div class="coll-empty"><div class="coll-empty-icon">⏳</div><p class="coll-empty-t">${t('common.loading')}</p></div>`;
   statsEl.style.display = 'none';
 
   try {
@@ -3526,7 +3808,7 @@ async function loadPublicProfile(userId) {
       avatar.textContent = '?';
       nameEl.textContent = 'Collectionneur';
     }
-    subEl.textContent = `${grades.length} carte${grades.length > 1 ? 's' : ''} gradée${grades.length > 1 ? 's' : ''}`;
+    subEl.textContent = t('coll.sub.count').replace('{n}', grades.length);
 
     if (grades.length > 0) {
       statsEl.style.display = 'flex';
@@ -3539,7 +3821,7 @@ async function loadPublicProfile(userId) {
     }
 
     if (grades.length === 0) {
-      grid.innerHTML = '<div class="coll-empty"><div class="coll-empty-icon">📦</div><p class="coll-empty-t">Aucune carte gradée</p></div>';
+      grid.innerHTML = `<div class="coll-empty"><div class="coll-empty-icon">📦</div><p class="coll-empty-t">${t('coll.empty.t')}</p></div>`;
       return;
     }
 
