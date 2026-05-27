@@ -183,6 +183,88 @@ Pour psa_label, utilise exactement :
 Le global est la moyenne des 4 scores, arrondie au demi-point.
 Si tu ne peux pas identifier la carte avec certitude, mets "Inconnue" pour name et 0 pour les prix.`;
 
+// ── Prix réel via Pokemon TCG API (Cardmarket EUR) ───────────────
+async function fetchRealPrice(cardName, setName, psaScore) {
+  try {
+    // Cherche la carte par nom exact, puis par nom partiel si rien trouvé
+    const queries = [
+      `name:"${cardName}"`,
+      `name:${cardName.split(' ')[0]}`,
+    ];
+
+    let card = null;
+    for (const q of queries) {
+      const url = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(q)}&pageSize=20&select=name,set,cardmarket,tcgplayer,rarity`;
+      const headers = {};
+      if (process.env.POKEMON_TCG_KEY) headers['X-Api-Key'] = process.env.POKEMON_TCG_KEY;
+      const resp = await fetch(url, { headers, signal: AbortSignal.timeout(5000) });
+      if (!resp.ok) continue;
+      const data = await resp.json();
+      if (!data.data?.length) continue;
+
+      // Essayer de matcher le set si l'IA en a trouvé un
+      let best = data.data[0];
+      if (setName && setName !== 'Inconnu' && setName !== 'Unknown') {
+        const sLow = setName.toLowerCase();
+        const match = data.data.find(c =>
+          c.set?.name?.toLowerCase().includes(sLow) ||
+          sLow.includes((c.set?.name || '').toLowerCase())
+        );
+        if (match) best = match;
+      }
+      card = best;
+      break;
+    }
+
+    if (!card) return null;
+
+    // Prix Cardmarket en EUR (source prioritaire)
+    const cm = card.cardmarket?.prices;
+    let rawEur = null;
+    if (cm) {
+      // avg30 > trendPrice > avg7 > averageSellPrice (par ordre de fiabilité)
+      rawEur = cm.avg30 || cm.trendPrice || cm.avg7 || cm.averageSellPrice;
+    }
+
+    // Fallback TCGPlayer USD → EUR (×0.92 approx)
+    if (!rawEur || rawEur <= 0) {
+      const tcp = card.tcgplayer?.prices || {};
+      const usd = tcp.holofoil?.market || tcp.reverseHolofoil?.market ||
+                  tcp.normal?.market  || tcp['1stEditionHolofoil']?.market;
+      if (usd) rawEur = usd * 0.92;
+    }
+
+    if (!rawEur || rawEur <= 0) return null;
+
+    // Coefficients PSA par grade (basés sur les données marchés réels)
+    const psaNum = psaScore >= 9.5 ? 10 : psaScore >= 8.5 ? 9 : psaScore >= 7.5 ? 8 :
+                   psaScore >= 6.5 ? 7  : psaScore >= 5.5 ? 6 : 5;
+    const coeffs = {
+      10: { low: 3.5, high: 7.0 },
+      9:  { low: 1.8, high: 3.5 },
+      8:  { low: 1.3, high: 2.0 },
+      7:  { low: 1.0, high: 1.5 },
+      6:  { low: 0.8, high: 1.1 },
+      5:  { low: 0.6, high: 0.9 },
+    };
+    const c = coeffs[psaNum] || coeffs[5];
+
+    // Prix minimaux réalistes (coût du grading PSA ~25€)
+    const minLow  = psaNum >= 9 ? 30 : psaNum >= 7 ? 15 : 5;
+    const low  = Math.max(minLow, Math.round(rawEur * c.low));
+    const high = Math.max(low + 5, Math.round(rawEur * c.high));
+
+    const source = cm ? 'Cardmarket' : 'TCGPlayer';
+    const note = `Source : ${source} (${rawEur.toFixed(2)}€ brut) × coeff. PSA ${psaNum}`;
+    console.log(`[Price] ${cardName} → ${rawEur.toFixed(2)}€ brut → PSA${psaNum}: ${low}–${high}€`);
+
+    return { low, high, currency: 'EUR', note, source: source.toLowerCase() };
+  } catch (e) {
+    console.error('fetchRealPrice error:', e.message);
+    return null;
+  }
+}
+
 app.post("/api/grade", requireAuth, upload.fields([{ name: "front", maxCount: 1 }, { name: "back", maxCount: 1 }]), async (req, res) => {
   const files = req.files || {};
   const frontFile = files.front?.[0];
@@ -277,6 +359,19 @@ app.post("/api/grade", requireAuth, upload.fields([{ name: "front", maxCount: 1 
     } catch (parseErr) {
       console.error("JSON invalide:", jsonMatch[0].slice(0, 300));
       throw new Error("Réponse IA mal formée — réessaie");
+    }
+
+    // ── Remplacer l'estimation IA par les vrais prix Cardmarket ──
+    const cardName = result.card?.name;
+    const setName  = result.card?.set;
+    if (cardName && cardName !== 'Inconnue' && cardName !== 'Unknown') {
+      const realPrice = await fetchRealPrice(cardName, setName, result.global || 0);
+      if (realPrice) {
+        result.price = realPrice;
+        console.log(`[Price] Remplacement IA → Cardmarket: ${realPrice.low}–${realPrice.high}€`);
+      } else {
+        console.log(`[Price] Cardmarket introuvable pour "${cardName}", conservation estimation IA`);
+      }
     }
 
     // Incrémenter le quota (le grade est consommé même sans sauvegarde)

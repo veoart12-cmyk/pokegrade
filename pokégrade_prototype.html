@@ -1374,7 +1374,10 @@ body {
 
   <!-- Estimation de prix -->
   <div class="price-block" id="price-block">
-    <p class="price-block-label" data-i18n="result.price.lbl">💰 Valeur estimée (marché PSA)</p>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <p class="price-block-label" style="margin-bottom:0" data-i18n="result.price.lbl">💰 Valeur estimée (marché PSA)</p>
+      <a id="price-source-badge" href="#" target="_blank" style="display:none;font-size:10px;font-weight:800;color:var(--red);background:var(--red-bg);border-radius:99px;padding:3px 9px;text-decoration:none;letter-spacing:.03em">Cardmarket ↗</a>
+    </div>
     <div class="price-range">
       <span class="price-low" id="price-low">—</span>
       <span class="price-sep">→</span>
@@ -2933,8 +2936,21 @@ function showResult(r) {
     document.getElementById('price-low').textContent  = r.price.low + '€';
     document.getElementById('price-high').textContent = r.price.high + '€';
     document.getElementById('price-note').textContent = r.price.note || 'Estimation basée sur les ventes récentes';
+
+    // Badge source Cardmarket avec lien de recherche
+    const badge = document.getElementById('price-source-badge');
+    if (r.price.source === 'cardmarket' || r.price.source === 'tcgplayer') {
+      const cardQuery = encodeURIComponent((r.card?.name || '') + ' ' + (r.card?.set || ''));
+      const cmUrl = `https://www.cardmarket.com/fr/Pokemon/Products/Search?searchString=${encodeURIComponent(r.card?.name || '')}`;
+      badge.href = cmUrl;
+      badge.textContent = r.price.source === 'cardmarket' ? 'Cardmarket ↗' : 'TCGPlayer ↗';
+      badge.style.display = 'inline-block';
+    } else {
+      badge.style.display = 'none';
+    }
   } else {
     document.getElementById('price-block').style.display = 'none';
+    document.getElementById('price-source-badge').style.display = 'none';
   }
 
   function setCrit(id, crit, label) {
