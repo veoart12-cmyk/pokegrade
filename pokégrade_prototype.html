@@ -2555,6 +2555,38 @@ async function loadAccount() {
   updatePublicProfileUI();
 }
 
+// ── Pokémon TCG API — image officielle (client-side) ───────────
+const _TCG_SET_MAP = {
+  'SV1':'sv1','SV2':'sv2','SV3':'sv3','SV3a':'sv3pt5',
+  'SV4':'sv4','SV4a':'sv4pt5','SV5':'sv5','SV5K':'sv5',
+  'SV6':'sv6','SV7':'sv7','SV8':'sv8','SV8a':'sv8pt5',
+  'Base Set':'base1','Jungle':'jungle','Fossil':'fossil',
+  'XY':'xy1','Sun & Moon':'sm1','Sword & Shield':'swsh1',
+};
+const _tcgImgCache = {}; // "name|set|num" → imageUrl or null
+
+async function fetchTCGImage(name, set, number) {
+  if (!name || name === 'Inconnue') return null;
+  const key = `${name}|${set}|${number}`;
+  if (key in _tcgImgCache) return _tcgImgCache[key];
+  try {
+    const setId  = _TCG_SET_MAP[set];
+    const numOnly = number ? number.split('/')[0].trim() : null;
+    let q = `name:"${name}"`;
+    if (setId)   q += ` set.id:${setId}`;
+    if (numOnly) q += ` number:${numOnly}`;
+    const url = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(q)}&pageSize=1&select=images`;
+    const resp = await fetch(url, { signal: AbortSignal.timeout(6000) });
+    const data = await resp.json();
+    const img = data.data?.[0]?.images?.large || data.data?.[0]?.images?.small || null;
+    _tcgImgCache[key] = img;
+    return img;
+  } catch(e) {
+    _tcgImgCache[key] = null;
+    return null;
+  }
+}
+
 // ── Slab canvas for collection ─────────────────────────────────
 const _slabCache = {}; // gradeId → dataUrl
 
@@ -2658,15 +2690,19 @@ async function generateSlabCanvas(gradeData) {
     }
   };
 
-  if (gradeData.image_url) {
+  // Priorité : image_url stockée → sinon lookup TCG API → sinon placeholder
+  const artUrl = gradeData.image_url
+    || await fetchTCGImage(r.card?.name, r.card?.set, r.card?.number);
+
+  if (artUrl) {
     try {
       await new Promise((resolve) => {
         const img = new Image();
         img.crossOrigin = 'anonymous';
         img.onload = () => {
-          // Fill bg with tier color first
-          ctx.fillStyle = t.bg; ctx.fillRect(cwx,cwy,cww,cwh);
-          // Cover-fit the photo into the card window
+          // Fill bg white (les images TCG ont déjà leur propre fond)
+          ctx.fillStyle = '#FFFFFF'; ctx.fillRect(cwx,cwy,cww,cwh);
+          // Cover-fit dans la fenêtre carte
           const imgAspect = img.naturalWidth / img.naturalHeight;
           const winAspect = cww / cwh;
           let dx, dy, dw, dh;
@@ -2681,7 +2717,7 @@ async function generateSlabCanvas(gradeData) {
           resolve();
         };
         img.onerror = () => { drawPlaceholder(); resolve(); };
-        img.src = gradeData.image_url;
+        img.src = artUrl;
       });
     } catch(e) { drawPlaceholder(); }
   } else {
