@@ -714,6 +714,29 @@ body {
 }
 .coll-title { font-size: 22px; font-weight: 900; letter-spacing: -0.6px; color: var(--black); }
 .coll-sub { font-size: 13px; color: var(--g500); margin-top: 3px; }
+/* ── Collection chart ── */
+.coll-best-wrap { margin-bottom: 12px; }
+.coll-best-label { font-size: 11px; font-weight: 700; color: var(--g500); text-transform: uppercase; letter-spacing: .7px; margin: 0 0 7px; }
+.coll-best-card {
+  background: var(--g50); border: 1.5px solid var(--g200); border-radius: 16px;
+  padding: 14px 16px; display: flex; align-items: center; gap: 14px;
+}
+.coll-best-name  { font-size: 16px; font-weight: 800; color: var(--black); margin: 0 0 3px; }
+.coll-best-meta  { font-size: 12px; color: var(--g500); margin: 0 0 6px; }
+.coll-best-score { display: flex; align-items: center; gap: 8px; }
+.coll-best-val   { font-size: 13px; font-weight: 700; color: var(--g700); }
+.coll-best-badge { font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 99px; }
+.coll-best-thumb {
+  width: 52px; height: 52px; border-radius: 10px; overflow: hidden; flex-shrink: 0;
+  background: var(--g200); display: flex; align-items: center; justify-content: center;
+}
+.coll-best-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.coll-chart-box {
+  background: var(--g50); border: 1.5px solid var(--g200); border-radius: 16px;
+  padding: 14px 14px 10px; margin-bottom: 16px;
+}
+.coll-chart-title { font-size: 12px; font-weight: 700; color: var(--g500); margin: 0 0 10px; text-transform: uppercase; letter-spacing: .5px; }
+
 .coll-grid {
   display: grid; grid-template-columns: 1fr 1fr;
   gap: 12px; padding: 16px;
@@ -1349,6 +1372,20 @@ body {
     <div class="coll-stat"><div class="coll-stat-n" id="stat-best">—</div><div class="coll-stat-l">Meilleure</div></div>
     <div class="coll-stat"><div class="coll-stat-n" id="stat-value">—</div><div class="coll-stat-l">Valeur est.</div></div>
   </div>
+  <!-- Chart + meilleure carte -->
+  <div id="coll-chart-section" style="display:none; padding: 0 14px 4px;">
+    <!-- Meilleure carte -->
+    <div class="coll-best-wrap" id="coll-best-wrap">
+      <p class="coll-best-label">⭐ Meilleure carte</p>
+      <div class="coll-best-card" id="coll-best-card"></div>
+    </div>
+    <!-- Line chart -->
+    <div class="coll-chart-box">
+      <p class="coll-chart-title">Évolution de la valeur totale</p>
+      <svg id="coll-chart" viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;overflow:visible"></svg>
+    </div>
+  </div>
+
   <div class="coll-grid" id="coll-grid">
     <div class="coll-empty">
       <div class="coll-empty-icon">📦</div>
@@ -1870,6 +1907,122 @@ function goToGrading() {
   go('s-grading');
 }
 
+// ── Value chart ────────────────────────────────────────────────
+function renderValueChart(grades) {
+  if (!grades || grades.length === 0) return;
+
+  // ── Meilleure carte ──
+  let bestGrade = grades[0];
+  grades.forEach(g => {
+    const bVal = (bestGrade.result?.price?.low > 0)
+      ? Math.round((bestGrade.result.price.low + bestGrade.result.price.high) / 2) : 0;
+    const gVal = (g.result?.price?.low > 0)
+      ? Math.round((g.result.price.low + g.result.price.high) / 2) : 0;
+    if (gVal > bVal) bestGrade = g;
+  });
+  const br = bestGrade.result || {};
+  const bScore = br.global || 0;
+  const bBadge = badgeFor(bScore);
+  const bName  = br.card?.name && br.card.name !== 'Inconnue' ? br.card.name : 'Carte Pokémon';
+  const bMeta  = [br.card?.set, br.card?.number].filter(Boolean).join(' · ') || br.psa_label?.split('—')[0]?.trim() || '';
+  const bAvg   = br.price?.low > 0 ? Math.round((br.price.low + br.price.high) / 2) : 0;
+  const bThumb = bestGrade.image_url || '';
+  document.getElementById('coll-best-card').innerHTML = `
+    <div class="coll-best-thumb">
+      ${bThumb ? `<img src="${bThumb}" alt="${bName}">` : '<span style="font-size:22px">🃏</span>'}
+    </div>
+    <div style="flex:1;min-width:0">
+      <p class="coll-best-name">${bName}</p>
+      <p class="coll-best-meta">${bMeta}</p>
+      <div class="coll-best-score">
+        <span class="coll-best-badge" style="background:${bBadge.bg};color:${bBadge.c}">${br.psa_label?.split('—')[0]?.trim() || 'PSA ?'}</span>
+        ${bAvg > 0 ? `<span class="coll-best-val">~${bAvg}€</span>` : ''}
+      </div>
+    </div>`;
+
+  // ── Données mensuelles cumulatives ──
+  const sorted = [...grades].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+  const monthMap = {};
+  sorted.forEach(g => {
+    const d   = new Date(g.created_at);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    if (!monthMap[key]) monthMap[key] = 0;
+    const p = g.result?.price;
+    monthMap[key] += p?.low > 0 ? Math.round((p.low + p.high) / 2) : 0;
+  });
+
+  const keys = Object.keys(monthMap).sort();
+  // Points cumulatifs
+  let cum = 0;
+  const points = keys.map(k => { cum += monthMap[k]; return { key: k, val: cum }; });
+
+  // Si un seul point → dupliquer pour afficher une ligne
+  if (points.length === 1) {
+    const prev = new Date(points[0].key + '-01');
+    prev.setMonth(prev.getMonth() - 1);
+    const pk = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}`;
+    points.unshift({ key: pk, val: 0 });
+  }
+
+  // ── SVG ──
+  const W = 320, H = 150;
+  const PL = 38, PR = 12, PT = 18, PB = 32;
+  const cW = W - PL - PR, cH = H - PT - PB;
+
+  const maxVal = Math.max(...points.map(p => p.val), 1);
+  const xStep  = cW / (points.length - 1);
+
+  const px = i => PL + i * xStep;
+  const py = v => PT + cH - (v / maxVal) * cH;
+
+  const polyline = points.map((p, i) => `${px(i).toFixed(1)},${py(p.val).toFixed(1)}`).join(' ');
+  const areaPath = `M${px(0).toFixed(1)},${py(0).toFixed(1)} ` +
+    points.map((p, i) => `L${px(i).toFixed(1)},${py(p.val).toFixed(1)}`).join(' ') +
+    ` L${px(points.length - 1).toFixed(1)},${(PT + cH).toFixed(1)} L${px(0).toFixed(1)},${(PT + cH).toFixed(1)} Z`;
+
+  // Labels mois
+  const MOIS = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Aoû','Sep','Oct','Nov','Déc'];
+  const xLabels = points.map((p, i) => {
+    const m = parseInt(p.key.split('-')[1], 10) - 1;
+    return `<text x="${px(i).toFixed(1)}" y="${H - 6}" text-anchor="middle" font-size="9" fill="var(--g500)" font-family="Arial">${MOIS[m]}</text>`;
+  }).join('');
+
+  // Lignes horizontales + labels valeur
+  const gridLines = [0, 0.5, 1].map(f => {
+    const yy = (PT + cH - f * cH).toFixed(1);
+    const lbl = f === 0 ? '0€' : f === 1 ? Math.round(maxVal) + '€' : Math.round(maxVal * 0.5) + '€';
+    return `<line x1="${PL}" y1="${yy}" x2="${W - PR}" y2="${yy}" stroke="var(--g200)" stroke-width="1"/>
+            <text x="${PL - 3}" y="${parseFloat(yy) + 3}" text-anchor="end" font-size="8" fill="var(--g500)" font-family="Arial">${lbl}</text>`;
+  }).join('');
+
+  // Dots + valeur sur le dernier point
+  const lastP = points[points.length - 1];
+  const dots = points.map((p, i) => {
+    const isLast = i === points.length - 1;
+    return `<circle cx="${px(i).toFixed(1)}" cy="${py(p.val).toFixed(1)}" r="${isLast ? 4.5 : 3}" fill="${isLast ? '#CC0000' : 'var(--g300)'}" stroke="var(--white)" stroke-width="1.5"/>
+            ${isLast && p.val > 0 ? `<text x="${px(i).toFixed(1)}" y="${(py(p.val) - 9).toFixed(1)}" text-anchor="middle" font-size="9.5" font-weight="bold" fill="#CC0000" font-family="Arial">${p.val}€</text>` : ''}`;
+  }).join('');
+
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const gradStop1 = isDark ? '#CC000040' : '#CC000030';
+  const gradStop2 = isDark ? '#CC000008' : '#CC000008';
+
+  document.getElementById('coll-chart').innerHTML = `
+    <defs>
+      <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${gradStop1}"/>
+        <stop offset="100%" stop-color="${gradStop2}"/>
+      </linearGradient>
+    </defs>
+    ${gridLines}
+    <path d="${areaPath}" fill="url(#chartGrad)"/>
+    <polyline points="${polyline}" fill="none" stroke="#CC0000" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+    ${dots}
+    ${xLabels}`;
+
+  document.getElementById('coll-chart-section').style.display = 'block';
+}
+
 // ── Ma Collection ──────────────────────────────────────────────
 async function loadCollection() {
   if (!currentSession) return;
@@ -1913,8 +2066,11 @@ async function loadCollection() {
           <p class="coll-empty-t">Aucune carte encore</p>
           <p class="coll-empty-s">Grade ta première carte pour la voir apparaître ici</p>
         </div>`;
+      document.getElementById('coll-chart-section').style.display = 'none';
       return;
     }
+
+    renderValueChart(grades);
 
     // Render grid with loading spinners first
     grid.innerHTML = grades.map((g, idx) => {
