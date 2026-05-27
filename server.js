@@ -241,15 +241,34 @@ app.post("/api/grade", requireAuth, upload.fields([{ name: "front", maxCount: 1 
       messages: [{ role: "user", content: [...imageContent, { type: "text", text: prompt }] }],
     });
 
-    cleanup();
-
     const text = response.content[0].text.trim();
-    // Extraire le JSON même si Claude ajoute du texte autour
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
+      cleanup();
       console.error("Réponse brute:", text.slice(0, 300));
       throw new Error("Réponse IA invalide — réessaie");
     }
+
+    // Upload de la photo recto dans Supabase Storage (avant cleanup)
+    let imageUrl = null;
+    try {
+      const imgBuffer = fs.readFileSync(frontFile.path);
+      const ext = (frontFile.mimetype || "").includes("png") ? "png" : "jpg";
+      const fileName = `${req.user.id}/${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("card-images")
+        .upload(fileName, imgBuffer, { contentType: frontFile.mimetype || "image/jpeg" });
+      if (!upErr) {
+        const { data: urlData } = supabase.storage.from("card-images").getPublicUrl(fileName);
+        imageUrl = urlData?.publicUrl || null;
+      } else {
+        console.error("Storage upload error:", upErr.message);
+      }
+    } catch (upEx) {
+      console.error("Storage exception:", upEx.message);
+    }
+
+    cleanup();
 
     let result;
     try {
@@ -262,7 +281,7 @@ app.post("/api/grade", requireAuth, upload.fields([{ name: "front", maxCount: 1 
     // Sauvegarder + incrémenter
     const newCount = profile.grades_this_month + 1;
     await supabase.from("profiles").update({ grades_this_month: newCount }).eq("id", req.user.id);
-    await supabase.from("grades").insert({ user_id: req.user.id, result });
+    await supabase.from("grades").insert({ user_id: req.user.id, result, image_url: imageUrl });
 
     res.json({
       success: true,

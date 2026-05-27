@@ -2558,7 +2558,7 @@ async function loadAccount() {
 // ── Slab canvas for collection ─────────────────────────────────
 const _slabCache = {}; // gradeId → dataUrl
 
-function generateSlabCanvas(gradeData) {
+async function generateSlabCanvas(gradeData) {
   const r         = gradeData.result || {};
   const score     = r.global || 0;
   const cardName  = (r.card?.name && r.card.name !== 'Inconnue') ? r.card.name : 'Carte Pokémon';
@@ -2609,51 +2609,87 @@ function generateSlabCanvas(gradeData) {
   ctx.fillStyle='#C0C3C8'; rrect(ctx,cwx-2,cwy-2,cww+4,cwh+4,14); ctx.fill();
   ctx.fillStyle='#D8DBE0'; rrect(ctx,cwx-1,cwy-1,cww+2,cwh+2,13); ctx.fill();
 
-  // ── Card art placeholder ──
+  // ── Card art (real photo or placeholder) ──
   ctx.save();
   rrect(ctx,cwx,cwy,cww,cwh,12); ctx.clip();
 
-  // Tier gradient bg
-  const artG = ctx.createRadialGradient(cwx+cww/2,cwy+cwh/2,0,cwx+cww/2,cwy+cwh/2,cwh*.8);
-  artG.addColorStop(0, t.bg+'EE');
-  artG.addColorStop(0.6, t.bg+'BB');
-  artG.addColorStop(1, '#050505');
-  ctx.fillStyle=artG; ctx.fillRect(cwx,cwy,cww,cwh);
+  const drawPlaceholder = () => {
+    // Tier gradient bg
+    const artG = ctx.createRadialGradient(cwx+cww/2,cwy+cwh/2,0,cwx+cww/2,cwy+cwh/2,cwh*.8);
+    artG.addColorStop(0, t.bg+'EE');
+    artG.addColorStop(0.6, t.bg+'BB');
+    artG.addColorStop(1, '#050505');
+    ctx.fillStyle=artG; ctx.fillRect(cwx,cwy,cww,cwh);
 
-  // Radial accent glow
-  const glow = ctx.createRadialGradient(cwx+cww/2,cwy+cwh/2,0,cwx+cww/2,cwy+cwh/2,cwh*.55);
-  glow.addColorStop(0, t.border+'44'); glow.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=glow; ctx.fillRect(cwx,cwy,cww,cwh);
+    // Radial accent glow
+    const glow = ctx.createRadialGradient(cwx+cww/2,cwy+cwh/2,0,cwx+cww/2,cwy+cwh/2,cwh*.55);
+    glow.addColorStop(0, t.border+'44'); glow.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=glow; ctx.fillRect(cwx,cwy,cwh,cwh);
 
-  // Big Pokéball watermark
-  const pbR=110, pbX=cwx+cww/2, pbY=cwy+cwh/2+10;
-  ctx.globalAlpha=0.13;
-  ctx.beginPath(); ctx.arc(pbX,pbY,pbR,Math.PI,0); ctx.lineTo(pbX-pbR,pbY); ctx.closePath();
-  ctx.fillStyle='#CC0000'; ctx.fill();
-  ctx.beginPath(); ctx.arc(pbX,pbY,pbR,0,Math.PI); ctx.lineTo(pbX+pbR,pbY); ctx.closePath();
-  ctx.fillStyle='#FFFFFF'; ctx.fill();
-  ctx.strokeStyle='#FFFFFF'; ctx.lineWidth=7;
-  ctx.beginPath(); ctx.moveTo(pbX-pbR,pbY); ctx.lineTo(pbX+pbR,pbY); ctx.stroke();
-  ctx.beginPath(); ctx.arc(pbX,pbY,26,0,Math.PI*2); ctx.fillStyle='#111'; ctx.fill();
-  ctx.beginPath(); ctx.arc(pbX,pbY,pbR,0,Math.PI*2); ctx.stroke();
-  ctx.globalAlpha=1;
-
-  // Card name centered
-  const fontSize = cardName.length > 16 ? 30 : 38;
-  ctx.font = `bold ${fontSize}px Arial Black, Arial, sans-serif`;
-  ctx.textAlign = 'center';
-  ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 16;
-  ctx.fillStyle = t.accent;
-  const cn = cardName.length > 18 ? cardName.slice(0,16)+'…' : cardName;
-  ctx.fillText(cn.toUpperCase(), cwx+cww/2, cwy+cwh/2+16);
-
-  // Stars for high grades
-  if (psaNum >= 9) {
-    ctx.shadowBlur=0; ctx.font='18px serif'; ctx.globalAlpha=0.6;
-    const stars = psaNum === 10 ? ['⭐','⭐','⭐'] : ['⭐','⭐'];
-    const sw = stars.length * 26; let sx = cwx+cww/2 - sw/2;
-    stars.forEach(s => { ctx.fillText(s, sx, cwy+cwh/2+50); sx+=26; });
+    // Big Pokéball watermark
+    const pbR=110, pbX=cwx+cww/2, pbY=cwy+cwh/2+10;
+    ctx.globalAlpha=0.13;
+    ctx.beginPath(); ctx.arc(pbX,pbY,pbR,Math.PI,0); ctx.lineTo(pbX-pbR,pbY); ctx.closePath();
+    ctx.fillStyle='#CC0000'; ctx.fill();
+    ctx.beginPath(); ctx.arc(pbX,pbY,pbR,0,Math.PI); ctx.lineTo(pbX+pbR,pbY); ctx.closePath();
+    ctx.fillStyle='#FFFFFF'; ctx.fill();
+    ctx.strokeStyle='#FFFFFF'; ctx.lineWidth=7;
+    ctx.beginPath(); ctx.moveTo(pbX-pbR,pbY); ctx.lineTo(pbX+pbR,pbY); ctx.stroke();
+    ctx.beginPath(); ctx.arc(pbX,pbY,26,0,Math.PI*2); ctx.fillStyle='#111'; ctx.fill();
+    ctx.beginPath(); ctx.arc(pbX,pbY,pbR,0,Math.PI*2); ctx.stroke();
     ctx.globalAlpha=1;
+
+    // Card name centered
+    const fontSize = cardName.length > 16 ? 30 : 38;
+    ctx.font = `bold ${fontSize}px Arial Black, Arial, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 16;
+    ctx.fillStyle = t.accent;
+    const cn = cardName.length > 18 ? cardName.slice(0,16)+'…' : cardName;
+    ctx.fillText(cn.toUpperCase(), cwx+cww/2, cwy+cwh/2+16);
+
+    // Stars for high grades
+    if (psaNum >= 9) {
+      ctx.shadowBlur=0; ctx.font='18px serif'; ctx.globalAlpha=0.6;
+      const stars = psaNum === 10 ? ['⭐','⭐','⭐'] : ['⭐','⭐'];
+      const sw = stars.length * 26; let sx = cwx+cww/2 - sw/2;
+      stars.forEach(s => { ctx.fillText(s, sx, cwy+cwh/2+50); sx+=26; });
+      ctx.globalAlpha=1;
+    }
+  };
+
+  if (gradeData.image_url) {
+    try {
+      await new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          // Fill bg with tier color first
+          ctx.fillStyle = t.bg; ctx.fillRect(cwx,cwy,cww,cwh);
+          // Cover-fit the photo into the card window
+          const imgAspect = img.naturalWidth / img.naturalHeight;
+          const winAspect = cww / cwh;
+          let dx, dy, dw, dh;
+          if (imgAspect > winAspect) {
+            dh = cwh; dw = dh * imgAspect;
+            dx = cwx + (cww - dw) / 2; dy = cwy;
+          } else {
+            dw = cww; dh = dw / imgAspect;
+            dx = cwx; dy = cwy + (cwh - dh) / 2;
+          }
+          ctx.drawImage(img, dx, dy, dw, dh);
+          // Subtle vignette overlay
+          const vig = ctx.createRadialGradient(cwx+cww/2,cwy+cwh/2,cwh*.2,cwx+cww/2,cwy+cwh/2,cwh*.75);
+          vig.addColorStop(0,'rgba(0,0,0,0)'); vig.addColorStop(1,'rgba(0,0,0,0.35)');
+          ctx.fillStyle=vig; ctx.fillRect(cwx,cwy,cww,cwh);
+          resolve();
+        };
+        img.onerror = () => { drawPlaceholder(); resolve(); };
+        img.src = gradeData.image_url;
+      });
+    } catch(e) { drawPlaceholder(); }
+  } else {
+    drawPlaceholder();
   }
   ctx.restore();
 
