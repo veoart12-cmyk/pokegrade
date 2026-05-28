@@ -232,131 +232,202 @@ body {
 .btn-block:active { background: var(--red-dark); }
 
 /* ══════════════
-   SCAN / UPLOAD
+   SCAN / UPLOAD  (HoloDex style)
 ══════════════ */
-#s-upload { background: #0B0B0B; }
+#s-upload { background: #000; }
 
 .scan-screen {
   display: flex; flex-direction: column;
-  min-height: 100vh; background: #0B0B0B;
+  min-height: 100vh; background: #000;
+  position: relative; overflow: hidden;
 }
+
+/* Top bar — back + side selector */
 .scan-top {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 10;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 52px 20px 12px;
-  flex-shrink: 0;
+  padding: 52px 20px 14px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%);
 }
 .scan-back-btn {
   font-size: 28px; line-height: 1;
-  color: rgba(255,255,255,0.55); cursor: pointer;
+  color: rgba(255,255,255,0.8); cursor: pointer;
   width: 36px; text-align: center;
 }
 .scan-tabs {
   display: flex;
-  background: rgba(255,255,255,0.09);
+  background: rgba(255,255,255,0.12);
   border-radius: 99px; padding: 3px; gap: 2px;
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
 }
 .scan-tab {
-  padding: 8px 22px; border: none; border-radius: 99px;
-  background: transparent; color: rgba(255,255,255,0.38);
-  font-size: 14px; font-weight: 700; cursor: pointer;
+  padding: 7px 20px; border: none; border-radius: 99px;
+  background: transparent; color: rgba(255,255,255,0.5);
+  font-size: 13px; font-weight: 700; cursor: pointer;
   transition: all 0.2s; font-family: inherit;
 }
-.scan-tab.active { background: #fff; color: #0A0A0A; }
+.scan-tab.active { background: #fff; color: #000; }
 
+/* Main scan area — full screen */
 .scan-panel {
   flex: 1; display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  padding: 14px 28px 10px;
+  padding: 0 0 140px 0; /* leave room for bottom bar */
+  position: relative;
+  /* Frame dimensions for vignette calc */
+  --frame-w: min(220px, 58vw);
+  --frame-h: calc(min(220px, 58vw) * 88 / 63);
 }
 
-/* Card frame — Pokémon card proportions (63mm × 88mm) */
+/* === VIGNETTE OVERLAY — dark areas OUTSIDE the card frame === */
+/* 4 overlay strips that surround the transparent card window */
+.scan-overlay-h, .scan-overlay-v {
+  position: absolute; background: rgba(0,0,0,0.72);
+  pointer-events: none; z-index: 2;
+}
+/* These are set dynamically based on frame position, fallback via CSS variables */
+.scan-overlay-top    { top: 0; left: 0; right: 0; bottom: calc(50% + var(--frame-h, 160px) / 2); }
+.scan-overlay-bottom { bottom: 0; left: 0; right: 0; top: calc(50% + var(--frame-h, 160px) / 2); }
+.scan-overlay-left   { top: calc(50% - var(--frame-h, 160px) / 2); bottom: calc(50% - var(--frame-h, 160px) / 2); left: 0; right: calc(50% + var(--frame-w, 114px) / 2); }
+.scan-overlay-right  { top: calc(50% - var(--frame-h, 160px) / 2); bottom: calc(50% - var(--frame-h, 160px) / 2); right: 0; left: calc(50% + var(--frame-w, 114px) / 2); }
+
+/* The card frame = the transparent window */
 .card-frame {
   position: relative;
-  width: min(230px, 62vw);
+  width: min(220px, 58vw);
   aspect-ratio: 63/88;
+  z-index: 3;
+  border-radius: 12px;
+  overflow: visible;
 }
-.cf-corner {
-  position: absolute; width: 22px; height: 22px;
-  border-style: solid; border-color: rgba(255,255,255,0.75); border-width: 0;
-  pointer-events: none; z-index: 3;
-  transition: border-color 0.35s;
-}
-.cf-corner.tl { top: -1px; left: -1px; border-top-width: 3px; border-left-width: 3px; border-radius: 6px 0 0 0; }
-.cf-corner.tr { top: -1px; right: -1px; border-top-width: 3px; border-right-width: 3px; border-radius: 0 6px 0 0; }
-.cf-corner.bl { bottom: -1px; left: -1px; border-bottom-width: 3px; border-left-width: 3px; border-radius: 0 0 0 6px; }
-.cf-corner.br { bottom: -1px; right: -1px; border-bottom-width: 3px; border-right-width: 3px; border-radius: 0 0 6px 0; }
-.card-frame.done .cf-corner { border-color: #CC0000; }
 
-/* Upload zone fills the frame */
+/* Corner brackets — bright white, clean */
+.cf-corner {
+  position: absolute; width: 26px; height: 26px;
+  border-style: solid; border-color: #fff; border-width: 0;
+  pointer-events: none; z-index: 5;
+  transition: border-color 0.3s;
+}
+.cf-corner.tl { top: -2px; left: -2px; border-top-width: 3px; border-left-width: 3px; border-radius: 8px 0 0 0; }
+.cf-corner.tr { top: -2px; right: -2px; border-top-width: 3px; border-right-width: 3px; border-radius: 0 8px 0 0; }
+.cf-corner.bl { bottom: -2px; left: -2px; border-bottom-width: 3px; border-left-width: 3px; border-radius: 0 0 0 8px; }
+.cf-corner.br { bottom: -2px; right: -2px; border-bottom-width: 3px; border-right-width: 3px; border-radius: 0 0 8px 0; }
+.card-frame.done .cf-corner { border-color: #CC0000; box-shadow: 0 0 0 0 rgba(204,0,0,0.3); }
+
+/* Scan line animation */
+.scan-line {
+  position: absolute; left: 0; right: 0; height: 2px;
+  background: linear-gradient(to right, transparent, rgba(204,0,0,0.6) 30%, #CC0000 50%, rgba(204,0,0,0.6) 70%, transparent);
+  z-index: 6; top: 0; pointer-events: none;
+  animation: scanMove 2.4s ease-in-out infinite;
+  border-radius: 1px;
+  box-shadow: 0 0 8px rgba(204,0,0,0.5);
+}
+@keyframes scanMove {
+  0%   { top: 4px; opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { top: calc(100% - 4px); opacity: 0; }
+}
+/* Hide scan line when photo is taken */
+.card-frame.done .scan-line { display: none; }
+
+/* Upload zone — truly transparent (no background, no border visible) */
 .upload-zone {
   position: absolute; inset: 0; margin: 0; padding: 0;
-  border: 1.5px solid rgba(255,255,255,0.1);
-  border-radius: 10px;
-  background: rgba(255,255,255,0.03);
+  border: none; border-radius: 12px;
+  background: transparent;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   cursor: pointer; overflow: hidden;
-  transition: border-color 0.2s;
+  z-index: 4;
 }
-.upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-.cf-placeholder { pointer-events: none; text-align: center; padding: 16px; }
+.upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; z-index: 5; }
+.cf-placeholder { pointer-events: none; text-align: center; padding: 12px; }
 .cf-ico {
-  width: 50px; height: 50px; border-radius: 50%;
-  background: rgba(204,0,0,0.12); border: 1.5px solid rgba(204,0,0,0.3);
+  width: 48px; height: 48px; border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  border: 1.5px solid rgba(255,255,255,0.3);
   display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 12px;
+  margin: 0 auto 10px;
+  backdrop-filter: blur(4px);
 }
-.cf-hint { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.85); margin-bottom: 4px; }
-.cf-sub  { font-size: 11px; color: rgba(255,255,255,0.35); }
+.cf-hint { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.9); margin-bottom: 3px; }
+.cf-sub  { font-size: 11px; color: rgba(255,255,255,0.45); }
 
 /* Preview fills the frame */
 .preview-zone {
   position: absolute; inset: 0; display: none;
-  border-radius: 10px; overflow: hidden;
+  border-radius: 12px; overflow: hidden; z-index: 4;
 }
-.preview-zone img { width: 100%; height: 100%; object-fit: cover; display: block; padding: 0; }
+.preview-zone img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .cf-retake {
   position: absolute; bottom: 0; left: 0; right: 0;
-  padding: 10px; background: rgba(0,0,0,0.6);
-  color: white; font-size: 12px; font-weight: 700;
+  padding: 9px; background: rgba(0,0,0,0.55);
+  color: white; font-size: 11px; font-weight: 700;
   text-align: center; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 5;
 }
 .cf-retake input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 
+/* Bottom area — hint + status + camera button */
+.scan-bottom-area {
+  position: absolute; bottom: 0; left: 0; right: 0; z-index: 10;
+  padding: 14px 24px 44px;
+  background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%);
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+}
+.scan-hint-text {
+  font-size: 13px; color: rgba(255,255,255,0.55); text-align: center; font-weight: 500;
+}
 /* Status dots */
 .scan-dots {
-  display: flex; align-items: center; gap: 12px;
-  margin-top: 18px; flex-shrink: 0;
+  display: flex; align-items: center; gap: 14px;
 }
 .scan-dot-item {
   display: flex; align-items: center; gap: 6px;
-  font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.28);
+  font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.3);
   transition: color 0.3s;
 }
-.scan-dot-item.done { color: rgba(255,255,255,0.7); }
+.scan-dot-item.done { color: rgba(255,255,255,0.85); }
 .scan-dot-circle {
   width: 8px; height: 8px; border-radius: 50%;
-  background: rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.15);
   transition: background 0.3s; flex-shrink: 0;
 }
 .scan-dot-item.done .scan-dot-circle { background: #CC0000; }
-.scan-dot-sep { color: rgba(255,255,255,0.15); font-size: 14px; }
+.scan-dot-sep { color: rgba(255,255,255,0.18); font-size: 16px; }
 
-.scan-bottom { padding: 12px 16px 48px; flex-shrink: 0; }
+/* Camera shutter button */
+.btn-shutter-wrap {
+  position: relative; width: 72px; height: 72px;
+}
+.btn-shutter {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: white; border: 3px solid rgba(255,255,255,0.4);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: transform 0.12s, background 0.15s;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  position: relative; z-index: 2;
+  outline: none;
+}
+.btn-shutter:active { transform: scale(0.93); background: rgba(255,255,255,0.85); }
+.btn-shutter:disabled { background: rgba(255,255,255,0.2); cursor: not-allowed; }
+.btn-shutter:disabled svg { opacity: 0.3; }
+.btn-shutter svg { width: 26px; height: 26px; }
+/* Analyze button — shown when front photo done */
 .btn-scan-analyze {
-  width: 100%; padding: 18px;
+  width: 100%; padding: 16px;
   background: var(--red); color: white;
   border: none; border-radius: 16px;
-  font-size: 17px; font-weight: 800; cursor: pointer;
+  font-size: 16px; font-weight: 800; cursor: pointer;
   transition: background 0.15s; font-family: inherit;
+  display: none; /* hidden by default, shown when photo is ready */
 }
-.btn-scan-analyze:disabled {
-  background: rgba(255,255,255,0.07);
-  color: rgba(255,255,255,0.2); cursor: not-allowed;
-}
-.btn-scan-analyze:not(:disabled):active { background: var(--red-dark); }
+.btn-scan-analyze.visible { display: block; }
+.btn-scan-analyze:active { background: var(--red-dark); }
+/* btn-go is the analyze button — visible only when .visible class is added */
 
 /* ══════════════
    ANALYZING
@@ -1273,7 +1344,7 @@ body {
 <div class="screen" id="s-upload">
   <div class="scan-screen">
 
-    <!-- Top nav -->
+    <!-- Top bar: back + Recto/Verso tabs -->
     <div class="scan-top">
       <span class="scan-back-btn" onclick="go('s-guide')">‹</span>
       <div class="scan-tabs">
@@ -1283,47 +1354,63 @@ body {
       <span style="width:36px"></span>
     </div>
 
-    <!-- Front panel -->
+    <!-- FRONT panel -->
     <div class="scan-panel" id="scan-panel-front">
+      <!-- Vignette: 4 strips that darken everything OUTSIDE the card frame -->
+      <div class="scan-overlay-h scan-overlay-top"></div>
+      <div class="scan-overlay-h scan-overlay-bottom"></div>
+      <div class="scan-overlay-v scan-overlay-left"></div>
+      <div class="scan-overlay-v scan-overlay-right"></div>
+
+      <!-- Card frame = transparent window -->
       <div class="card-frame" id="card-frame-front">
         <div class="cf-corner tl"></div>
         <div class="cf-corner tr"></div>
         <div class="cf-corner bl"></div>
         <div class="cf-corner br"></div>
-        <!-- Upload zone -->
+        <!-- Animated scan line (hidden once photo taken) -->
+        <div class="scan-line"></div>
+        <!-- Tap to pick photo -->
         <div class="upload-zone" id="upload-zone">
-          <input type="file" accept="image/*" onchange="handleFile(event,'front')">
+          <input type="file" accept="image/*" capture="environment" onchange="handleFile(event,'front')">
           <div class="cf-placeholder">
             <div class="cf-ico">
               <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-                <path d="M2 8.5h2.2l2-3h7.6l2 3H18a1.5 1.5 0 0 1 1.5 1.5v7.5A1.5 1.5 0 0 1 18 19H4A1.5 1.5 0 0 1 2.5 17.5V10A1.5 1.5 0 0 1 4 8.5z" stroke="#CC0000" stroke-width="1.6" fill="none"/>
-                <circle cx="11" cy="14" r="3" stroke="#CC0000" stroke-width="1.6"/>
+                <path d="M2 8.5h2.2l2-3h7.6l2 3H18a1.5 1.5 0 0 1 1.5 1.5v7.5A1.5 1.5 0 0 1 18 19H4A1.5 1.5 0 0 1 2.5 17.5V10A1.5 1.5 0 0 1 4 8.5z" stroke="rgba(255,255,255,0.55)" stroke-width="1.6" fill="none"/>
+                <circle cx="11" cy="14" r="3" stroke="rgba(255,255,255,0.55)" stroke-width="1.6"/>
               </svg>
             </div>
             <p class="cf-hint" data-i18n="upload.front.t">Face avant</p>
             <p class="cf-sub" data-i18n="upload.front.s">Appuie pour photographier</p>
           </div>
         </div>
-        <!-- Preview -->
+        <!-- Photo preview fills the frame -->
         <div class="preview-zone" id="preview-zone">
           <img id="preview-img" src="" alt="">
           <label class="cf-retake">
-            <input type="file" accept="image/*" onchange="handleFile(event,'front')">
+            <input type="file" accept="image/*" capture="environment" onchange="handleFile(event,'front')">
             <span data-i18n="upload.change">Changer</span>
           </label>
         </div>
       </div>
     </div>
 
-    <!-- Back panel -->
+    <!-- BACK panel (hidden until tab switch) -->
     <div class="scan-panel" id="scan-panel-back" style="display:none">
+      <!-- Vignette -->
+      <div class="scan-overlay-h scan-overlay-top"></div>
+      <div class="scan-overlay-h scan-overlay-bottom"></div>
+      <div class="scan-overlay-v scan-overlay-left"></div>
+      <div class="scan-overlay-v scan-overlay-right"></div>
+
       <div class="card-frame" id="card-frame-back">
         <div class="cf-corner tl"></div>
         <div class="cf-corner tr"></div>
         <div class="cf-corner bl"></div>
         <div class="cf-corner br"></div>
+        <div class="scan-line"></div>
         <div class="upload-zone" id="upload-zone-back">
-          <input type="file" accept="image/*" onchange="handleFile(event,'back')">
+          <input type="file" accept="image/*" capture="environment" onchange="handleFile(event,'back')">
           <div class="cf-placeholder">
             <div class="cf-ico">
               <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
@@ -1338,29 +1425,38 @@ body {
         <div class="preview-zone" id="preview-zone-back">
           <img id="preview-img-back" src="" alt="">
           <label class="cf-retake">
-            <input type="file" accept="image/*" onchange="handleFile(event,'back')">
+            <input type="file" accept="image/*" capture="environment" onchange="handleFile(event,'back')">
             <span data-i18n="upload.change">Changer</span>
           </label>
         </div>
       </div>
     </div>
 
-    <!-- Status dots -->
-    <div class="scan-dots">
-      <div class="scan-dot-item" id="scan-dot-front">
-        <div class="scan-dot-circle"></div>
-        <span data-i18n="upload.recto">Recto</span>
+    <!-- Bottom bar: hint + dots + shutter + analyze -->
+    <div class="scan-bottom-area">
+      <p class="scan-hint-text" id="scan-hint-txt" data-i18n="upload.hint">Cadre ta carte dans la zone</p>
+      <div class="scan-dots">
+        <div class="scan-dot-item" id="scan-dot-front">
+          <div class="scan-dot-circle"></div>
+          <span data-i18n="upload.recto">Recto</span>
+        </div>
+        <div class="scan-dot-sep">·</div>
+        <div class="scan-dot-item" id="scan-dot-back">
+          <div class="scan-dot-circle"></div>
+          <span data-i18n="upload.verso">Verso</span>
+        </div>
       </div>
-      <div class="scan-dot-sep">·</div>
-      <div class="scan-dot-item" id="scan-dot-back">
-        <div class="scan-dot-circle"></div>
-        <span data-i18n="upload.verso">Verso</span>
+      <!-- Round camera shutter button -->
+      <div class="btn-shutter-wrap">
+        <button class="btn-shutter" id="btn-shutter" onclick="triggerShutter()" type="button" aria-label="Prendre une photo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
+        </button>
       </div>
-    </div>
-
-    <!-- Analyze button -->
-    <div class="scan-bottom">
-      <button class="btn-scan-analyze" id="btn-go" onclick="startAnalysis()" disabled data-i18n="upload.btn">Analyser →</button>
+      <!-- Analyze button — appears once front photo is ready -->
+      <button class="btn-scan-analyze" id="btn-go" onclick="startAnalysis()" type="button" data-i18n="upload.btn">Analyser →</button>
     </div>
 
     <!-- Hidden for JS compat -->
@@ -1928,6 +2024,7 @@ const TRANSLATIONS = {
     'upload.title':'Ta carte','upload.front.t':'Face avant','upload.front.s':'Obligatoire',
     'upload.back.t':'Face arrière','upload.back.s':'Optionnel','upload.change':'Changer',
     'upload.name.lbl':'Nom de la carte','upload.name.ph':'Détecté auto, ou tape ici…','upload.btn':'Analyser →',
+    'upload.hint':'Cadre ta carte dans la zone',
     'analyzing.h':'Analyse en cours…','analyzing.s':'Standards PSA officiels',
     'step1':'Détection de la carte','step2':'Centering','step3':'Corners & Edges','step4':'Surface','step5':'Note finale',
     'result.back':'← Nouveau grade','result.share':'Partager','result.score.lbl':'Note globale',
@@ -1999,6 +2096,7 @@ const TRANSLATIONS = {
     'upload.title':'Your card','upload.front.t':'Front face','upload.front.s':'Required',
     'upload.back.t':'Back face','upload.back.s':'Optional','upload.change':'Change',
     'upload.name.lbl':'Card name','upload.name.ph':'Auto-detected, or type here…','upload.btn':'Analyze →',
+    'upload.hint':'Frame your card in the zone',
     'analyzing.h':'Analyzing…','analyzing.s':'Official PSA standards',
     'step1':'Card detection','step2':'Centering','step3':'Corners & Edges','step4':'Surface','step5':'Final score',
     'result.back':'← New grade','result.share':'Share','result.score.lbl':'Overall score',
@@ -2070,6 +2168,7 @@ const TRANSLATIONS = {
     'upload.title':'Tu carta','upload.front.t':'Cara delantera','upload.front.s':'Obligatorio',
     'upload.back.t':'Cara trasera','upload.back.s':'Opcional','upload.change':'Cambiar',
     'upload.name.lbl':'Nombre de la carta','upload.name.ph':'Detectado auto, o escribe aquí…','upload.btn':'Analizar →',
+    'upload.hint':'Encuadra tu carta en la zona',
     'analyzing.h':'Analizando…','analyzing.s':'Estándares PSA oficiales',
     'step1':'Detección de la carta','step2':'Centrado','step3':'Esquinas y Bordes','step4':'Superficie','step5':'Nota final',
     'result.back':'← Nueva nota','result.share':'Compartir','result.score.lbl':'Nota global',
@@ -2141,6 +2240,7 @@ const TRANSLATIONS = {
     'upload.title':'La tua carta','upload.front.t':'Faccia anteriore','upload.front.s':'Obbligatorio',
     'upload.back.t':'Faccia posteriore','upload.back.s':'Opzionale','upload.change':'Cambia',
     'upload.name.lbl':'Nome della carta','upload.name.ph':'Rilevato automaticamente, o scrivi qui…','upload.btn':'Analizza →',
+    'upload.hint':'Inquadra la carta nella zona',
     'analyzing.h':'Analisi in corso…','analyzing.s':'Standard PSA ufficiali',
     'step1':'Rilevamento carta','step2':'Centratura','step3':'Angoli e Bordi','step4':'Superficie','step5':'Voto finale',
     'result.back':'← Nuovo voto','result.share':'Condividi','result.score.lbl':'Voto globale',
@@ -2212,6 +2312,7 @@ const TRANSLATIONS = {
     'upload.title':'Deine Karte','upload.front.t':'Vorderseite','upload.front.s':'Erforderlich',
     'upload.back.t':'Rückseite','upload.back.s':'Optional','upload.change':'Ändern',
     'upload.name.lbl':'Kartenname','upload.name.ph':'Auto-erkannt, oder hier eingeben…','upload.btn':'Analysieren →',
+    'upload.hint':'Karte in den Rahmen legen',
     'analyzing.h':'Analyse läuft…','analyzing.s':'Offizielle PSA-Standards',
     'step1':'Kartenerkennung','step2':'Zentrierung','step3':'Ecken & Kanten','step4':'Oberfläche','step5':'Endnote',
     'result.back':'← Neue Note','result.share':'Teilen','result.score.lbl':'Gesamtnote',
@@ -2283,6 +2384,7 @@ const TRANSLATIONS = {
     'upload.title':'Jouw kaart','upload.front.t':'Voorzijde','upload.front.s':'Verplicht',
     'upload.back.t':'Achterzijde','upload.back.s':'Optioneel','upload.change':'Wijzigen',
     'upload.name.lbl':'Kaartnaam','upload.name.ph':'Auto-gedetecteerd, of typ hier…','upload.btn':'Analyseren →',
+    'upload.hint':'Kaart in de zone plaatsen',
     'analyzing.h':'Analyse bezig…','analyzing.s':'Officiële PSA-normen',
     'step1':'Kaartdetectie','step2':'Centrering','step3':'Hoeken & Randen','step4':'Oppervlak','step5':'Eindscore',
     'result.back':'← Nieuwe beoordeling','result.share':'Delen','result.score.lbl':'Totaalscore',
@@ -2802,6 +2904,33 @@ function switchScanTab(side) {
   if (pb) pb.style.display = isFront ? 'none' : 'flex';
   document.getElementById('scan-tab-front')?.classList.toggle('active', isFront);
   document.getElementById('scan-tab-back')?.classList.toggle('active', !isFront);
+  // Update hint text
+  const hint = document.getElementById('scan-hint-txt');
+  if (hint) {
+    if (!isFront) hint.textContent = 'Face arrière — optionnel';
+    else if (frontFile) hint.textContent = 'Recto prêt — analyse ou ajoute le verso';
+    else hint.textContent = 'Cadre ta carte dans la zone';
+  }
+}
+
+// ── Shutter button: triggers the file input for current panel ──
+function triggerShutter() {
+  const isFront = document.getElementById('scan-panel-front').style.display !== 'none';
+  if (isFront) {
+    const pz = document.getElementById('preview-zone');
+    if (pz && pz.style.display === 'block') {
+      pz.querySelector('input')?.click();
+    } else {
+      document.getElementById('upload-zone')?.querySelector('input')?.click();
+    }
+  } else {
+    const pz = document.getElementById('preview-zone-back');
+    if (pz && pz.style.display === 'block') {
+      pz.querySelector('input')?.click();
+    } else {
+      document.getElementById('upload-zone-back')?.querySelector('input')?.click();
+    }
+  }
 }
 
 // ── Upload ─────────────────────────────────────────────────────
@@ -2818,14 +2947,17 @@ function handleFile(e, side) {
       document.getElementById('preview-img').src = ev.target.result;
       document.getElementById('preview-zone').style.display = 'block';
       document.getElementById('upload-zone').style.display = 'none';
-      // Mark frame as done (red corners)
+      // Mark frame done → corners turn red, scan line hides
       document.getElementById('card-frame-front')?.classList.add('done');
-      // Mark dot as done
+      // Mark dot done
       document.getElementById('scan-dot-front')?.classList.add('done');
-      // Enable analyze button
+      // Show analyze button
       const b = document.getElementById('btn-go');
-      b.disabled = false;
-      // Auto-switch to verso tab to prompt user for back photo
+      if (b) b.classList.add('visible');
+      // Update hint
+      const hint = document.getElementById('scan-hint-txt');
+      if (hint) hint.textContent = 'Recto prêt — analyse ou ajoute le verso';
+      // Auto-switch to verso tab after short delay
       setTimeout(() => switchScanTab('back'), 450);
     };
   } else {
@@ -2836,6 +2968,9 @@ function handleFile(e, side) {
       document.getElementById('upload-zone-back').style.display = 'none';
       document.getElementById('card-frame-back')?.classList.add('done');
       document.getElementById('scan-dot-back')?.classList.add('done');
+      // Update hint
+      const hint = document.getElementById('scan-hint-txt');
+      if (hint) hint.textContent = 'Verso ajouté — prêt pour l\'analyse';
     };
   }
   reader.readAsDataURL(f);
@@ -3129,8 +3264,12 @@ function resetAndGo() {
   // Go back to front tab
   switchScanTab('front');
   document.getElementById('card-name').value = '';
+  // Reset hint
+  const hint = document.getElementById('scan-hint-txt');
+  if (hint) hint.textContent = 'Cadre ta carte dans la zone';
+  // Hide analyze button
   const b = document.getElementById('btn-go');
-  if (b) { b.disabled = true; }
+  if (b) { b.classList.remove('visible'); }
   document.getElementById('sc-ring').style.strokeDashoffset = '239';
   document.getElementById('card-detected-block').style.display = 'none';
   document.getElementById('price-block').style.display = 'none';
