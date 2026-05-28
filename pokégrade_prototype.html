@@ -232,60 +232,131 @@ body {
 .btn-block:active { background: var(--red-dark); }
 
 /* ══════════════
-   UPLOAD
+   SCAN / UPLOAD
 ══════════════ */
+#s-upload { background: #0B0B0B; }
+
+.scan-screen {
+  display: flex; flex-direction: column;
+  min-height: 100vh; background: #0B0B0B;
+}
+.scan-top {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 52px 20px 12px;
+  flex-shrink: 0;
+}
+.scan-back-btn {
+  font-size: 28px; line-height: 1;
+  color: rgba(255,255,255,0.55); cursor: pointer;
+  width: 36px; text-align: center;
+}
+.scan-tabs {
+  display: flex;
+  background: rgba(255,255,255,0.09);
+  border-radius: 99px; padding: 3px; gap: 2px;
+}
+.scan-tab {
+  padding: 8px 22px; border: none; border-radius: 99px;
+  background: transparent; color: rgba(255,255,255,0.38);
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  transition: all 0.2s; font-family: inherit;
+}
+.scan-tab.active { background: #fff; color: #0A0A0A; }
+
+.scan-panel {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 14px 28px 10px;
+}
+
+/* Card frame — Pokémon card proportions (63mm × 88mm) */
+.card-frame {
+  position: relative;
+  width: min(230px, 62vw);
+  aspect-ratio: 63/88;
+}
+.cf-corner {
+  position: absolute; width: 22px; height: 22px;
+  border-style: solid; border-color: rgba(255,255,255,0.75); border-width: 0;
+  pointer-events: none; z-index: 3;
+  transition: border-color 0.35s;
+}
+.cf-corner.tl { top: -1px; left: -1px; border-top-width: 3px; border-left-width: 3px; border-radius: 6px 0 0 0; }
+.cf-corner.tr { top: -1px; right: -1px; border-top-width: 3px; border-right-width: 3px; border-radius: 0 6px 0 0; }
+.cf-corner.bl { bottom: -1px; left: -1px; border-bottom-width: 3px; border-left-width: 3px; border-radius: 0 0 0 6px; }
+.cf-corner.br { bottom: -1px; right: -1px; border-bottom-width: 3px; border-right-width: 3px; border-radius: 0 0 6px 0; }
+.card-frame.done .cf-corner { border-color: #CC0000; }
+
+/* Upload zone fills the frame */
 .upload-zone {
-  margin: 16px;
-  border: 2px dashed var(--g200);
-  border-radius: 20px;
-  background: var(--g50);
-  padding: 44px 20px;
-  text-align: center;
-  cursor: pointer;
-  position: relative; overflow: hidden;
+  position: absolute; inset: 0; margin: 0; padding: 0;
+  border: 1.5px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.03);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  cursor: pointer; overflow: hidden;
   transition: border-color 0.2s;
 }
-.upload-zone:hover { border-color: var(--red); }
 .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-.upload-ico {
-  width: 56px; height: 56px;
-  background: var(--white); border-radius: 16px;
+.cf-placeholder { pointer-events: none; text-align: center; padding: 16px; }
+.cf-ico {
+  width: 50px; height: 50px; border-radius: 50%;
+  background: rgba(204,0,0,0.12); border: 1.5px solid rgba(204,0,0,0.3);
   display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 14px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  margin: 0 auto 12px;
 }
-.upload-t { font-size: 17px; font-weight: 800; color: var(--black); margin-bottom: 4px; }
-.upload-s { font-size: 13px; color: var(--g500); }
+.cf-hint { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.85); margin-bottom: 4px; }
+.cf-sub  { font-size: 11px; color: rgba(255,255,255,0.35); }
 
+/* Preview fills the frame */
 .preview-zone {
-  display: none;
-  margin: 16px;
-  border-radius: 20px;
-  overflow: hidden;
-  background: var(--g50);
+  position: absolute; inset: 0; display: none;
+  border-radius: 10px; overflow: hidden;
 }
-.preview-zone img { width: 100%; max-height: 280px; object-fit: contain; display: block; padding: 16px; }
-.preview-change {
-  display: flex; align-items: center; justify-content: center; gap: 6px;
-  padding: 13px; background: var(--white);
-  border-top: 1px solid var(--g100);
-  font-size: 13px; font-weight: 700; color: var(--red);
-  cursor: pointer; position: relative;
+.preview-zone img { width: 100%; height: 100%; object-fit: cover; display: block; padding: 0; }
+.cf-retake {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 10px; background: rgba(0,0,0,0.6);
+  color: white; font-size: 12px; font-weight: 700;
+  text-align: center; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
 }
-.preview-change input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.cf-retake input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 
-.name-row {
-  margin: 0 16px 14px;
-  background: var(--g50);
-  border-radius: 14px;
-  padding: 14px 16px;
+/* Status dots */
+.scan-dots {
+  display: flex; align-items: center; gap: 12px;
+  margin-top: 18px; flex-shrink: 0;
 }
-.name-lbl { font-size: 11px; font-weight: 700; color: var(--g500); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 8px; }
-.name-inp {
-  width: 100%; background: none; border: none; outline: none;
-  font-size: 16px; font-weight: 700; color: var(--black);
+.scan-dot-item {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.28);
+  transition: color 0.3s;
 }
-.name-inp::placeholder { color: var(--g300); font-weight: 400; }
+.scan-dot-item.done { color: rgba(255,255,255,0.7); }
+.scan-dot-circle {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(255,255,255,0.14);
+  transition: background 0.3s; flex-shrink: 0;
+}
+.scan-dot-item.done .scan-dot-circle { background: #CC0000; }
+.scan-dot-sep { color: rgba(255,255,255,0.15); font-size: 14px; }
+
+.scan-bottom { padding: 12px 16px 48px; flex-shrink: 0; }
+.btn-scan-analyze {
+  width: 100%; padding: 18px;
+  background: var(--red); color: white;
+  border: none; border-radius: 16px;
+  font-size: 17px; font-weight: 800; cursor: pointer;
+  transition: background 0.15s; font-family: inherit;
+}
+.btn-scan-analyze:disabled {
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.2); cursor: not-allowed;
+}
+.btn-scan-analyze:not(:disabled):active { background: var(--red-dark); }
 
 /* ══════════════
    ANALYZING
@@ -294,11 +365,12 @@ body {
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   padding: 40px 28px; text-align: center; min-height: 100vh;
+  background: #0B0B0B;
 }
 .orb-wrap { position: relative; margin-bottom: 36px; }
 .orb {
   width: 96px; height: 96px; border-radius: 50%;
-  background: var(--red-bg);
+  background: rgba(204,0,0,0.08);
   display: flex; align-items: center; justify-content: center;
 }
 .orb-r {
@@ -308,24 +380,24 @@ body {
   animation: spin 1s linear infinite;
 }
 .r1 { inset: -10px; }
-.r2 { inset: -20px; border-width: 2px; border-top-color: var(--g200); animation-duration: 1.7s; animation-direction: reverse; }
+.r2 { inset: -20px; border-width: 2px; border-top-color: rgba(255,255,255,0.07); animation-duration: 1.7s; animation-direction: reverse; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.an-h { font-size: 26px; font-weight: 900; color: var(--black); letter-spacing: -0.8px; margin-bottom: 8px; }
-.an-s { font-size: 14px; color: var(--g500); }
+.an-h { font-size: 26px; font-weight: 900; color: #fff; letter-spacing: -0.8px; margin-bottom: 8px; }
+.an-s { font-size: 14px; color: rgba(255,255,255,0.4); }
 
 .steps { margin-top: 36px; width: 100%; max-width: 280px; }
 .step {
   display: flex; align-items: center; gap: 12px;
-  padding: 11px 0; border-bottom: 1px solid var(--g100);
-  font-size: 14px; color: var(--g300); transition: color 0.3s;
+  padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 14px; color: rgba(255,255,255,0.2); transition: color 0.3s;
 }
 .step:last-child { border-bottom: none; }
-.step.active { color: var(--black); font-weight: 700; }
-.step.done   { color: var(--green); }
-.sdot { width: 7px; height: 7px; border-radius: 50%; background: var(--g200); flex-shrink: 0; transition: background 0.3s; }
+.step.active { color: #fff; font-weight: 700; }
+.step.done   { color: #4ADE80; }
+.sdot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.12); flex-shrink: 0; transition: background 0.3s; }
 .step.active .sdot { background: var(--red); animation: pd 1s ease-in-out infinite; }
-.step.done   .sdot { background: var(--green); }
+.step.done   .sdot { background: #4ADE80; }
 @keyframes pd { 0%,100%{transform:scale(1)} 50%{transform:scale(1.9);opacity:.5} }
 
 /* ══════════════
@@ -333,160 +405,139 @@ body {
 ══════════════ */
 #s-result { background: var(--g50); }
 
-.res-bar {
+/* Sticky header */
+.res-header {
   position: sticky; top: 0; z-index: 10;
   background: var(--white);
-  padding: 52px 22px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 52px 20px 14px;
   border-bottom: 1px solid var(--g100);
 }
-.res-nav {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 14px;
-}
 .res-back  { font-size: 15px; color: var(--red); font-weight: 600; cursor: pointer; }
-.res-share { font-size: 14px; color: var(--g500); cursor: pointer; }
+.res-share { font-size: 14px; color: var(--g500); cursor: pointer; font-weight: 600; }
 
-.res-card-row { display: flex; align-items: center; gap: 12px; }
-.res-thumb {
-  width: 44px; height: 62px; border-radius: 5px;
-  background: var(--g200); overflow: hidden; flex-shrink: 0;
+/* Hero card image */
+.res-hero {
+  background: var(--white);
+  padding: 22px 0 0;
+  display: flex; justify-content: center;
 }
-.res-thumb img { width: 100%; height: 100%; object-fit: cover; display: none; }
-.res-cn { font-size: 18px; font-weight: 800; color: var(--black); letter-spacing: -0.3px; }
-.res-cs { font-size: 12px; color: var(--g500); margin-top: 2px; }
+.res-img-wrap {
+  width: 124px; height: 174px; /* 63:88 ratio */
+  border-radius: 10px; overflow: hidden;
+  background: var(--g100);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.13), 0 2px 6px rgba(0,0,0,0.08);
+}
+.res-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: none; }
 
-/* Card detected badge */
-.card-detected {
-  background: var(--g50); border-radius: 16px;
-  margin: 10px 14px 0; padding: 14px 16px;
-  display: none;
-  border-left: 4px solid var(--red);
-  border: 1px solid var(--g100);
-  border-left: 4px solid var(--red);
+/* Card identity */
+.res-identity {
+  background: var(--white);
+  padding: 14px 20px 20px;
+  text-align: center;
+  border-bottom: 1px solid var(--g100);
 }
-.card-detected-row { display: flex; align-items: center; justify-content: space-between; }
-.card-detected-label { font-size: 11px; font-weight: 700; color: var(--g500); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 8px; }
-.card-detected-name { font-size: 17px; font-weight: 900; color: var(--black); letter-spacing: -0.3px; }
-.card-detected-info { font-size: 12px; color: var(--g500); margin-top: 3px; }
-.card-detected-rarity {
+.res-card-name {
+  font-size: 22px; font-weight: 900; color: var(--black);
+  letter-spacing: -0.5px; margin-bottom: 4px;
+}
+.res-card-set { font-size: 13px; color: var(--g500); }
+.res-card-rarity {
   display: inline-block; font-size: 11px; font-weight: 700;
   padding: 3px 10px; border-radius: 99px;
   background: #FFF9E6; color: #B45309; margin-top: 6px;
 }
 
+/* PSA Grade block */
+.res-grade-block {
+  margin: 14px 14px 0;
+  border-radius: 18px; overflow: hidden;
+  background: #0A0A0A; /* default, overridden by JS */
+}
+.rgb-inner { padding: 22px 20px; text-align: center; }
+.rgb-label {
+  display: block; font-size: 11px; font-weight: 900;
+  letter-spacing: .3em; opacity: 0.55; margin-bottom: 2px;
+}
+.rgb-score-row {
+  display: flex; align-items: baseline; justify-content: center; gap: 4px;
+  margin-bottom: 10px;
+}
+.rgb-num { font-size: 72px; font-weight: 900; line-height: 1; letter-spacing: -4px; }
+.rgb-max { font-size: 22px; font-weight: 400; opacity: 0.4; }
+/* Keep these for JS compatibility */
+.psa-tag { display: inline-block; font-size: 13px; font-weight: 800; padding: 6px 16px; border-radius: 99px; margin-bottom: 8px; }
+.sc-eq   { font-size: 12px; opacity: 0.5; }
+
+/* Criteria 2×2 grid */
+.crit-section { padding: 14px 14px 0; }
+.crit-head-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 0 10px 2px;
+  font-size: 10px; font-weight: 800; color: var(--g500);
+  text-transform: uppercase; letter-spacing: .12em;
+}
+.crit-head-row::before {
+  content: ''; display: inline-block; width: 3px; height: 14px;
+  background: var(--red); border-radius: 2px; flex-shrink: 0;
+}
+.crit-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+.crit {
+  background: var(--white); border-radius: 14px;
+  padding: 13px 13px 11px;
+  border: 1px solid var(--g100);
+}
+.crit-nm {
+  display: block; font-size: 9px; font-weight: 800;
+  color: var(--g500); text-transform: uppercase; letter-spacing: .08em;
+  margin-bottom: 5px;
+}
+.crit-sc-row { display: flex; align-items: baseline; gap: 2px; margin-bottom: 7px; }
+.crit-sc  { font-size: 28px; font-weight: 900; line-height: 1; }
+.crit-sc-max { font-size: 11px; font-weight: 400; color: var(--g300); }
+.crit-bar { width: 100%; height: 4px; background: var(--g100); border-radius: 99px; overflow: hidden; margin-bottom: 6px; }
+.crit-f   { height: 100%; border-radius: 99px; transition: width 1.2s cubic-bezier(0.4,0,0.2,1); width: 0%; }
+.crit-ob  { font-size: 10px; color: var(--g500); line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
 /* Price block */
 .price-block {
   background: var(--white); border-radius: 16px;
-  margin: 10px 14px; padding: 16px 18px;
-  display: none;
-  border: 1px solid var(--g100);
-  border-left: 4px solid var(--red);
+  margin: 10px 14px 0; padding: 16px 18px;
+  display: none; border: 1px solid var(--g100);
 }
-.price-block-label { font-size: 11px; font-weight: 700; color: var(--g500); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 12px; }
-.price-range { display: flex; align-items: center; gap: 8px; }
-.price-low  { font-size: 22px; font-weight: 900; color: var(--black); }
+.price-block-label { font-size: 11px; font-weight: 700; color: var(--g500); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 10px; }
+.price-range { display: flex; align-items: center; gap: 10px; }
+.price-low  { font-size: 26px; font-weight: 900; color: var(--black); }
 .price-sep  { font-size: 16px; color: var(--g300); }
-.price-high { font-size: 22px; font-weight: 900; color: var(--black); }
-.price-note { font-size: 12px; color: var(--g500); margin-top: 6px; line-height: 1.4; }
+.price-high { font-size: 26px; font-weight: 900; color: var(--black); }
+.price-note { font-size: 11px; color: var(--g500); margin-top: 6px; line-height: 1.4; }
 
-.score-block {
-  background: var(--white);
-  margin: 14px 14px 10px;
-  border-radius: 20px;
-  padding: 0 22px 24px;
-  text-align: center;
-  overflow: hidden;
-  border: 1px solid var(--g100);
+/* Fake detection */
+.fake-block {
+  margin: 10px 14px 0; padding: 14px 16px;
+  border-radius: 14px; border: 1px solid var(--g100);
+  background: var(--white); display: none;
 }
-/* Bande rouge en haut du bloc score */
-.score-block::before {
-  content: '';
-  display: block;
-  height: 5px;
-  background: var(--red);
-  margin: 0 -22px 20px;
-  border-radius: 20px 20px 0 0;
-}
-.sc-lbl {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 11px; font-weight: 800; color: var(--g500);
-  text-transform: uppercase; letter-spacing: .1em; margin-bottom: 10px;
-}
-.sc-lbl::before { content: ''; display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--red); }
-.sc-row { display: flex; align-items: baseline; justify-content: center; gap: 3px; margin-bottom: 18px; }
-.sc-n { font-size: 84px; font-weight: 900; line-height: 1; letter-spacing: -5px; }
-.sc-d { font-size: 30px; font-weight: 400; color: var(--g300); }
+.fake-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.fake-label  { font-size: 11px; font-weight: 700; color: var(--g500); text-transform: uppercase; letter-spacing: .1em; }
+.fake-conf   { font-size: 11px; color: var(--g500); }
+.fake-verdict { font-size: 15px; font-weight: 700; }
+.fake-verdict.ok      { color: var(--green); }
+.fake-verdict.suspect { color: var(--amber); }
+.fake-verdict.danger  { color: var(--red); }
+.fake-block.ok      { border-color: #BBF7D0; background: var(--green-bg); }
+.fake-block.suspect { border-color: #FDE68A; background: var(--amber-bg); }
+.fake-block.danger  { border-color: #FECACA; background: var(--red-bg); }
+.fake-indicator { font-size: 11px; color: var(--g500); margin-top: 3px; }
 
-.ring-wrap { display: flex; justify-content: center; margin-bottom: 18px; }
-
-.psa-tag {
-  display: inline-block;
-  font-size: 14px; font-weight: 800;
-  padding: 7px 18px; border-radius: 99px;
-  margin-bottom: 6px;
-}
-.sc-eq { font-size: 13px; color: var(--g500); }
-
-/* ── Section header "Détail des critères" ── */
-.crit-head-row {
-  display: flex; align-items: center; gap: 8px;
-  padding: 18px 18px 10px;
-  font-size: 11px; font-weight: 800;
-  color: var(--g500); text-transform: uppercase; letter-spacing: .1em;
-}
-.crit-head-row::before {
-  content: '';
-  display: inline-block;
-  width: 4px; height: 16px;
-  background: var(--red);
-  border-radius: 2px;
-  flex-shrink: 0;
-}
-
-/* ── Blocs critères ── */
-.crit {
-  background: var(--white);
-  margin: 0 14px 10px;
-  border-radius: 16px;
-  padding: 16px 16px 14px 20px;
-  border-left: 4px solid var(--red);
-  border: 1px solid var(--g100);
-  border-left: 4px solid var(--red);
-  position: relative;
-}
-.crit-top {
-  display: flex; align-items: flex-start;
-  justify-content: space-between; margin-bottom: 8px;
-}
-.crit-nm {
-  font-size: 11px; font-weight: 800;
-  color: var(--g500); text-transform: uppercase; letter-spacing: .07em;
-  padding-top: 4px;
-}
-.crit-sc  { font-size: 26px; font-weight: 900; line-height: 1; }
-.crit-sc-max { font-size: 13px; font-weight: 400; color: var(--g300); }
-.crit-ob  { font-size: 13px; color: var(--g700); line-height: 1.5; margin-bottom: 12px; }
-.crit-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
-.crit-bar { flex: 1; height: 8px; background: var(--g100); border-radius: 99px; overflow: hidden; }
-.crit-f   { height: 100%; border-radius: 99px; transition: width 1.2s cubic-bezier(0.4,0,0.2,1); width: 0%; }
-.crit-pct { font-size: 12px; font-weight: 800; min-width: 36px; text-align: right; }
-.crit-cf  { font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
-.crit-cf.high { color: var(--green); }
-.crit-cf.mid  { color: var(--amber); }
-.crit-cf.low  { color: var(--red); }
-.crit-cf-dot  { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-.crit-cf.high .crit-cf-dot { background: var(--green); }
-.crit-cf.mid  .crit-cf-dot { background: var(--amber); }
-.crit-cf.low  .crit-cf-dot { background: var(--red); }
-
-/* ── Save banner ── */
+/* Save banner */
 .save-banner {
-  margin: 0 14px 14px;
-  background: var(--g50);
-  border: 1.5px solid var(--g200);
-  border-radius: 18px;
-  padding: 16px 16px 14px;
-  transition: opacity .3s, transform .3s;
+  margin: 10px 14px 0;
+  background: var(--g50); border: 1.5px solid var(--g200);
+  border-radius: 18px; padding: 16px 16px 14px;
+  transition: opacity .3s;
 }
 .save-banner.hidden { display: none; }
 .save-banner.saved  { border-color: var(--green); background: var(--green-bg); }
@@ -496,37 +547,29 @@ body {
 .save-banner-sub    { font-size: 12px; color: var(--g500); margin: 0; }
 .save-banner-btns   { display: flex; gap: 10px; }
 .save-btn-yes {
-  flex: 1; padding: 13px;
-  background: var(--red); color: #fff;
-  border: none; border-radius: 12px;
-  font-size: 15px; font-weight: 700; cursor: pointer;
+  flex: 1; padding: 13px; background: var(--red); color: #fff;
+  border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer;
 }
 .save-btn-yes:disabled { background: var(--green); }
 .save-btn-no {
-  flex: 1; padding: 13px;
-  background: transparent; color: var(--g500);
+  flex: 1; padding: 13px; background: transparent; color: var(--g500);
   border: 1.5px solid var(--g200); border-radius: 12px;
   font-size: 15px; font-weight: 600; cursor: pointer;
 }
 
-.res-bottom { padding: 6px 14px 44px; }
+.res-bottom { padding: 10px 14px 48px; }
 .btn-red-full {
-  width: 100%; padding: 18px;
-  background: var(--red); color: var(--white);
-  border: none; border-radius: 16px;
-  font-size: 16px; font-weight: 800; cursor: pointer;
-  margin-bottom: 10px;
-  transition: background 0.15s;
+  width: 100%; padding: 18px; background: var(--red); color: var(--white);
+  border: none; border-radius: 16px; font-size: 16px; font-weight: 800;
+  cursor: pointer; margin-bottom: 10px; transition: background 0.15s;
 }
 .btn-red-full:active { background: var(--red-dark); }
 .btn-outline {
-  width: 100%; padding: 16px;
-  background: var(--white); color: var(--black);
+  width: 100%; padding: 16px; background: var(--white); color: var(--black);
   border: 1.5px solid var(--g200); border-radius: 16px;
-  font-size: 15px; font-weight: 700; cursor: pointer;
-  margin-bottom: 14px;
+  font-size: 15px; font-weight: 700; cursor: pointer; margin-bottom: 10px;
 }
-.disc { font-size: 11px; color: var(--g300); text-align: center; line-height: 1.5; }
+.disc { font-size: 11px; color: var(--g300); text-align: center; line-height: 1.5; padding-top: 4px; }
 
 /* ══════════════
    AUTH (LOGIN / SIGNUP)
@@ -1228,68 +1271,101 @@ body {
 
 <!-- UPLOAD -->
 <div class="screen" id="s-upload">
-  <div class="nav">
-    <span class="nav-back" onclick="go('s-guide')" data-i18n="nav.back">← Retour</span>
-    <span class="nav-title" data-i18n="upload.title">Ta carte</span>
-    <span class="nav-skip"></span>
-  </div>
+  <div class="scan-screen">
 
-  <!-- RECTO -->
-  <div style="padding: 0 16px 6px">
-    <p style="font-size:11px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px"><span data-i18n="upload.recto">① Recto</span> <span style="color:var(--red)">*</span></p>
-  </div>
-
-  <div class="upload-zone" id="upload-zone">
-    <input type="file" accept="image/*" onchange="handleFile(event,'front')">
-    <div class="upload-ico">
-      <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-        <path d="M13 4v16M5 12l8-8 8 8" stroke="#CC0000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M3 22h20" stroke="#CC0000" stroke-width="2" stroke-linecap="round"/>
-      </svg>
+    <!-- Top nav -->
+    <div class="scan-top">
+      <span class="scan-back-btn" onclick="go('s-guide')">‹</span>
+      <div class="scan-tabs">
+        <button class="scan-tab active" id="scan-tab-front" onclick="switchScanTab('front')" data-i18n="upload.recto">Recto</button>
+        <button class="scan-tab" id="scan-tab-back" onclick="switchScanTab('back')" data-i18n="upload.verso">Verso</button>
+      </div>
+      <span style="width:36px"></span>
     </div>
-    <p class="upload-t" data-i18n="upload.front.t">Face avant</p>
-    <p class="upload-s" data-i18n="upload.front.s">Obligatoire</p>
-  </div>
 
-  <div class="preview-zone" id="preview-zone">
-    <img id="preview-img" src="" alt="">
-    <label class="preview-change">
-      <span data-i18n="upload.change">Changer</span>
-      <input type="file" accept="image/*" onchange="handleFile(event,'front')">
-    </label>
-  </div>
-
-  <!-- VERSO -->
-  <div style="padding: 10px 16px 6px">
-    <p style="font-size:11px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px"><span data-i18n="upload.verso">② Verso</span> <span style="color:var(--g300);font-weight:400;text-transform:none;letter-spacing:0" data-i18n="upload.verso.opt">optionnel — améliore la précision</span></p>
-  </div>
-
-  <div class="upload-zone" id="upload-zone-back" style="padding:28px 20px">
-    <input type="file" accept="image/*" onchange="handleFile(event,'back')">
-    <div class="upload-ico">
-      <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-        <path d="M13 4v16M5 12l8-8 8 8" stroke="#CCC" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M3 22h20" stroke="#CCC" stroke-width="2" stroke-linecap="round"/>
-      </svg>
+    <!-- Front panel -->
+    <div class="scan-panel" id="scan-panel-front">
+      <div class="card-frame" id="card-frame-front">
+        <div class="cf-corner tl"></div>
+        <div class="cf-corner tr"></div>
+        <div class="cf-corner bl"></div>
+        <div class="cf-corner br"></div>
+        <!-- Upload zone -->
+        <div class="upload-zone" id="upload-zone">
+          <input type="file" accept="image/*" onchange="handleFile(event,'front')">
+          <div class="cf-placeholder">
+            <div class="cf-ico">
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                <path d="M2 8.5h2.2l2-3h7.6l2 3H18a1.5 1.5 0 0 1 1.5 1.5v7.5A1.5 1.5 0 0 1 18 19H4A1.5 1.5 0 0 1 2.5 17.5V10A1.5 1.5 0 0 1 4 8.5z" stroke="#CC0000" stroke-width="1.6" fill="none"/>
+                <circle cx="11" cy="14" r="3" stroke="#CC0000" stroke-width="1.6"/>
+              </svg>
+            </div>
+            <p class="cf-hint" data-i18n="upload.front.t">Face avant</p>
+            <p class="cf-sub" data-i18n="upload.front.s">Appuie pour photographier</p>
+          </div>
+        </div>
+        <!-- Preview -->
+        <div class="preview-zone" id="preview-zone">
+          <img id="preview-img" src="" alt="">
+          <label class="cf-retake">
+            <input type="file" accept="image/*" onchange="handleFile(event,'front')">
+            <span data-i18n="upload.change">Changer</span>
+          </label>
+        </div>
+      </div>
     </div>
-    <p class="upload-t" style="color:var(--g500)" data-i18n="upload.back.t">Face arrière</p>
-    <p class="upload-s" data-i18n="upload.back.s">Optionnel</p>
-  </div>
 
-  <div class="preview-zone" id="preview-zone-back">
-    <img id="preview-img-back" src="" alt="">
-    <label class="preview-change">
-      <span data-i18n="upload.change">Changer</span>
-      <input type="file" accept="image/*" onchange="handleFile(event,'back')">
-    </label>
-  </div>
+    <!-- Back panel -->
+    <div class="scan-panel" id="scan-panel-back" style="display:none">
+      <div class="card-frame" id="card-frame-back">
+        <div class="cf-corner tl"></div>
+        <div class="cf-corner tr"></div>
+        <div class="cf-corner bl"></div>
+        <div class="cf-corner br"></div>
+        <div class="upload-zone" id="upload-zone-back">
+          <input type="file" accept="image/*" onchange="handleFile(event,'back')">
+          <div class="cf-placeholder">
+            <div class="cf-ico">
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                <path d="M2 8.5h2.2l2-3h7.6l2 3H18a1.5 1.5 0 0 1 1.5 1.5v7.5A1.5 1.5 0 0 1 18 19H4A1.5 1.5 0 0 1 2.5 17.5V10A1.5 1.5 0 0 1 4 8.5z" stroke="rgba(255,255,255,0.3)" stroke-width="1.6" fill="none"/>
+                <circle cx="11" cy="14" r="3" stroke="rgba(255,255,255,0.3)" stroke-width="1.6"/>
+              </svg>
+            </div>
+            <p class="cf-hint" data-i18n="upload.back.t">Face arrière</p>
+            <p class="cf-sub" data-i18n="upload.back.s">Optionnel — améliore la précision</p>
+          </div>
+        </div>
+        <div class="preview-zone" id="preview-zone-back">
+          <img id="preview-img-back" src="" alt="">
+          <label class="cf-retake">
+            <input type="file" accept="image/*" onchange="handleFile(event,'back')">
+            <span data-i18n="upload.change">Changer</span>
+          </label>
+        </div>
+      </div>
+    </div>
 
-  <div class="name-row">
-    <p class="name-lbl" data-i18n="upload.name.lbl">Nom de la carte</p>
-    <input class="name-inp" type="text" id="card-name" data-i18n-placeholder="upload.name.ph" placeholder="Détecté auto, ou tape ici…">
-  </div>
+    <!-- Status dots -->
+    <div class="scan-dots">
+      <div class="scan-dot-item" id="scan-dot-front">
+        <div class="scan-dot-circle"></div>
+        <span data-i18n="upload.recto">Recto</span>
+      </div>
+      <div class="scan-dot-sep">·</div>
+      <div class="scan-dot-item" id="scan-dot-back">
+        <div class="scan-dot-circle"></div>
+        <span data-i18n="upload.verso">Verso</span>
+      </div>
+    </div>
 
-  <button class="btn-block" id="btn-go" onclick="startAnalysis()" disabled style="opacity:.3" data-i18n="upload.btn">Analyser →</button>
+    <!-- Analyze button -->
+    <div class="scan-bottom">
+      <button class="btn-scan-analyze" id="btn-go" onclick="startAnalysis()" disabled data-i18n="upload.btn">Analyser →</button>
+    </div>
+
+    <!-- Hidden for JS compat -->
+    <input type="text" id="card-name" style="display:none">
+  </div>
 </div>
 
 <!-- ANALYZING -->
@@ -1320,49 +1396,78 @@ body {
 
 <!-- RESULT -->
 <div class="screen" id="s-result">
-  <div class="res-bar">
-    <div class="res-nav">
-      <span class="res-back" onclick="resetAndGo()" data-i18n="result.back">← Nouveau grade</span>
-      <span class="res-share" onclick="shareResult()" data-i18n="result.share">Partager</span>
-    </div>
-    <div class="res-card-row">
-      <div class="res-thumb"><img id="res-img" src="" alt=""></div>
-      <div>
-        <p class="res-cn" id="res-name">Carte Pokémon</p>
-        <p class="res-cs" data-i18n="result.sub">Analyse IA · Standards PSA</p>
-      </div>
+
+  <!-- Sticky header -->
+  <div class="res-header">
+    <span class="res-back" onclick="resetAndGo()" data-i18n="result.back">← Nouveau grade</span>
+    <span class="res-share" onclick="shareResult()" data-i18n="result.share">Partager</span>
+  </div>
+
+  <!-- Hero: card image -->
+  <div class="res-hero">
+    <div class="res-img-wrap">
+      <img id="res-img" src="" alt="">
     </div>
   </div>
 
-  <div class="score-block">
-    <p class="sc-lbl" data-i18n="result.score.lbl">Note globale</p>
-    <div class="sc-row">
-      <span class="sc-n" id="sc-num">—</span>
-      <span class="sc-d">/10</span>
+  <!-- Card identity -->
+  <div class="res-identity">
+    <h1 class="res-card-name" id="res-name">—</h1>
+    <div id="card-detected-block" style="display:none">
+      <span id="detected-name" style="display:none"></span>
+      <p class="res-card-set" id="detected-info"></p>
+      <span class="res-card-rarity" id="detected-rarity"></span>
     </div>
-    <div class="ring-wrap">
-      <svg width="96" height="96" viewBox="0 0 96 96">
-        <circle cx="48" cy="48" r="38" fill="none" stroke="#F4F4F4" stroke-width="7"/>
+  </div>
+
+  <!-- PSA Grade block -->
+  <div class="res-grade-block" id="res-grade-block">
+    <div class="rgb-inner">
+      <span class="rgb-label">PSA</span>
+      <div class="rgb-score-row">
+        <span class="rgb-num" id="sc-num">—</span>
+        <span class="rgb-max">/10</span>
+      </div>
+      <!-- Hidden ring kept for JS compat -->
+      <svg width="0" height="0" style="position:absolute;overflow:hidden;pointer-events:none">
         <circle id="sc-ring" cx="48" cy="48" r="38" fill="none"
           stroke="#CC0000" stroke-width="7" stroke-linecap="round"
           stroke-dasharray="239" stroke-dashoffset="239"
           transform="rotate(-90 48 48)"
           style="transition: stroke-dashoffset 1.4s cubic-bezier(0.4,0,0.2,1), stroke 0.4s;"/>
       </svg>
+      <div class="psa-tag" id="sc-badge">—</div>
+      <p class="sc-eq" id="sc-equiv">—</p>
     </div>
-    <div class="psa-tag" id="sc-badge">—</div>
-    <p class="sc-eq" id="sc-equiv">—</p>
   </div>
 
-  <!-- Carte détectée -->
-  <div class="card-detected" id="card-detected-block">
-    <p class="card-detected-label" data-i18n="result.card.lbl">Carte identifiée</p>
-    <p class="card-detected-name" id="detected-name">—</p>
-    <p class="card-detected-info" id="detected-info">—</p>
-    <span class="card-detected-rarity" id="detected-rarity"></span>
+  <!-- Criteria 2×2 grid -->
+  <div class="crit-section">
+    <p class="crit-head-row" data-i18n="result.criteria">Détail des critères</p>
+    <div class="crit-grid">
+      <div id="crit-centering" class="crit"></div>
+      <div id="crit-corners"   class="crit"></div>
+      <div id="crit-edges"     class="crit"></div>
+      <div id="crit-surface"   class="crit"></div>
+    </div>
   </div>
 
-  <!-- Détection de contrefaçon -->
+  <!-- Price block -->
+  <div class="price-block" id="price-block">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <p class="price-block-label" style="margin-bottom:0" data-i18n="result.price.lbl">💰 Valeur estimée</p>
+      <a id="price-source-badge" href="#" target="_blank"
+         style="display:none;font-size:10px;font-weight:800;color:var(--red);background:var(--red-bg);border-radius:99px;padding:3px 9px;text-decoration:none;letter-spacing:.03em">Cardmarket ↗</a>
+    </div>
+    <div class="price-range">
+      <span class="price-low" id="price-low">—</span>
+      <span class="price-sep">→</span>
+      <span class="price-high" id="price-high">—</span>
+    </div>
+    <p class="price-note" id="price-note"></p>
+  </div>
+
+  <!-- Fake detection -->
   <div class="fake-block" id="fake-block">
     <div class="fake-header">
       <p class="fake-label" data-i18n="result.fake.lbl">🔍 Authenticité</p>
@@ -1372,27 +1477,7 @@ body {
     <div id="fake-indicators"></div>
   </div>
 
-  <!-- Estimation de prix -->
-  <div class="price-block" id="price-block">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-      <p class="price-block-label" style="margin-bottom:0" data-i18n="result.price.lbl">💰 Valeur estimée (marché PSA)</p>
-      <a id="price-source-badge" href="#" target="_blank" style="display:none;font-size:10px;font-weight:800;color:var(--red);background:var(--red-bg);border-radius:99px;padding:3px 9px;text-decoration:none;letter-spacing:.03em">Cardmarket ↗</a>
-    </div>
-    <div class="price-range">
-      <span class="price-low" id="price-low">—</span>
-      <span class="price-sep">→</span>
-      <span class="price-high" id="price-high">—</span>
-    </div>
-    <p class="price-note" id="price-note">—</p>
-  </div>
-
-  <p class="crit-head-row" data-i18n="result.criteria">Détail des critères</p>
-  <div id="crit-centering" class="crit"></div>
-  <div id="crit-corners"   class="crit"></div>
-  <div id="crit-edges"     class="crit"></div>
-  <div id="crit-surface"   class="crit"></div>
-
-  <!-- Bandeau ajout collection -->
+  <!-- Save banner -->
   <div class="save-banner" id="save-banner">
     <div class="save-banner-inner">
       <div class="save-banner-icon">📦</div>
@@ -1409,7 +1494,7 @@ body {
 
   <div class="res-bottom">
     <button class="btn-red-full" onclick="goToGrading()" data-i18n="result.btn.grading">Envoyer au gradage physique →</button>
-    <button class="btn-outline"  onclick="openROI()" style="margin-bottom:10px" data-i18n="result.btn.roi">📊 Calculer le ROI de ce grade</button>
+    <button class="btn-outline"  onclick="openROI()" data-i18n="result.btn.roi">📊 Calculer le ROI de ce grade</button>
     <button class="btn-outline"  onclick="resetAndGo()" data-i18n="result.btn.new">Grader une autre carte</button>
     <p class="disc" data-i18n="result.disc">Estimation IA, non officielle. Pour une certification officielle, utilisez PSA, Aura Collect ou CCC.</p>
   </div>
@@ -2708,6 +2793,17 @@ function handleGradeBtn() {
   go('s-guide');
 }
 
+// ── Scan tab switch ────────────────────────────────────────────
+function switchScanTab(side) {
+  const isFront = side === 'front';
+  const pf = document.getElementById('scan-panel-front');
+  const pb = document.getElementById('scan-panel-back');
+  if (pf) pf.style.display = isFront ? 'flex' : 'none';
+  if (pb) pb.style.display = isFront ? 'none' : 'flex';
+  document.getElementById('scan-tab-front')?.classList.toggle('active', isFront);
+  document.getElementById('scan-tab-back')?.classList.toggle('active', !isFront);
+}
+
 // ── Upload ─────────────────────────────────────────────────────
 let frontFile = null;
 let backFile  = null;
@@ -2722,8 +2818,15 @@ function handleFile(e, side) {
       document.getElementById('preview-img').src = ev.target.result;
       document.getElementById('preview-zone').style.display = 'block';
       document.getElementById('upload-zone').style.display = 'none';
+      // Mark frame as done (red corners)
+      document.getElementById('card-frame-front')?.classList.add('done');
+      // Mark dot as done
+      document.getElementById('scan-dot-front')?.classList.add('done');
+      // Enable analyze button
       const b = document.getElementById('btn-go');
-      b.disabled = false; b.style.opacity = '1';
+      b.disabled = false;
+      // Auto-switch to verso tab to prompt user for back photo
+      setTimeout(() => switchScanTab('back'), 450);
     };
   } else {
     backFile = f;
@@ -2731,6 +2834,8 @@ function handleFile(e, side) {
       document.getElementById('preview-img-back').src = ev.target.result;
       document.getElementById('preview-zone-back').style.display = 'block';
       document.getElementById('upload-zone-back').style.display = 'none';
+      document.getElementById('card-frame-back')?.classList.add('done');
+      document.getElementById('scan-dot-back')?.classList.add('done');
     };
   }
   reader.readAsDataURL(f);
@@ -2872,13 +2977,38 @@ function showResult(r) {
 
   if (frontFile) {
     const rd = new FileReader();
-    rd.onload = ev => { const img = document.getElementById('res-img'); img.src = ev.target.result; img.style.display='block'; };
+    rd.onload = ev => {
+      const img = document.getElementById('res-img');
+      img.src = ev.target.result;
+      img.style.display = 'block';
+      // Ensure the wrap is visible
+      const wrap = img.closest('.res-img-wrap');
+      if (wrap) wrap.style.background = 'transparent';
+    };
     rd.readAsDataURL(frontFile);
   }
 
   const col = colFor(g), badge = badgeFor(g);
+
+  // Grade tier palette (PSA slab colors)
+  const psaNum = g >= 9.5 ? 10 : g >= 8.5 ? 9 : g >= 7.5 ? 8 : g >= 6.5 ? 7 : g >= 5.5 ? 6 : 5;
+  const tiers = {
+    10: { bg:'#140E00', accent:'#F5D97F' },
+     9: { bg:'#040E1E', accent:'#64B5F6' },
+     8: { bg:'#03110A', accent:'#66BB6A' },
+     7: { bg:'#0E051C', accent:'#CE93D8' },
+     6: { bg:'#160600', accent:'#FF8A65' },
+     5: { bg:'#111',    accent:'#9CA3AF' },
+  };
+  const tier = tiers[psaNum] || tiers[5];
+  const gradeBlock = document.getElementById('res-grade-block');
+  if (gradeBlock) {
+    gradeBlock.style.background = tier.bg;
+    gradeBlock.style.color = tier.accent;
+  }
+
   document.getElementById('sc-num').textContent = g.toFixed(1);
-  document.getElementById('sc-num').style.color = col;
+  document.getElementById('sc-num').style.color = tier.accent;
   document.getElementById('sc-badge').textContent = r.psa_label;
   document.getElementById('sc-badge').style.cssText = `background:${badge.bg};color:${badge.c}`;
   document.getElementById('sc-equiv').textContent = r.psa_equiv;
@@ -2957,20 +3087,19 @@ function showResult(r) {
     if (!crit || typeof crit.score === 'undefined') return;
     const c   = colFor(crit.score);
     const pct = Math.round(crit.score * 10);
-    const cf  = confFor(crit.confidence);
     document.getElementById(id).innerHTML = `
-      <div class="crit-top">
-        <span class="crit-nm">${label}</span>
-        <span class="crit-sc" style="color:${c}">${crit.score.toFixed(1)}<span class="crit-sc-max">/10</span></span>
+      <span class="crit-nm">${label}</span>
+      <div class="crit-sc-row">
+        <span class="crit-sc" style="color:${c}">${crit.score.toFixed(1)}</span>
+        <span class="crit-sc-max">/10</span>
       </div>
-      <p class="crit-ob">${crit.observation}</p>
-      <div class="crit-bar-row">
-        <div class="crit-bar"><div class="crit-f" id="${id}-f" style="background:${c}"></div></div>
-        <span class="crit-pct" style="color:${c}">${pct}%</span>
-      </div>
-      <p class="crit-cf ${cf.cls}"><span class="crit-cf-dot"></span>${cf.txt}</p>
+      <div class="crit-bar"><div class="crit-f" id="${id}-f" style="background:${c}"></div></div>
+      <p class="crit-ob">${crit.observation || ''}</p>
     `;
-    setTimeout(() => { document.getElementById(id + '-f').style.width = pct + '%'; }, 500);
+    setTimeout(() => {
+      const bar = document.getElementById(id + '-f');
+      if (bar) bar.style.width = pct + '%';
+    }, 500);
   }
 
   setCrit('crit-centering', r.centering, 'Centering');
@@ -2988,11 +3117,20 @@ function showResult(r) {
 function resetAndGo() {
   frontFile = null; backFile = null;
   document.getElementById('preview-zone').style.display = 'none';
-  document.getElementById('upload-zone').style.display = 'block';
+  document.getElementById('upload-zone').style.display = 'flex';
   document.getElementById('preview-zone-back').style.display = 'none';
-  document.getElementById('upload-zone-back').style.display = 'block';
+  document.getElementById('upload-zone-back').style.display = 'flex';
+  // Reset frame corners
+  document.getElementById('card-frame-front')?.classList.remove('done');
+  document.getElementById('card-frame-back')?.classList.remove('done');
+  // Reset dots
+  document.getElementById('scan-dot-front')?.classList.remove('done');
+  document.getElementById('scan-dot-back')?.classList.remove('done');
+  // Go back to front tab
+  switchScanTab('front');
   document.getElementById('card-name').value = '';
-  const b = document.getElementById('btn-go'); b.disabled=true; b.style.opacity='0.3';
+  const b = document.getElementById('btn-go');
+  if (b) { b.disabled = true; }
   document.getElementById('sc-ring').style.strokeDashoffset = '239';
   document.getElementById('card-detected-block').style.display = 'none';
   document.getElementById('price-block').style.display = 'none';
