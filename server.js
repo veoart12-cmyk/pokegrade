@@ -282,14 +282,27 @@ async function fetchRealPrice(cardName, setName, psaScore) {
     };
     const c = coeffs[psaNum] || coeffs[5];
 
-    // Prix minimaux réalistes (coût du grading PSA ~25€)
-    const minLow  = psaNum >= 9 ? 30 : psaNum >= 7 ? 15 : 5;
-    const low  = Math.max(minLow, Math.round(rawEur * c.low));
-    const high = Math.max(low + 5, Math.round(rawEur * c.high));
+    // Calcul sans plancher artificiel — on respecte le vrai prix de marché
+    const rawLow  = rawEur * c.low;
+    const rawHigh = rawEur * c.high;
+
+    // Formater avec la bonne précision selon la valeur
+    function fmtEur(v) {
+      if (v < 0.1)  return parseFloat(v.toFixed(3));
+      if (v < 1)    return parseFloat(v.toFixed(2));
+      if (v < 10)   return parseFloat(v.toFixed(1));
+      return Math.round(v);
+    }
+    const low  = fmtEur(rawLow);
+    const high = fmtEur(Math.max(rawHigh, rawLow * 1.1)); // high toujours > low
 
     const source = cm ? 'Cardmarket' : 'TCGPlayer';
-    const note = `Source : ${source} (${rawEur.toFixed(2)}€ brut) × coeff. PSA ${psaNum}`;
-    console.log(`[Price] ${cardName} → ${rawEur.toFixed(2)}€ brut → PSA${psaNum}: ${low}–${high}€`);
+    // Avertissement si la carte vaut moins d'1€ (grading non rentable)
+    const worthNote = rawEur < 1
+      ? ` ⚠️ Carte peu valorisée — grading PSA (~25€) non rentable`
+      : '';
+    const note = `Source : ${source} (${rawEur.toFixed(2)}€) × coeff. PSA ${psaNum}${worthNote}`;
+    console.log(`[Price] ${cardName} → ${rawEur.toFixed(3)}€ brut → PSA${psaNum}: ${low}–${high}€`);
 
     return { low, high, currency: 'EUR', note, source: source.toLowerCase() };
   } catch (e) {
