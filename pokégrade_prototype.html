@@ -819,6 +819,109 @@ body {
 .nav-tab.active span { color: var(--red); }
 .nav-tab:not(.active) span { color: var(--g500); }
 
+/* ══════════════════════════════
+   ADMIN DASHBOARD (owner only)
+══════════════════════════════ */
+#s-admin { background: #0A0A0A; min-height: 100vh; }
+
+.adm-header {
+  position: sticky; top: 0; z-index: 10;
+  background: #0A0A0A;
+  padding: 54px 20px 14px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.adm-title { font-size: 18px; font-weight: 900; color: #fff; letter-spacing: -0.4px; }
+.adm-sub   { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 1px; }
+.adm-refresh {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: rgba(255,255,255,0.08); border: none;
+  color: rgba(255,255,255,0.5); font-size: 16px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.adm-refresh:active { background: rgba(255,255,255,0.15); }
+
+.adm-body { padding: 16px 16px 40px; display: flex; flex-direction: column; gap: 14px; }
+
+/* Section card */
+.adm-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px; padding: 16px;
+}
+.adm-card-title {
+  font-size: 10px; font-weight: 800; letter-spacing: .12em;
+  color: rgba(255,255,255,0.35); text-transform: uppercase; margin-bottom: 14px;
+}
+
+/* KPI grid */
+.adm-kpi-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+.adm-kpi {
+  background: rgba(255,255,255,0.04);
+  border-radius: 12px; padding: 12px 14px;
+}
+.adm-kpi-val {
+  font-size: 26px; font-weight: 900; color: #fff;
+  letter-spacing: -1px; line-height: 1;
+}
+.adm-kpi-val.green  { color: #4ADE80; }
+.adm-kpi-val.red    { color: #CC0000; }
+.adm-kpi-val.amber  { color: #FBBF24; }
+.adm-kpi-val.blue   { color: #60A5FA; }
+.adm-kpi-lbl {
+  font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 4px;
+}
+
+/* Full-width stat row */
+.adm-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.adm-row:last-child { border-bottom: none; padding-bottom: 0; }
+.adm-row-lbl { font-size: 13px; color: rgba(255,255,255,0.55); }
+.adm-row-val { font-size: 13px; font-weight: 800; color: #fff; }
+
+/* Sparkline chart */
+.adm-sparkline {
+  display: flex; align-items: flex-end; gap: 3px;
+  height: 40px; margin-top: 10px;
+}
+.adm-bar {
+  flex: 1; background: rgba(204,0,0,0.5); border-radius: 3px 3px 0 0;
+  min-height: 2px; transition: height 0.3s;
+}
+.adm-bar.today { background: #CC0000; }
+.adm-bar-labels {
+  display: flex; justify-content: space-between;
+  margin-top: 4px;
+}
+.adm-bar-lbl { font-size: 9px; color: rgba(255,255,255,0.2); }
+
+/* MRR highlight */
+.adm-mrr {
+  text-align: center; padding: 8px 0 4px;
+}
+.adm-mrr-val {
+  font-size: 36px; font-weight: 900; color: #4ADE80;
+  letter-spacing: -1.5px; line-height: 1;
+}
+.adm-mrr-lbl { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 4px; }
+
+/* Loading state */
+.adm-loading {
+  display: flex; align-items: center; justify-content: center;
+  padding: 60px 0; color: rgba(255,255,255,0.3); font-size: 14px;
+}
+
+/* Admin dot on home — tiny, discreet */
+.admin-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  cursor: pointer; flex-shrink: 0;
+}
+
 /* ── Collection (Pokédex) ── */
 #s-collection { background: var(--g50); }
 .coll-header {
@@ -1249,6 +1352,8 @@ body {
           <path d="M2 15.5c0-3 3.1-5 7-5s7 2 7 5" stroke="#555" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
       </button>
+      <!-- Bouton admin — invisible pour les non-admins -->
+      <div class="admin-dot" id="admin-dot" style="display:none" onclick="openAdmin()" title="Admin"></div>
     </div>
   </div>
 
@@ -1593,6 +1698,26 @@ body {
     <button class="btn-outline"  onclick="openROI()" data-i18n="result.btn.roi">📊 Calculer le ROI de ce grade</button>
     <button class="btn-outline"  onclick="resetAndGo()" data-i18n="result.btn.new">Grader une autre carte</button>
     <p class="disc" data-i18n="result.disc">Estimation IA, non officielle. Pour une certification officielle, utilisez PSA, Aura Collect ou CCC.</p>
+  </div>
+</div>
+
+<!-- ADMIN DASHBOARD (owner only) -->
+<div class="screen" id="s-admin">
+  <div class="adm-header">
+    <div>
+      <div class="adm-title">⚡ Dashboard Admin</div>
+      <div class="adm-sub" id="adm-updated">—</div>
+    </div>
+    <button class="adm-refresh" onclick="loadAdminStats()" title="Rafraîchir">↻</button>
+  </div>
+
+  <div class="adm-body" id="adm-body">
+    <div class="adm-loading" id="adm-loading">Chargement des données…</div>
+  </div>
+
+  <!-- Back to home -->
+  <div style="padding: 0 16px 40px; display:none" id="adm-footer">
+    <button onclick="go('s-home')" style="width:100%;padding:14px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:14px;color:rgba(255,255,255,0.5);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">← Retour</button>
   </div>
 </div>
 
@@ -2573,10 +2698,13 @@ sb.auth.onAuthStateChange(async (event, session) => {
     await refreshProfile();
     updateHomePill();
     document.getElementById('home-note').style.display = 'none';
+    checkAdminDot(); // affiche le point admin si c'est le propriétaire
   } else {
     currentProfile = null;
     document.getElementById('home-pill').style.display = 'none';
     document.getElementById('home-note').style.display = 'block';
+    const dot = document.getElementById('admin-dot');
+    if (dot) dot.style.display = 'none';
   }
 });
 
@@ -2878,12 +3006,154 @@ function updateHomePill() {
 }
 
 // ── Button handlers ────────────────────────────────────────────
+const ADMIN_EMAILS = ['elhaddaddali@gmail.com', 'dilanlabaki@gmail.com'];
+
 function handleAccountBtn() {
   if (currentSession) {
     loadAccount();
     go('s-account');
   } else {
     go('s-login');
+  }
+}
+
+// ── Admin ──────────────────────────────────────────────────────
+function checkAdminDot() {
+  const dot = document.getElementById('admin-dot');
+  if (dot && ADMIN_EMAILS.includes(currentSession?.user?.email)) {
+    dot.style.display = 'block';
+  }
+}
+
+function openAdmin() {
+  go('s-admin');
+  loadAdminStats();
+}
+
+async function loadAdminStats() {
+  const body    = document.getElementById('adm-body');
+  const footer  = document.getElementById('adm-footer');
+  const updated = document.getElementById('adm-updated');
+  if (!body) return;
+
+  body.innerHTML = '<div class="adm-loading">Chargement…</div>';
+  if (footer) footer.style.display = 'none';
+
+  try {
+    const res = await fetch('/api/admin/stats', {
+      headers: { Authorization: `Bearer ${currentSession.access_token}` }
+    });
+    if (!res.ok) throw new Error('Accès refusé');
+    const d = await res.json();
+
+    // Sparkline — hauteur relative
+    const maxBar = Math.max(...d.activity.dailyChart.map(b => b.count), 1);
+    const bars   = d.activity.dailyChart.map((b, i) => {
+      const isToday = i === d.activity.dailyChart.length - 1;
+      const h = Math.max(4, Math.round((b.count / maxBar) * 40));
+      return `<div class="adm-bar${isToday ? ' today' : ''}" style="height:${h}px" title="${b.date}: ${b.count} grades"></div>`;
+    }).join('');
+
+    body.innerHTML = `
+      <!-- MRR -->
+      <div class="adm-card">
+        <div class="adm-card-title">💰 Revenus</div>
+        <div class="adm-mrr">
+          <div class="adm-mrr-val">${d.revenue.mrr}€</div>
+          <div class="adm-mrr-lbl">MRR estimé · ${d.revenue.plan}</div>
+        </div>
+      </div>
+
+      <!-- Utilisateurs -->
+      <div class="adm-card">
+        <div class="adm-card-title">👥 Utilisateurs</div>
+        <div class="adm-kpi-grid">
+          <div class="adm-kpi">
+            <div class="adm-kpi-val">${d.users.total}</div>
+            <div class="adm-kpi-lbl">Total inscrits</div>
+          </div>
+          <div class="adm-kpi">
+            <div class="adm-kpi-val green">${d.users.premium}</div>
+            <div class="adm-kpi-lbl">Premium</div>
+          </div>
+          <div class="adm-kpi">
+            <div class="adm-kpi-val amber">${d.users.convRate}%</div>
+            <div class="adm-kpi-lbl">Conversion</div>
+          </div>
+          <div class="adm-kpi">
+            <div class="adm-kpi-val blue">+${d.users.newMonth}</div>
+            <div class="adm-kpi-lbl">Nouveaux (30j)</div>
+          </div>
+        </div>
+        <div style="margin-top:10px">
+          <div class="adm-row"><span class="adm-row-lbl">Nouveaux aujourd'hui</span><span class="adm-row-val">+${d.users.newToday}</span></div>
+          <div class="adm-row"><span class="adm-row-lbl">Utilisateurs gratuits</span><span class="adm-row-val">${d.users.free}</span></div>
+        </div>
+      </div>
+
+      <!-- Grades & usage -->
+      <div class="adm-card">
+        <div class="adm-card-title">🎯 Grades & Usage</div>
+        <div class="adm-kpi-grid">
+          <div class="adm-kpi">
+            <div class="adm-kpi-val">${d.grades.total}</div>
+            <div class="adm-kpi-lbl">Total grades</div>
+          </div>
+          <div class="adm-kpi">
+            <div class="adm-kpi-val red">${d.grades.today}</div>
+            <div class="adm-kpi-lbl">Aujourd'hui</div>
+          </div>
+          <div class="adm-kpi">
+            <div class="adm-kpi-val">${d.grades.week}</div>
+            <div class="adm-kpi-lbl">7 derniers jours</div>
+          </div>
+          <div class="adm-kpi">
+            <div class="adm-kpi-val">${d.grades.month}</div>
+            <div class="adm-kpi-lbl">30 derniers jours</div>
+          </div>
+        </div>
+        <div style="margin-top:12px">
+          <div style="font-size:10px;color:rgba(255,255,255,0.25);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em">Grades / jour (14 jours)</div>
+          <div class="adm-sparkline">${bars}</div>
+          <div class="adm-bar-labels">
+            <span class="adm-bar-lbl">J-13</span>
+            <span class="adm-bar-lbl">J-7</span>
+            <span class="adm-bar-lbl">Aujourd'hui</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rétention -->
+      <div class="adm-card">
+        <div class="adm-card-title">🔁 Rétention</div>
+        <div class="adm-kpi-grid">
+          <div class="adm-kpi">
+            <div class="adm-kpi-val green">${d.activity.activeUsersWeek}</div>
+            <div class="adm-kpi-lbl">Actifs (7j)</div>
+          </div>
+          <div class="adm-kpi">
+            <div class="adm-kpi-val">${d.activity.activeUsersMonth}</div>
+            <div class="adm-kpi-lbl">Actifs (30j)</div>
+          </div>
+          <div class="adm-kpi">
+            <div class="adm-kpi-val amber">${d.activity.retainedUsers}</div>
+            <div class="adm-kpi-lbl">Revenus (≥2 sessions)</div>
+          </div>
+          <div class="adm-kpi">
+            <div class="adm-kpi-val">${d.activity.avgGradesPerUser}</div>
+            <div class="adm-kpi-lbl">Grades / utilisateur</div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    if (footer) footer.style.display = 'block';
+    if (updated) {
+      const now = new Date();
+      updated.textContent = `Mis à jour à ${now.getHours()}h${String(now.getMinutes()).padStart(2,'0')}`;
+    }
+  } catch (e) {
+    body.innerHTML = `<div class="adm-loading" style="color:#CC0000">${e.message}</div>`;
   }
 }
 

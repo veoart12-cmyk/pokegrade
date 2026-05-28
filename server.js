@@ -615,6 +615,102 @@ app.post("/api/webhook", async (req, res) => {
   res.json({ received: true });
 });
 
+// ── Admin stats (accès restreint au propriétaire) ───────────────
+const ADMIN_EMAILS = ['elhaddaddali@gmail.com', 'dilanlabaki@gmail.com'];
+
+app.get("/api/admin/stats", requireAuth, async (req, res) => {
+  // Vérifie que c'est bien un admin
+  if (!ADMIN_EMAILS.includes(req.user.email)) {
+    return res.status(403).json({ error: 'Accès refusé' });
+  }
+
+  try {
+    const now = new Date();
+    const today     = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+    const week      = new Date(now - 7  * 86400000).toISOString();
+    const month     = new Date(now - 30 * 86400000).toISOString();
+    const yesterday = new Date(now - 1  * 86400000).toISOString();
+
+    // ── Utilisateurs ──
+    const { count: totalUsers }   = await supabase.from('profiles').select('*', { count: 'exact', head: true });
+    const { count: newThisMonth } = await supabase.from('profiles').select('*', { count: 'exact', head: true }).gte('created_at', month);
+    const { count: newToday }     = await supabase.from('profiles').select('*', { count: 'exact', head: true }).gte('created_at', today);
+    const { count: premiumUsers } = await supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('is_premium', true);
+
+    // ── Grades ──
+    const { count: totalGrades } = await supabase.from('grades').select('*', { count: 'exact', head: true });
+    const { count: gradesToday } = await supabase.from('grades').select('*', { count: 'exact', head: true }).gte('created_at', today);
+    const { count: gradesWeek }  = await supabase.from('grades').select('*', { count: 'exact', head: true }).gte('created_at', week);
+    const { count: gradesMonth } = await supabase.from('grades').select('*', { count: 'exact', head: true }).gte('created_at', month);
+
+    // Utilisateurs actifs (ont gradé au moins une fois dans la période)
+    const { data: activeThisWeek }  = await supabase.from('grades').select('user_id').gte('created_at', week);
+    const { data: activeThisMonth } = await supabase.from('grades').select('user_id').gte('created_at', month);
+    const uniqueWeek  = new Set((activeThisWeek  || []).map(r => r.user_id)).size;
+    const uniqueMonth = new Set((activeThisMonth || []).map(r => r.user_id)).size;
+
+    // ── Rétention : utilisateurs avec > 1 session (gradé à des jours différents) ──
+    const { data: allGrades } = await supabase.from('grades').select('user_id, created_at');
+    const userDays = {};
+    (allGrades || []).forEach(g => {
+      const day = g.created_at?.slice(0, 10);
+      if (!userDays[g.user_id]) userDays[g.user_id] = new Set();
+      userDays[g.user_id].add(day);
+    });
+    const retained = Object.values(userDays).filter(days => days.size >= 2).length;
+    const avgGradesPerUser = totalUsers > 0
+      ? ((totalGrades || 0) / totalUsers).toFixed(1)
+      : '0';
+
+    // Grades par jour sur les 14 derniers jours (pour le sparkline)
+    const dailyCounts = {};
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(now - i * 86400000);
+      dailyCounts[d.toISOString().slice(0, 10)] = 0;
+    }
+    (allGrades || []).forEach(g => {
+      const day = g.created_at?.slice(0, 10);
+      if (day in dailyCounts) dailyCounts[day]++;
+    });
+
+    // ── Revenus estimés ──
+    const MONTHLY_PRICE = 9.99; // EUR
+    const mrr = ((premiumUsers || 0) * MONTHLY_PRICE).toFixed(2);
+
+    res.json({
+      users: {
+        total:      totalUsers   || 0,
+        newToday:   newToday     || 0,
+        newMonth:   newThisMonth || 0,
+        premium:    premiumUsers || 0,
+        free:       (totalUsers || 0) - (premiumUsers || 0),
+        convRate:   totalUsers > 0 ? (((premiumUsers || 0) / totalUsers) * 100).toFixed(1) : '0',
+      },
+      grades: {
+        total:   totalGrades || 0,
+        today:   gradesToday || 0,
+        week:    gradesWeek  || 0,
+        month:   gradesMonth || 0,
+      },
+      activity: {
+        activeUsersWeek:  uniqueWeek,
+        activeUsersMonth: uniqueMonth,
+        retainedUsers:    retained,
+        avgGradesPerUser,
+        dailyChart: Object.entries(dailyCounts).map(([date, count]) => ({ date, count })),
+      },
+      revenue: {
+        mrr,
+        currency: 'EUR',
+        plan: `${premiumUsers || 0} abonnés × ${MONTHLY_PRICE}€/mois`,
+      },
+    });
+  } catch (e) {
+    console.error('[Admin] Erreur stats:', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`\n✅ Serveur PokeGrade démarré`);
